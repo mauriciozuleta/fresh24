@@ -1,3 +1,12 @@
+    .user-option {
+        color: #fff;
+        font-weight: 500;
+        text-decoration: none;
+        transition: color 0.2s;
+    }
+    .user-option:hover {
+        color: #7ec3f7;
+    }
     /* --- Layout for VS Code-like 3-section main area --- */
     .layout {
         display: flex;
@@ -61,19 +70,16 @@
         opacity: 1;
     }
     .options-sidebar {
-        width: 240px;
+        width: 168px; /* 30% narrower than 240px */
         background: #23293a;
         color: #b3c6e0;
         border-right: 2px solid #26304a;
         box-shadow: 2px 0 8px rgba(0,0,0,0.10);
         padding: 2rem 1rem;
-        display: none;
+        display: flex;
         flex-direction: column;
         position: relative;
         z-index: 1050;
-    }
-    .options-sidebar.active {
-        display: flex;
     }
     .main-content {
         flex: 1 1 auto;

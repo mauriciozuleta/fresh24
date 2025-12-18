@@ -8,30 +8,22 @@
     <script>
     document.addEventListener('DOMContentLoaded', function() {
         var icons = document.querySelectorAll('.sidebar-icon');
-        var optionsSidebar = document.getElementById('options-sidebar');
         var optionsSidebarContent = document.getElementById('options-sidebar-content');
-        var activeIcon = null;
+        var userMenu = document.getElementById('user-menu');
         icons.forEach(function(icon) {
             icon.addEventListener('click', function(e) {
                 e.preventDefault();
                 var label = icon.getAttribute('data-label');
-                if (activeIcon === icon && optionsSidebar.classList.contains('active')) {
-                    optionsSidebar.classList.remove('active');
-                    activeIcon = null;
+                optionsSidebarContent.textContent = label + ' Options';
+                if (label === 'User') {
+                    userMenu.style.display = 'block';
                 } else {
-                    optionsSidebarContent.textContent = label + ' Options';
-                    optionsSidebar.classList.add('active');
-                    activeIcon = icon;
+                    userMenu.style.display = 'none';
                 }
             });
         });
-        // Optional: close options sidebar when clicking outside
-        document.addEventListener('mousedown', function(e) {
-            if (optionsSidebar.classList.contains('active') && !optionsSidebar.contains(e.target) && !e.target.classList.contains('sidebar-icon')) {
-                optionsSidebar.classList.remove('active');
-                activeIcon = null;
-            }
-        });
+        // Hide user menu by default
+        userMenu.style.display = 'none';
     });
     </script>
 </head>
@@ -68,6 +60,18 @@
         </aside>
         <aside id="options-sidebar" class="options-sidebar">
             <div id="options-sidebar-content">Select an option</div>
+                <div id="user-menu" style="display:none">
+                    <h3>Manage Branch</h3>
+                    <ul>
+                        <li><a href="#" class="user-option">Add Branch</a></li>
+                        <li><a href="#" class="user-option">Edit Branch</a></li>
+                    </ul>
+                    <h3>Manage Products</h3>
+                    <ul>
+                        <li><a href="#" class="user-option">Add Products</a></li>
+                        <li><a href="#" class="user-option">View Products</a></li>
+                    </ul>
+                </div>
         </aside>
         <main class="main-content">
             <div class="container">
