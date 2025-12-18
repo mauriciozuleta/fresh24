@@ -1,0 +1,11 @@
+/* VS Code-like theme placeholder */
+:root {
+  --vscode-bg: #1e1e1e;
+  --vscode-fg: #d4d4d4;
+  --vscode-accent: #007acc;
+}
+body {
+  background: var(--vscode-bg);
+  color: var(--vscode-fg);
+  font-family: 'Segoe UI', 'Fira Mono', 'monospace', 'sans-serif';
+}
