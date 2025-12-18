@@ -7,25 +7,29 @@
     <link rel="stylesheet" href="/static/style.css">
     <script>
     document.addEventListener('DOMContentLoaded', function() {
-        var sideMenu = document.getElementById('side-menu');
-        var sideMenuTitle = document.getElementById('side-menu-title');
-        var closeBtn = document.getElementById('side-menu-close');
         var icons = document.querySelectorAll('.sidebar-icon');
+        var optionsSidebar = document.getElementById('options-sidebar');
+        var optionsSidebarContent = document.getElementById('options-sidebar-content');
+        var activeIcon = null;
         icons.forEach(function(icon) {
             icon.addEventListener('click', function(e) {
                 e.preventDefault();
-                var label = icon.querySelector('.tooltip').textContent;
-                sideMenuTitle.textContent = label;
-                sideMenu.classList.add('active');
+                var label = icon.getAttribute('data-label');
+                if (activeIcon === icon && optionsSidebar.classList.contains('active')) {
+                    optionsSidebar.classList.remove('active');
+                    activeIcon = null;
+                } else {
+                    optionsSidebarContent.textContent = label + ' Options';
+                    optionsSidebar.classList.add('active');
+                    activeIcon = icon;
+                }
             });
         });
-        closeBtn.addEventListener('click', function() {
-            sideMenu.classList.remove('active');
-        });
-        // Optional: close menu when clicking outside
+        // Optional: close options sidebar when clicking outside
         document.addEventListener('mousedown', function(e) {
-            if (sideMenu.classList.contains('active') && !sideMenu.contains(e.target) && !e.target.classList.contains('sidebar-icon')) {
-                sideMenu.classList.remove('active');
+            if (optionsSidebar.classList.contains('active') && !optionsSidebar.contains(e.target) && !e.target.classList.contains('sidebar-icon')) {
+                optionsSidebar.classList.remove('active');
+                activeIcon = null;
             }
         });
     });
@@ -41,29 +45,39 @@
     </nav>
     <div class="layout">
         <aside class="sidebar">
-            <a href="#" class="sidebar-icon">
+            <a href="#" class="sidebar-icon" data-label="User">
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#7ec3f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 8-4 8-4s8 0 8 4"/></svg>
+                <span class="tooltip">User</span>
             </a>
-            <a href="#" class="sidebar-icon">
+            <a href="#" class="sidebar-icon" data-label="Shipment">
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#7ec3f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M16 3v4M8 3v4"/><path d="M3 10h18"/></svg>
+                <span class="tooltip">Shipment</span>
             </a>
-            <a href="#" class="sidebar-icon">
+            <a href="#" class="sidebar-icon" data-label="Scheduling">
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#7ec3f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4"/><path d="M3 10h18"/></svg>
+                <span class="tooltip">Scheduling</span>
             </a>
-            <a href="#" class="sidebar-icon">
+            <a href="#" class="sidebar-icon" data-label="Simulation">
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#7ec3f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                <span class="tooltip">Simulation</span>
             </a>
-            <a href="#" class="sidebar-icon">
+            <a href="#" class="sidebar-icon" data-label="Settings">
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#7ec3f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.09a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h.09a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.09a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                <span class="tooltip">Settings</span>
             </a>
         </aside>
-        <!-- Side menu removed for minimal layout -->
-        <div class="main-content">
+        <aside id="options-sidebar" class="options-sidebar">
+            <div id="options-sidebar-content">Select an option</div>
+        </aside>
+        <main class="main-content">
             <div class="container">
                 <h1>Welcome to the Financial Simulator</h1>
                 <p>This is your home page. The UI uses a dark, cold color palette inspired by VS Code.</p>
             </div>
-        </div>
+        </main>
+        </aside>
+        <!-- Side menu removed for minimal layout -->
+        <!-- main-content now inside <main> above -->
     </div>
     <footer class="footer">
         <div>Powered by Dnamic aircraft Services</div>

@@ -1,3 +1,91 @@
+    /* --- Layout for VS Code-like 3-section main area --- */
+    .layout {
+        display: flex;
+        min-height: calc(100vh - 56px - 64px);
+    }
+    .sidebar {
+        width: 64px;
+        background: #232d3a;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 1rem 0 1rem 0;
+        box-shadow: 2px 0 8px rgba(0,0,0,0.12);
+        z-index: 1100;
+        position: sticky;
+        top: 56px;
+        height: calc(100vh - 56px - 64px);
+    }
+    .sidebar-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 48px;
+        height: 48px;
+        margin: 0.5rem 0;
+        border-radius: 8px;
+        transition: background 0.2s;
+        cursor: pointer;
+        position: relative;
+    }
+    .sidebar-icon:hover {
+        background: #23293a;
+    }
+    .sidebar-icon svg {
+        display: block;
+        width: 28px;
+        height: 28px;
+    }
+    /* Tooltip styles */
+    .sidebar-icon .tooltip {
+        visibility: hidden;
+        opacity: 0;
+        position: absolute;
+        left: 110%;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 2000;
+        font-size: 0.95rem;
+        white-space: nowrap;
+        background: #23293a;
+        color: #b3c6e0;
+        border: 1px solid #26304a;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+        padding: 4px 10px;
+        border-radius: 4px;
+        transition: opacity 0.2s, visibility 0.2s;
+        pointer-events: none;
+    }
+    .sidebar-icon:hover .tooltip {
+        visibility: visible;
+        opacity: 1;
+    }
+    .options-sidebar {
+        width: 240px;
+        background: #23293a;
+        color: #b3c6e0;
+        border-right: 2px solid #26304a;
+        box-shadow: 2px 0 8px rgba(0,0,0,0.10);
+        padding: 2rem 1rem;
+        display: none;
+        flex-direction: column;
+        position: relative;
+        z-index: 1050;
+    }
+    .options-sidebar.active {
+        display: flex;
+    }
+    .main-content {
+        flex: 1 1 auto;
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        padding-bottom: 80px;
+        background: #20263a;
+        border-left: 2px solid #26304a;
+        border-right: 2px solid #26304a;
+        border-bottom: 2px solid #26304a;
+    }
     /* --- Clean Sidebar Styles --- */
 /* --- Minimal VS Code-like Layout, No Tooltips --- */
 body {
