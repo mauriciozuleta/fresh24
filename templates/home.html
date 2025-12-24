@@ -37,6 +37,14 @@
     </nav>
     <div class="layout">
         <aside class="sidebar">
+            <a href="#" class="sidebar-icon" data-label="Administrator">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#f7c97e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="8" r="4"/>
+                    <path d="M4 20c0-4 8-4 8-4s8 0 8 4"/>
+                    <rect x="9" y="16" width="6" height="4" rx="1" fill="#f7c97e" stroke="#f7c97e"/>
+                </svg>
+                <span class="tooltip">Administrator</span>
+            </a>
             <a href="#" class="sidebar-icon" data-label="User">
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#7ec3f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 8-4 8-4s8 0 8 4"/></svg>
                 <span class="tooltip">User</span>
@@ -72,6 +80,48 @@
                         <li><a href="#" class="user-option">View Products</a></li>
                     </ul>
                 </div>
+                <div id="admin-menu" style="display:none">
+                    <div class="vscode-tree">
+                        <div class="vscode-tree-item" data-toggle="logistics">
+                            <span class="vscode-tree-arrow">&gt;</span> Logistics
+                        </div>
+                        <div class="vscode-tree-children" data-parent="logistics" style="display:none;">
+                            <div class="vscode-tree-item" data-toggle="air">
+                                <span class="vscode-tree-arrow">&gt;</span> Air
+                            </div>
+                            <div class="vscode-tree-children" data-parent="air" style="display:none;">
+                                <div class="vscode-tree-item" data-toggle="mode">
+                                    <span class="vscode-tree-arrow">&gt;</span> Mode
+                                </div>
+                                <div class="vscode-tree-children" data-parent="mode" style="display:none;">
+                                    <div><a href="#" class="admin-option">Charter</a></div>
+                                    <div><a href="#" class="admin-option">ACMI Charter</a></div>
+                                    <div><a href="#" class="admin-option">Majestic Charter</a></div>
+                                </div>
+                                <div class="vscode-tree-item" data-toggle="airports">
+                                    <span class="vscode-tree-arrow">&gt;</span> Airports
+                                </div>
+                                <div class="vscode-tree-children" data-parent="airports" style="display:none;">
+                                    <div><a href="#" class="admin-option">Create Airport</a></div>
+                                    <div><a href="#" class="admin-option">View Airports</a></div>
+                                </div>
+                                <div class="vscode-tree-item" data-toggle="aircraft">
+                                    <span class="vscode-tree-arrow">&gt;</span> Aircraft
+                                </div>
+                                <div class="vscode-tree-children" data-parent="aircraft" style="display:none;">
+                                    <div><a href="#" class="admin-option">View Aircrafts</a></div>
+                                    <div><a href="#" class="admin-option">Add Aircraft</a></div>
+                                </div>
+                            </div>
+                            <div class="vscode-tree-item">Land</div>
+                            <div class="vscode-tree-item">Sea</div>
+                        </div>
+                        <div class="vscode-tree-item" data-toggle="supplychain">
+                            <span class="vscode-tree-arrow">&gt;</span> Supply Chain
+                        </div>
+                        <div class="vscode-tree-children" data-parent="supplychain" style="display:none;"></div>
+                    </div>
+                </div>
         </aside>
         <main class="main-content">
             <div id="tab-bar" class="tab-bar"></div>
@@ -85,6 +135,22 @@
         <!-- main-content now inside <main> above -->
     </div>
     <footer class="footer">
+            <style>
+            .vscode-tree-item.open > .vscode-tree-arrow {
+                transform: rotate(90deg) scaleY(1.2);
+                display: inline-block;
+                transition: transform 0.1s;
+            }
+            /* Indent admin VS Code-style tree items and options */
+            #admin-menu .vscode-tree-children {
+                padding-left: 2ch; /* keep groups a bit indented */
+            }
+            #admin-menu .admin-option {
+                padding-left: 1ch; /* leaf options ~1 character indent */
+                font-size: 0.9rem;  /* slightly smaller font for final options */
+                color: var(--vscode-fg, #d4d4d4) !important; /* keep same high-contrast color */
+            }
+            </style>
         <div>Powered by Dnamic aircraft Services</div>
         <div><a href="https://www.dnamic-tech.com" target="_blank" rel="noopener">www.dnamic-tech.com</a></div>
     <script>
@@ -94,30 +160,52 @@
         var userMenu = document.getElementById('user-menu');
         var tabBar = document.getElementById('tab-bar');
         var tabContent = document.getElementById('tab-content');
-        var openTabs = {};
-        var activeTab = null;
+        // Workspaces: each icon label gets its own workspace (tabs and activeTab)
+        var workspaces = {};
+        var currentWorkspace = null;
+
+        // Admin (Administrator icon) tree toggles
+        var adminToggleItems = document.querySelectorAll('#admin-menu .vscode-tree-item[data-toggle]');
+        adminToggleItems.forEach(function(item) {
+            item.addEventListener('click', function(e) {
+                e.stopPropagation();
+                var key = item.getAttribute('data-toggle');
+                var children = document.querySelector('#admin-menu .vscode-tree-children[data-parent="' + key + '"]');
+                if (children) {
+                    var isOpen = children.style.display !== 'none';
+                    children.style.display = isOpen ? 'none' : 'block';
+                    item.classList.toggle('open', !isOpen);
+                }
+            });
+        });
 
         icons.forEach(function(icon) {
             icon.addEventListener('click', function(e) {
                 e.preventDefault();
                 var label = icon.getAttribute('data-label');
                 optionsSidebarContent.textContent = label + ' Options';
+                userMenu.style.display = 'none';
+                document.getElementById('admin-menu').style.display = 'none';
                 if (label === 'User') {
                     userMenu.style.display = 'block';
-                } else {
-                    userMenu.style.display = 'none';
+                } else if (label === 'Administrator') {
+                    document.getElementById('admin-menu').style.display = 'block';
                 }
+                // Switch workspace
+                switchWorkspace(label);
             });
         });
         // Hide user menu by default
         userMenu.style.display = 'none';
 
-        // Tab logic
+        // Tab logic (now per workspace)
         document.querySelectorAll('.user-option').forEach(function(option) {
             option.addEventListener('click', function(e) {
                 e.preventDefault();
                 var tabName = option.textContent.trim();
-                if (!openTabs[tabName]) {
+                if (!currentWorkspace) return;
+                var ws = workspaces[currentWorkspace];
+                if (!ws.openTabs[tabName]) {
                     // Create new tab
                     var tab = document.createElement('div');
                     tab.className = 'tab';
@@ -145,14 +233,14 @@
                         e.stopPropagation();
                         // Remove tab from DOM and openTabs
                         tabBar.removeChild(tab);
-                        delete openTabs[tabName];
+                        delete ws.openTabs[tabName];
                         // If closed tab was active, activate another tab
-                        if (activeTab === tabName) {
-                            var tabKeys = Object.keys(openTabs);
+                        if (ws.activeTab === tabName) {
+                            var tabKeys = Object.keys(ws.openTabs);
                             if (tabKeys.length > 0) {
                                 setActiveTab(tabKeys[tabKeys.length - 1]);
                             } else {
-                                activeTab = null;
+                                ws.activeTab = null;
                                 tabContent.innerHTML = '<h1>Welcome to the Financial Simulator</h1><p>This is your home page. The UI uses a dark, cold color palette inspired by VS Code.</p>';
                             }
                         }
@@ -163,22 +251,48 @@
                         setActiveTab(tabName);
                     });
                     tabBar.appendChild(tab);
-                    openTabs[tabName] = tab;
+                    ws.openTabs[tabName] = tab;
                 }
                 setActiveTab(tabName);
             });
         });
 
         function setActiveTab(tabName) {
+            if (!currentWorkspace) return;
+            var ws = workspaces[currentWorkspace];
             // Remove active from all tabs
-            Object.values(openTabs).forEach(function(tab) {
+            Object.values(ws.openTabs).forEach(function(tab) {
                 tab.classList.remove('active');
             });
             // Set active
-            openTabs[tabName].classList.add('active');
-            activeTab = tabName;
-            // Show content for the tab
-            tabContent.innerHTML = '<div class="tab-content-inner"><h2>' + tabName + '</h2><p>Content for ' + tabName + '.</p></div>';
+            if (ws.openTabs[tabName]) {
+                ws.openTabs[tabName].classList.add('active');
+                ws.activeTab = tabName;
+                // Show content for the tab
+                tabContent.innerHTML = '<div class="tab-content-inner"><h2>' + tabName + '</h2><p>Content for ' + tabName + '.</p></div>';
+            }
+        }
+
+        function switchWorkspace(label) {
+            // Save current workspace state (tabs, activeTab)
+            // If workspace doesn't exist, create it
+            if (!workspaces[label]) {
+                workspaces[label] = { openTabs: {}, activeTab: null };
+            }
+            currentWorkspace = label;
+            // Clear tab bar
+            while (tabBar.firstChild) tabBar.removeChild(tabBar.firstChild);
+            // Add tabs for this workspace
+            var ws = workspaces[label];
+            Object.entries(ws.openTabs).forEach(function([tabName, tab]) {
+                tabBar.appendChild(tab);
+            });
+            // Set active tab if any
+            if (ws.activeTab && ws.openTabs[ws.activeTab]) {
+                setActiveTab(ws.activeTab);
+            } else {
+                tabContent.innerHTML = '<h1>Welcome to the Financial Simulator</h1><p>This is your home page. The UI uses a dark, cold color palette inspired by VS Code.</p>';
+            }
         }
     });
     </script>
