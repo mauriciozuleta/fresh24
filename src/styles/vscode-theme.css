@@ -9,3 +9,43 @@ body {
   color: var(--vscode-fg);
   font-family: 'Segoe UI', 'Fira Mono', 'monospace', 'sans-serif';
 }
+
+.tabs-container {
+  margin-top: 2rem;
+}
+.tabs {
+  display: flex;
+  gap: 0.5rem;
+}
+.tab {
+  background: #252526;
+  color: var(--vscode-fg);
+  padding: 0.5rem 1rem;
+  border-radius: 5px 5px 0 0;
+  cursor: pointer;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.tab.active {
+  background: var(--vscode-bg);
+  border-bottom: 2px solid var(--vscode-accent);
+}
+.close-btn {
+  background: transparent;
+  border: none;
+  color: #d4d4d4;
+  margin-left: 0.5rem;
+  font-size: 1rem;
+  cursor: pointer;
+}
+.close-btn:hover {
+  color: #f14c4c;
+}
+.tab-content {
+  background: #252526;
+  padding: 1rem;
+  border-radius: 0 5px 5px 5px;
+  margin-top: -1px;
+}
+}

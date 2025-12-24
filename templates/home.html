@@ -74,7 +74,8 @@
                 </div>
         </aside>
         <main class="main-content">
-            <div class="container">
+            <div id="tab-bar" class="tab-bar"></div>
+            <div class="container" id="tab-content">
                 <h1>Welcome to the Financial Simulator</h1>
                 <p>This is your home page. The UI uses a dark, cold color palette inspired by VS Code.</p>
             </div>
@@ -86,6 +87,98 @@
     <footer class="footer">
         <div>Powered by Dnamic aircraft Services</div>
         <div><a href="https://www.dnamic-tech.com" target="_blank" rel="noopener">www.dnamic-tech.com</a></div>
-    </footer>
-</body>
-</html>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var icons = document.querySelectorAll('.sidebar-icon');
+        var optionsSidebarContent = document.getElementById('options-sidebar-content');
+        var userMenu = document.getElementById('user-menu');
+        var tabBar = document.getElementById('tab-bar');
+        var tabContent = document.getElementById('tab-content');
+        var openTabs = {};
+        var activeTab = null;
+
+        icons.forEach(function(icon) {
+            icon.addEventListener('click', function(e) {
+                e.preventDefault();
+                var label = icon.getAttribute('data-label');
+                optionsSidebarContent.textContent = label + ' Options';
+                if (label === 'User') {
+                    userMenu.style.display = 'block';
+                } else {
+                    userMenu.style.display = 'none';
+                }
+            });
+        });
+        // Hide user menu by default
+        userMenu.style.display = 'none';
+
+        // Tab logic
+        document.querySelectorAll('.user-option').forEach(function(option) {
+            option.addEventListener('click', function(e) {
+                e.preventDefault();
+                var tabName = option.textContent.trim();
+                if (!openTabs[tabName]) {
+                    // Create new tab
+                    var tab = document.createElement('div');
+                    tab.className = 'tab';
+                    tab.dataset.tab = tabName;
+                    // Tab label
+                    var label = document.createElement('span');
+                    label.textContent = tabName;
+                    label.style.marginRight = '8px';
+                    label.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        setActiveTab(tabName);
+                    });
+                    // Close button
+                    var closeBtn = document.createElement('button');
+                    closeBtn.className = 'tab-close-btn';
+                    closeBtn.textContent = '×';
+                    closeBtn.title = 'Close tab';
+                    closeBtn.style.background = 'transparent';
+                    closeBtn.style.border = 'none';
+                    closeBtn.style.color = '#d4d4d4';
+                    closeBtn.style.cursor = 'pointer';
+                    closeBtn.style.fontSize = '1rem';
+                    closeBtn.style.marginLeft = '2px';
+                    closeBtn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        // Remove tab from DOM and openTabs
+                        tabBar.removeChild(tab);
+                        delete openTabs[tabName];
+                        // If closed tab was active, activate another tab
+                        if (activeTab === tabName) {
+                            var tabKeys = Object.keys(openTabs);
+                            if (tabKeys.length > 0) {
+                                setActiveTab(tabKeys[tabKeys.length - 1]);
+                            } else {
+                                activeTab = null;
+                                tabContent.innerHTML = '<h1>Welcome to the Financial Simulator</h1><p>This is your home page. The UI uses a dark, cold color palette inspired by VS Code.</p>';
+                            }
+                        }
+                    });
+                    tab.appendChild(label);
+                    tab.appendChild(closeBtn);
+                    tab.addEventListener('click', function() {
+                        setActiveTab(tabName);
+                    });
+                    tabBar.appendChild(tab);
+                    openTabs[tabName] = tab;
+                }
+                setActiveTab(tabName);
+            });
+        });
+
+        function setActiveTab(tabName) {
+            // Remove active from all tabs
+            Object.values(openTabs).forEach(function(tab) {
+                tab.classList.remove('active');
+            });
+            // Set active
+            openTabs[tabName].classList.add('active');
+            activeTab = tabName;
+            // Show content for the tab
+            tabContent.innerHTML = '<div class="tab-content-inner"><h2>' + tabName + '</h2><p>Content for ' + tabName + '.</p></div>';
+        }
+    });
+    </script>
