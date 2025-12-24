@@ -1,0 +1,298 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="content-section">
+<style>
+  .airport-form-container {
+    background-color: #181c22;
+    border-radius: 8px;
+    padding: 2rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    margin-bottom: 2rem;
+  }
+  .airport-form-row {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+  }
+  .airport-form-group {
+    flex: 1;
+    min-width: 200px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .airport-form-group.small {
+    flex: 0 0 150px;
+    min-width: 150px;
+  }
+  .airport-form-group.medium {
+    flex: 0 0 250px;
+    min-width: 250px;
+  }
+  .airport-form-label {
+    color: #FF5C00;
+    font-weight: bold;
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+  }
+  .airport-form-input {
+    background-color: #23272e;
+    border: 1px solid #2196f3;
+    color: #fff;
+    padding: 0.5rem;
+    border-radius: 4px;
+    font-size: 0.9rem;
+  }
+  .airport-form-input:focus {
+    outline: none;
+    border-color: #FF5C00;
+    box-shadow: 0 0 0 2px rgba(255, 92, 0, 0.2);
+  }
+  .airport-form-select {
+    background-color: #23272e;
+    border: 1px solid #2196f3;
+    color: #fff;
+    padding: 0.5rem;
+    border-radius: 4px;
+    font-size: 0.9rem;
+  }
+  .airport-form-select:focus {
+    outline: none;
+    border-color: #FF5C00;
+    box-shadow: 0 0 0 2px rgba(255, 92, 0, 0.2);
+  }
+  .airport-form-button {
+    background-color: #2196f3;
+    color: #fff;
+    border: none;
+    padding: 0.75rem 2rem;
+    border-radius: 4px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-top: 1rem;
+    width: 100%;
+  }
+  .airport-form-button:hover {
+    background-color: #1976d2;
+  }
+  .error-message {
+    color: #ff6b6b;
+    font-size: 0.8rem;
+    margin-top: 0.25rem;
+  }
+  .alert-danger {
+    background-color: rgba(255, 107, 107, 0.1);
+    border: 1px solid #ff6b6b;
+    color: #ff6b6b;
+    padding: 1rem;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+  }
+  .alert-danger ul {
+    margin: 0;
+    list-style: none;
+    padding: 0;
+  }
+  .alert-danger li {
+    margin-bottom: 0.5rem;
+  }
+  .section-title {
+    color: #FF5C00;
+    font-size: 1.1rem;
+    font-weight: bold;
+    margin: 1.5rem 0 1rem 0;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #FF5C00;
+  }
+</style>
+
+<h2 style="color: #FF5C00; margin-bottom: 1.5rem; font-weight: bold; letter-spacing: 1px;">
+  {{ 'Edit Airport' if edit_id else 'Add New Airport' }}
+</h2>
+
+<div class="airport-form-container">
+  <form method="POST" action="{{ url_for('coredata.add_airport') }}">
+    {% if edit_id %}
+      <input type="hidden" name="edit_id" value="{{ edit_id }}">
+    {% endif %}
+    {{ form.hidden_tag() }}
+
+    {% if form.errors %}
+      <div class="alert-danger">
+        <ul>
+          {% for field, errors in form.errors.items() %}
+            {% for error in errors %}
+              <li><strong>{{ form[field].label.text }}:</strong> {{ error }}</li>
+            {% endfor %}
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+
+    <!-- Basic Airport Information -->
+    <div class="section-title">Basic Information</div>
+    <div class="airport-form-row">
+      <div class="airport-form-group small">
+        <label class="airport-form-label">{{ form.iata_code.label.text }}</label>
+        {{ form.iata_code(class="airport-form-input", id="iata_code_input", maxlength=3, placeholder="XXX", style="text-transform: uppercase;") }}
+        {% if form.iata_code.errors %}<div class="error-message">{{ form.iata_code.errors[0] }}</div>{% endif %}
+      </div>
+      <div class="airport-form-group medium">
+        <label class="airport-form-label">{{ form.name.label.text }}</label>
+        {{ form.name(class="airport-form-input", id="airport_name_input", placeholder="Auto-populated") }}
+        {% if form.name.errors %}<div class="error-message">{{ form.name.errors[0] }}</div>{% endif %}
+      </div>
+      <div class="airport-form-group">
+        <label class="airport-form-label">{{ form.city.label.text }}</label>
+        {{ form.city(class="airport-form-input", id="city_input", placeholder="Auto-populated") }}
+        {% if form.city.errors %}<div class="error-message">{{ form.city.errors[0] }}</div>{% endif %}
+      </div>
+      <div class="airport-form-group">
+        <label class="airport-form-label">{{ form.country_id.label.text }}</label>
+        {{ form.country_id(class="airport-form-select", id="country_select") }}
+        {% if form.country_id.errors %}<div class="error-message">{{ form.country_id.errors[0] }}</div>{% endif %}
+      </div>
+    </div>
+
+    <!-- Cost Information -->
+    <div class="section-title">Cost Information</div>
+    <div class="airport-form-row">
+      <div class="airport-form-group">
+        <label class="airport-form-label">{{ form.fuel_cost_gl.label.text }}</label>
+        {{ form.fuel_cost_gl(class="airport-form-input", placeholder="0.00", step="0.01") }}
+        {% if form.fuel_cost_gl.errors %}<div class="error-message">{{ form.fuel_cost_gl.errors[0] }}</div>{% endif %}
+      </div>
+      <div class="airport-form-group">
+        <label class="airport-form-label">{{ form.cargo_handling_cost_kg.label.text }}</label>
+        {{ form.cargo_handling_cost_kg(class="airport-form-input", placeholder="0.00", step="0.01") }}
+        {% if form.cargo_handling_cost_kg.errors %}<div class="error-message">{{ form.cargo_handling_cost_kg.errors[0] }}</div>{% endif %}
+      </div>
+      <div class="airport-form-group">
+        <label class="airport-form-label">{{ form.airport_fee.label.text }}</label>
+        {{ form.airport_fee(class="airport-form-input", placeholder="0.00", step="0.01") }}
+        {% if form.airport_fee.errors %}<div class="error-message">{{ form.airport_fee.errors[0] }}</div>{% endif %}
+      </div>
+      <div class="airport-form-group">
+        <label class="airport-form-label">{{ form.turnaround_cost.label.text }}</label>
+        {{ form.turnaround_cost(class="airport-form-input", placeholder="0.00", step="0.01") }}
+        {% if form.turnaround_cost.errors %}<div class="error-message">{{ form.turnaround_cost.errors[0] }}</div>{% endif %}
+      </div>
+    </div>
+
+    <!-- Additional Costs -->
+    <div class="section-title">Additional Costs</div>
+    <div class="airport-form-row">
+      <div class="airport-form-group">
+        <label class="airport-form-label">{{ form.other_desc.label.text }}</label>
+        {{ form.other_desc(class="airport-form-input", placeholder="Description of other costs") }}
+        {% if form.other_desc.errors %}<div class="error-message">{{ form.other_desc.errors[0] }}</div>{% endif %}
+      </div>
+      <div class="airport-form-group">
+        <label class="airport-form-label">{{ form.other_cost.label.text }}</label>
+        {{ form.other_cost(class="airport-form-input", placeholder="0.00", step="0.01") }}
+        {% if form.other_cost.errors %}<div class="error-message">{{ form.other_cost.errors[0] }}</div>{% endif %}
+      </div>
+    </div>
+
+    <!-- Location Information -->
+    <div class="section-title">Location Information</div>
+    <div class="airport-form-row">
+      <div class="airport-form-group">
+        <label class="airport-form-label">{{ form.altitude_ft.label.text }}</label>
+        {{ form.altitude_ft(class="airport-form-input", placeholder="0", step="1") }}
+        {% if form.altitude_ft.errors %}<div class="error-message">{{ form.altitude_ft.errors[0] }}</div>{% endif %}
+      </div>
+    </div>
+
+    <button type="submit" class="airport-form-button">
+      {{ 'Update Airport' if edit_id else 'Add Airport' }}
+    </button>
+  </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const editId = "{{ edit_id or '' }}";
+  const iataInput = document.getElementById('iata_code_input');
+  const nameInput = document.getElementById('airport_name_input');
+  const cityInput = document.getElementById('city_input');
+  const countrySelect = document.getElementById('country_select');
+  const mainForm = document.querySelector('form');
+
+  if (!editId) {
+    // --- This logic only runs for ADDING a new airport ---
+    nameInput.readOnly = true;
+    cityInput.readOnly = true;
+    countrySelect.disabled = true;
+
+    iataInput.addEventListener('blur', async function() {
+      const iataCode = this.value.trim().toUpperCase();
+      if (iataCode.length !== 3) {
+        nameInput.value = 'Auto-populated';
+        cityInput.value = 'Auto-populated';
+        countrySelect.value = '';
+        return;
+      }
+
+      nameInput.value = 'Searching...';
+      cityInput.value = 'Searching...';
+
+      try {
+        const response = await fetch(`/coredata/api/find_airports_for_city?iata=${encodeURIComponent(iataCode)}`);
+        const airports = await response.json();
+
+        if (airports.length > 0) {
+          const airport = airports[0];
+          nameInput.value = airport.name;
+          cityInput.value = airport.city;
+          if (airport.country_code) {
+            countrySelect.value = airport.country_code;
+          } else {
+            countrySelect.value = '';
+            alert(`Could not map airport country to a country in the database.`);
+          }
+        } else {
+          nameInput.value = 'Not Found';
+          cityInput.value = 'Not Found';
+          countrySelect.value = '';
+        }
+      } catch (error) {
+        console.error('Error fetching airport data:', error);
+        nameInput.value = 'Error';
+        cityInput.value = 'Error';
+        countrySelect.value = '';
+      }
+    });
+  }
+
+  // Auto-uppercase IATA code input
+  if (iataInput) {
+    iataInput.addEventListener('input', function() {
+      this.value = this.value.toUpperCase();
+    });
+  }
+  
+  // Format currency inputs
+  const currencyInputs = document.querySelectorAll('input[step="0.01"]');
+  currencyInputs.forEach(input => {
+    input.addEventListener('blur', function() {
+      if (this.value && !isNaN(this.value)) {
+        this.value = parseFloat(this.value).toFixed(2);
+      }
+    });
+  });
+
+  // Re-enable fields before form submission so their values are sent
+  mainForm.addEventListener('submit', function() {
+    // nameInput and cityInput are readonly, so they will be submitted.
+    // We only need to re-enable the disabled country select.
+    countrySelect.disabled = false;
+  });
+});
+</script>
+</div>
+{% endblock %}
