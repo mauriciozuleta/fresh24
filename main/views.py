@@ -1,7 +1,30 @@
-from django.shortcuts import render
 
+from django.shortcuts import render, redirect
+from .forms import AircraftForm, AirportForm
+from .models import Aircraft, Airport
 
-from django.shortcuts import render
 
 def home(request):
 	return render(request, 'home.html')
+
+
+def add_aircraft(request):
+	if request.method == 'POST':
+		form = AircraftForm(request.POST)
+		if form.is_valid():
+			form.save()
+			return redirect('home')
+	else:
+		form = AircraftForm()
+	return render(request, 'add_aircraft.html', {'form': form})
+
+
+def add_airport(request):
+	if request.method == 'POST':
+		form = AirportForm(request.POST)
+		if form.is_valid():
+			form.save()
+			return redirect('home')
+	else:
+		form = AirportForm()
+	return render(request, 'add_airport.html', {'form': form})

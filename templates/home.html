@@ -69,16 +69,22 @@
         <aside id="options-sidebar" class="options-sidebar">
             <div id="options-sidebar-content">Select an option</div>
                 <div id="user-menu" style="display:none">
-                    <h3>Manage Branch</h3>
-                    <ul>
-                        <li><a href="#" class="user-option">Add Branch</a></li>
-                        <li><a href="#" class="user-option">Edit Branch</a></li>
-                    </ul>
-                    <h3>Manage Products</h3>
-                    <ul>
-                        <li><a href="#" class="user-option">Add Products</a></li>
-                        <li><a href="#" class="user-option">View Products</a></li>
-                    </ul>
+                    <div class="vscode-tree">
+                        <div class="vscode-tree-item" data-toggle="manage-branch">
+                            <span class="vscode-tree-arrow">&gt;</span> Manage Branch
+                        </div>
+                        <div class="vscode-tree-children" data-parent="manage-branch" style="display:none;">
+                            <div><a href="#" class="user-option menu-option">Add Branch</a></div>
+                            <div><a href="#" class="user-option menu-option">Edit Branch</a></div>
+                        </div>
+                        <div class="vscode-tree-item" data-toggle="manage-products">
+                            <span class="vscode-tree-arrow">&gt;</span> Manage Products
+                        </div>
+                        <div class="vscode-tree-children" data-parent="manage-products" style="display:none;">
+                            <div><a href="#" class="user-option menu-option">Add Products</a></div>
+                            <div><a href="#" class="user-option menu-option">View Products</a></div>
+                        </div>
+                    </div>
                 </div>
                 <div id="admin-menu" style="display:none">
                     <div class="vscode-tree">
@@ -90,31 +96,18 @@
                                 <span class="vscode-tree-arrow">&gt;</span> Air
                             </div>
                             <div class="vscode-tree-children" data-parent="air" style="display:none;">
-                                <div class="vscode-tree-item" data-toggle="mode">
-                                    <span class="vscode-tree-arrow">&gt;</span> Mode
-                                </div>
-                                <div class="vscode-tree-children" data-parent="mode" style="display:none;">
-                                    <div><a href="#" class="admin-option">Charter</a></div>
-                                    <div><a href="#" class="admin-option">ACMI Charter</a></div>
-                                    <div><a href="#" class="admin-option">Majestic Charter</a></div>
-                                </div>
-                                <div class="vscode-tree-item" data-toggle="airports">
-                                    <span class="vscode-tree-arrow">&gt;</span> Airports
-                                </div>
-                                <div class="vscode-tree-children" data-parent="airports" style="display:none;">
-                                    <div><a href="#" class="admin-option">Create Airport</a></div>
-                                    <div><a href="#" class="admin-option">View Airports</a></div>
-                                </div>
-                                <div class="vscode-tree-item" data-toggle="aircraft">
-                                    <span class="vscode-tree-arrow">&gt;</span> Aircraft
-                                </div>
-                                <div class="vscode-tree-children" data-parent="aircraft" style="display:none;">
-                                    <div><a href="#" class="admin-option">View Aircrafts</a></div>
-                                    <div><a href="#" class="admin-option">Add Aircraft</a></div>
-                                </div>
+                                <div><a href="#" class="admin-option menu-option">Mode</a></div>
+                                <div><a href="#" class="admin-option menu-option">Airports</a></div>
+                                <div><a href="#" class="admin-option menu-option">Aircraft</a></div>
                             </div>
                             <div class="vscode-tree-item">Land</div>
                             <div class="vscode-tree-item">Sea</div>
+                        </div>
+                        <div class="vscode-tree-item" data-toggle="user-management">
+                            <span class="vscode-tree-arrow">&gt;</span> User Management
+                        </div>
+                        <div class="vscode-tree-children" data-parent="user-management" style="display:none;">
+                            <div><a href="#" class="admin-option menu-option">User Management</a></div>
                         </div>
                         <div class="vscode-tree-item" data-toggle="supplychain">
                             <span class="vscode-tree-arrow">&gt;</span> Supply Chain
@@ -125,7 +118,7 @@
         </aside>
         <main class="main-content">
             <div id="tab-bar" class="tab-bar"></div>
-            <div class="container" id="tab-content">
+            <div id="tab-content">
                 <h1>Welcome to the Financial Simulator</h1>
                 <p>This is your home page. The UI uses a dark, cold color palette inspired by VS Code.</p>
             </div>
@@ -134,6 +127,14 @@
         <!-- Side menu removed for minimal layout -->
         <!-- main-content now inside <main> above -->
     </div>
+    <!-- Hidden template with the Add Aircraft form markup -->
+    <template id="add-aircraft-fragment">
+        {% include 'add_aircraft.html' %}
+    </template>
+    <!-- Hidden template with the Add Airport form markup -->
+    <template id="add-airport-fragment">
+        {% include 'add_airport.html' %}
+    </template>
     <footer class="footer">
             <style>
             .vscode-tree-item.open > .vscode-tree-arrow {
@@ -141,14 +142,22 @@
                 display: inline-block;
                 transition: transform 0.1s;
             }
-            /* Indent admin VS Code-style tree items and options */
-            #admin-menu .vscode-tree-children {
+            /* Indent VS Code-style tree items and options (default for all menus) */
+            .vscode-tree-children {
                 padding-left: 2ch; /* keep groups a bit indented */
             }
-            #admin-menu .admin-option {
+            .menu-option {
                 padding-left: 1ch; /* leaf options ~1 character indent */
                 font-size: 0.9rem;  /* slightly smaller font for final options */
                 color: var(--vscode-fg, #d4d4d4) !important; /* keep same high-contrast color */
+                text-decoration: none;
+                display: block;
+            }
+            /* Remove bullets and extra padding from user menu lists */
+            #user-menu ul {
+                list-style: none;
+                margin: 0;
+                padding-left: 0;
             }
             </style>
         <div>Powered by Dnamic aircraft Services</div>
@@ -164,13 +173,13 @@
         var workspaces = {};
         var currentWorkspace = null;
 
-        // Admin (Administrator icon) tree toggles
-        var adminToggleItems = document.querySelectorAll('#admin-menu .vscode-tree-item[data-toggle]');
-        adminToggleItems.forEach(function(item) {
+        // VS Code-style tree toggles (used by all menus with .vscode-tree)
+        var treeToggleItems = document.querySelectorAll('.vscode-tree-item[data-toggle]');
+        treeToggleItems.forEach(function(item) {
             item.addEventListener('click', function(e) {
                 e.stopPropagation();
                 var key = item.getAttribute('data-toggle');
-                var children = document.querySelector('#admin-menu .vscode-tree-children[data-parent="' + key + '"]');
+                var children = document.querySelector('.vscode-tree-children[data-parent="' + key + '"]');
                 if (children) {
                     var isOpen = children.style.display !== 'none';
                     children.style.display = isOpen ? 'none' : 'block';
@@ -198,61 +207,76 @@
         // Hide user menu by default
         userMenu.style.display = 'none';
 
-        // Tab logic (now per workspace)
-        document.querySelectorAll('.user-option').forEach(function(option) {
+        // Helper to create a tab in the current workspace
+        function createTab(tabName, options) {
+            if (!currentWorkspace) return null;
+            var ws = workspaces[currentWorkspace];
+            if (ws.openTabs[tabName]) {
+                return ws.openTabs[tabName];
+            }
+
+            var tab = document.createElement('div');
+            tab.className = 'tab';
+            tab.dataset.tab = tabName;
+
+            // Tab label
+            var labelSpan = document.createElement('span');
+            labelSpan.textContent = tabName;
+            labelSpan.style.marginRight = '8px';
+            labelSpan.addEventListener('click', function(e) {
+                e.stopPropagation();
+                setActiveTab(tabName);
+            });
+            tab.appendChild(labelSpan);
+
+            var nonClosable = options && options.nonClosable;
+            if (!nonClosable) {
+                // Close button for regular tabs
+                var closeBtn = document.createElement('button');
+                closeBtn.className = 'tab-close-btn';
+                closeBtn.textContent = '×';
+                closeBtn.title = 'Close tab';
+                closeBtn.style.background = 'transparent';
+                closeBtn.style.border = 'none';
+                closeBtn.style.color = '#d4d4d4';
+                closeBtn.style.cursor = 'pointer';
+                closeBtn.style.fontSize = '1rem';
+                closeBtn.style.marginLeft = '2px';
+                closeBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    // Remove tab from DOM and openTabs
+                    tabBar.removeChild(tab);
+                    delete ws.openTabs[tabName];
+                    // If closed tab was active, activate another tab
+                    if (ws.activeTab === tabName) {
+                        var tabKeys = Object.keys(ws.openTabs);
+                        if (tabKeys.length > 0) {
+                            setActiveTab(tabKeys[tabKeys.length - 1]);
+                        } else {
+                            ws.activeTab = null;
+                            tabContent.innerHTML = '<h1>Welcome to the Financial Simulator</h1><p>This is your home page. The UI uses a dark, cold color palette inspired by VS Code.</p>';
+                        }
+                    }
+                });
+                tab.appendChild(closeBtn);
+            }
+
+            tab.addEventListener('click', function() {
+                setActiveTab(tabName);
+            });
+
+            tabBar.appendChild(tab);
+            ws.openTabs[tabName] = tab;
+            return tab;
+        }
+
+        // Tab logic (per workspace) for all menu options
+        document.querySelectorAll('.menu-option').forEach(function(option) {
             option.addEventListener('click', function(e) {
                 e.preventDefault();
                 var tabName = option.textContent.trim();
                 if (!currentWorkspace) return;
-                var ws = workspaces[currentWorkspace];
-                if (!ws.openTabs[tabName]) {
-                    // Create new tab
-                    var tab = document.createElement('div');
-                    tab.className = 'tab';
-                    tab.dataset.tab = tabName;
-                    // Tab label
-                    var label = document.createElement('span');
-                    label.textContent = tabName;
-                    label.style.marginRight = '8px';
-                    label.addEventListener('click', function(e) {
-                        e.stopPropagation();
-                        setActiveTab(tabName);
-                    });
-                    // Close button
-                    var closeBtn = document.createElement('button');
-                    closeBtn.className = 'tab-close-btn';
-                    closeBtn.textContent = '×';
-                    closeBtn.title = 'Close tab';
-                    closeBtn.style.background = 'transparent';
-                    closeBtn.style.border = 'none';
-                    closeBtn.style.color = '#d4d4d4';
-                    closeBtn.style.cursor = 'pointer';
-                    closeBtn.style.fontSize = '1rem';
-                    closeBtn.style.marginLeft = '2px';
-                    closeBtn.addEventListener('click', function(e) {
-                        e.stopPropagation();
-                        // Remove tab from DOM and openTabs
-                        tabBar.removeChild(tab);
-                        delete ws.openTabs[tabName];
-                        // If closed tab was active, activate another tab
-                        if (ws.activeTab === tabName) {
-                            var tabKeys = Object.keys(ws.openTabs);
-                            if (tabKeys.length > 0) {
-                                setActiveTab(tabKeys[tabKeys.length - 1]);
-                            } else {
-                                ws.activeTab = null;
-                                tabContent.innerHTML = '<h1>Welcome to the Financial Simulator</h1><p>This is your home page. The UI uses a dark, cold color palette inspired by VS Code.</p>';
-                            }
-                        }
-                    });
-                    tab.appendChild(label);
-                    tab.appendChild(closeBtn);
-                    tab.addEventListener('click', function() {
-                        setActiveTab(tabName);
-                    });
-                    tabBar.appendChild(tab);
-                    ws.openTabs[tabName] = tab;
-                }
+                createTab(tabName, { nonClosable: false });
                 setActiveTab(tabName);
             });
         });
@@ -269,29 +293,135 @@
                 ws.openTabs[tabName].classList.add('active');
                 ws.activeTab = tabName;
                 // Show content for the tab
-                tabContent.innerHTML = '<div class="tab-content-inner"><h2>' + tabName + '</h2><p>Content for ' + tabName + '.</p></div>';
+                if (tabName === 'Aircraft') {
+                    tabContent.innerHTML = '' +
+                        '<div class="tab-content-inner aircraft-tab">' +
+                            '<h2>Aircraft</h2>' +
+                            '<section class="aircraft-list-section">' +
+                                '<h3>Available Aircraft</h3>' +
+                                '<div class="aircraft-list-placeholder">No aircraft loaded yet.</div>' +
+                            '</section>' +
+                            '<section class="aircraft-actions">' +
+                                '<button id="add-aircraft-btn" class="primary-button">Add New Aircraft</button>' +
+                            '</section>' +
+                        '</div>';
+                    var addBtn = document.getElementById('add-aircraft-btn');
+                    if (addBtn) {
+                        addBtn.addEventListener('click', function() {
+                            if (!currentWorkspace) return;
+                            createTab('Add Aircraft', { nonClosable: false });
+                            setActiveTab('Add Aircraft');
+                        });
+                    }
+                } else if (tabName === 'Add Aircraft') {
+                    // Fetch the rendered form from the backend
+                    fetch('/add-aircraft/')
+                        .then(function(response) { return response.text(); })
+                        .then(function(html) {
+                            var parser = new DOMParser();
+                            var doc = parser.parseFromString(html, 'text/html');
+                            var form = doc.querySelector('.tab-content-inner');
+                            if (form) {
+                                tabContent.innerHTML = form.outerHTML;
+                                // Execute inline scripts manually (innerHTML doesn't execute them)
+                                var scripts = doc.querySelectorAll('script');
+                                scripts.forEach(function(oldScript) {
+                                    var newScript = document.createElement('script');
+                                    if (oldScript.src) {
+                                        newScript.src = oldScript.src;
+                                    } else {
+                                        newScript.textContent = oldScript.textContent;
+                                    }
+                                    document.body.appendChild(newScript);
+                                });
+                            } else {
+                                // Fallback: show the full HTML response so errors are visible
+                                tabContent.innerHTML = html;
+                            }
+                        })
+                        .catch(function() {
+                            tabContent.innerHTML = '<div class="tab-content-inner"><h2>Add Aircraft</h2><p>Form could not be loaded.</p></div>';
+                        });
+                } else if (tabName === 'Airports') {
+                    tabContent.innerHTML = '' +
+                        '<div class="tab-content-inner airports-tab">' +
+                            '<h2>Airports</h2>' +
+                            '<section class="airports-list-section">' +
+                                '<h3>Available Airports</h3>' +
+                                '<div class="airports-list-placeholder">No airports loaded yet.</div>' +
+                            '</section>' +
+                            '<section class="airports-actions">' +
+                                '<button id="add-airport-btn" class="primary-button">Add New Airport</button>' +
+                            '</section>' +
+                        '</div>';
+                    var addBtn = document.getElementById('add-airport-btn');
+                    if (addBtn) {
+                        addBtn.addEventListener('click', function() {
+                            if (!currentWorkspace) return;
+                            createTab('Add Airport', { nonClosable: false });
+                            setActiveTab('Add Airport');
+                        });
+                    }
+                } else if (tabName === 'Add Airport') {
+                    // Fetch the rendered form from the backend
+                    fetch('/add-airport/')
+                        .then(function(response) { return response.text(); })
+                        .then(function(html) {
+                            var parser = new DOMParser();
+                            var doc = parser.parseFromString(html, 'text/html');
+                            var form = doc.querySelector('.tab-content-inner');
+                            if (form) {
+                                tabContent.innerHTML = form.outerHTML;
+                                // Execute inline scripts manually (innerHTML doesn't execute them)
+                                var scripts = doc.querySelectorAll('script');
+                                scripts.forEach(function(oldScript) {
+                                    var newScript = document.createElement('script');
+                                    if (oldScript.src) {
+                                        newScript.src = oldScript.src;
+                                    } else {
+                                        newScript.textContent = oldScript.textContent;
+                                    }
+                                    document.body.appendChild(newScript);
+                                });
+                            } else {
+                                // Fallback: show the full HTML response so errors are visible
+                                tabContent.innerHTML = html;
+                            }
+                        })
+                        .catch(function() {
+                            tabContent.innerHTML = '<div class="tab-content-inner"><h2>Add Airport</h2><p>Form could not be loaded.</p></div>';
+                        });
+                } else {
+                    tabContent.innerHTML = '<div class="tab-content-inner"><h2>' + tabName + '</h2><p>Content for ' + tabName + '.</p></div>';
+                }
             }
         }
 
         function switchWorkspace(label) {
-            // Save current workspace state (tabs, activeTab)
             // If workspace doesn't exist, create it
             if (!workspaces[label]) {
                 workspaces[label] = { openTabs: {}, activeTab: null };
             }
             currentWorkspace = label;
-            // Clear tab bar
-            while (tabBar.firstChild) tabBar.removeChild(tabBar.firstChild);
-            // Add tabs for this workspace
+
+            // Ensure each icon/workspace has a non-closable "Home" tab
             var ws = workspaces[label];
+            if (!ws.openTabs[label]) {
+                createTab(label, { nonClosable: true });
+                ws.activeTab = label;
+            }
+
+            // Clear tab bar and re-attach this workspace's tabs
+            while (tabBar.firstChild) tabBar.removeChild(tabBar.firstChild);
             Object.entries(ws.openTabs).forEach(function([tabName, tab]) {
                 tabBar.appendChild(tab);
             });
-            // Set active tab if any
+
+            // Set active tab
             if (ws.activeTab && ws.openTabs[ws.activeTab]) {
                 setActiveTab(ws.activeTab);
             } else {
-                tabContent.innerHTML = '<h1>Welcome to the Financial Simulator</h1><p>This is your home page. The UI uses a dark, cold color palette inspired by VS Code.</p>';
+                setActiveTab(label);
             }
         }
     });

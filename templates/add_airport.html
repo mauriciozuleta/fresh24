@@ -1,80 +1,142 @@
+{% load crispy_forms_tags %}
+{% if form %}
 <div class="tab-content-inner aircraft-form-page">
   <div class="aircraft-header">
     <h1 class="aircraft-title">Add New Airport</h1>
   </div>
   <div class="aircraft-form-container">
-    <form>
-      <!-- Section 1: Basic Information -->
+    <form method="post" action="/add-airport/" id="airport-form">
+      {% csrf_token %}
       <div class="aircraft-form-section">
         <div class="aircraft-section-title">Basic Information</div>
         <div class="aircraft-form-row three-col">
-          <div class="form-group"><div class="aircraft-form-group">
-            <label for="iata_code">IATA Code</label>
-            <input id="iata_code" class="aircraft-form-control" type="text" maxlength="3" placeholder="XXX" style="text-transform: uppercase;" />
-          </div></div>
-          <div class="form-group"><div class="aircraft-form-group">
-            <label for="airport_name">Airport Name</label>
-            <input id="airport_name" class="aircraft-form-control" type="text" placeholder="Auto-populated" />
-          </div></div>
-          <div class="form-group"><div class="aircraft-form-group">
-            <label for="city">City</label>
-            <input id="city" class="aircraft-form-control" type="text" placeholder="Auto-populated" />
-          </div></div>
-          <div class="form-group"><div class="aircraft-form-group">
-            <label for="country">Country</label>
-            <select id="country" class="aircraft-form-control">
-              <option value="">Select Country</option>
-              <!-- Populate with country options dynamically -->
-            </select>
-          </div></div>
+          <div class="aircraft-form-group">
+            {{ form.iata_code|as_crispy_field|safe }}
+          </div>
+          <div class="aircraft-form-group">
+            {{ form.name|as_crispy_field|safe }}
+          </div>
+          <div class="aircraft-form-group">
+            {{ form.city|as_crispy_field|safe }}
+          </div>
+          <div class="aircraft-form-group">
+            {{ form.country|as_crispy_field|safe }}
+          </div>
         </div>
       </div>
       <hr class="aircraft-section-separator" />
-
-      <!-- Section 2: Cost Information -->
       <div class="aircraft-form-section">
         <div class="aircraft-section-title">Cost Information</div>
         <div class="aircraft-form-row three-col">
-          <div class="form-group"><div class="aircraft-form-group">
-            <label for="fuel_cost_gl">Fuel Cost (per gal)</label>
-            <input id="fuel_cost_gl" class="aircraft-form-control" type="number" step="0.01" placeholder="0.00" />
-          </div></div>
-          <div class="form-group"><div class="aircraft-form-group">
-            <label for="cargo_handling_cost_kg">Cargo Handling (x kg)</label>
-            <input id="cargo_handling_cost_kg" class="aircraft-form-control" type="number" step="0.01" placeholder="0.00" />
-          </div></div>
-          <div class="form-group"><div class="aircraft-form-group">
-            <label for="airport_fee">Airport Fee</label>
-            <input id="airport_fee" class="aircraft-form-control" type="number" step="0.01" placeholder="0.00" />
-          </div></div>
-          <div class="form-group"><div class="aircraft-form-group">
-            <label for="turnaround_cost">Turnaround Cost</label>
-            <input id="turnaround_cost" class="aircraft-form-control" type="number" step="0.01" placeholder="0.00" />
-          </div></div>
+          {{ form.fuel_cost_gl|as_crispy_field }}
+          {{ form.cargo_handling_cost_kg|as_crispy_field }}
+          {{ form.airport_fee|as_crispy_field }}
+          {{ form.turnaround_cost|as_crispy_field }}
         </div>
       </div>
       <hr class="aircraft-section-separator" />
-
-      <!-- Section 3: Additional & Location Information -->
       <div class="aircraft-form-section">
         <div class="aircraft-section-title">Additional & Location Information</div>
         <div class="aircraft-form-row three-col">
-          <div class="form-group"><div class="aircraft-form-group">
-            <label for="other_desc">Other Cost Description</label>
-            <input id="other_desc" class="aircraft-form-control" type="text" placeholder="Description of other costs" />
-          </div></div>
-          <div class="form-group"><div class="aircraft-form-group">
-            <label for="other_cost">Other Cost</label>
-            <input id="other_cost" class="aircraft-form-control" type="number" step="0.01" placeholder="0.00" />
-          </div></div>
-          <div class="form-group"><div class="aircraft-form-group">
-            <label for="altitude_ft">Altitude (ft)</label>
-            <input id="altitude_ft" class="aircraft-form-control" type="number" step="1" placeholder="0" />
-          </div></div>
+          {{ form.other_desc|as_crispy_field }}
+          {{ form.other_cost|as_crispy_field }}
+          {{ form.altitude_ft|as_crispy_field }}
         </div>
       </div>
-
+      <input type="hidden" id="id_latitude" name="latitude">
+      <input type="hidden" id="id_longitude" name="longitude">
+      <input type="hidden" id="id_altitude_ft" name="altitude_ft">
       <button type="submit" class="aircraft-btn">Add Airport</button>
     </form>
   </div>
 </div>
+{% endif %}
+
+<script>
+console.log('=== Airport form script loaded ===');
+(function() {
+  console.log('=== Script executing immediately ===');
+  const iataInput = document.getElementById('id_iata_code');
+  const nameInput = document.getElementById('id_name');
+  const cityInput = document.getElementById('id_city');
+  const countryInput = document.getElementById('id_country');
+  const latInput = document.getElementById('id_latitude');
+  const lonInput = document.getElementById('id_longitude');
+  const altInput = document.getElementById('id_altitude_ft');
+  
+  console.log('IATA input element:', iataInput);
+  console.log('Name input element:', nameInput);
+  console.log('City input element:', cityInput);
+  console.log('Country input element:', countryInput);
+  
+  if (iataInput) {
+    console.log('Adding event listener to IATA input');
+    
+    // Auto-uppercase as user types
+    iataInput.addEventListener('input', function() {
+      console.log('Input event fired! Value:', this.value);
+      this.value = this.value.toUpperCase();
+      
+      if (this.value.length === 3) {
+        console.log('IATA code filled:', this.value);
+        const iataCode = this.value;
+        
+        // Clear and disable fields while searching
+        if (nameInput) {
+          nameInput.value = 'Searching...';
+          nameInput.readOnly = true;
+        }
+        if (cityInput) {
+          cityInput.value = 'Searching...';
+          cityInput.readOnly = true;
+        }
+        if (countryInput) {
+          countryInput.value = '';
+          countryInput.readOnly = true;
+        }
+        
+        // Fetch airport data from API
+        console.log('Fetching airport data for:', iataCode);
+        fetch('/api/airport-lookup/?iata_code=' + encodeURIComponent(iataCode))
+          .then(function(response) {
+            console.log('API response status:', response.status);
+            if (!response.ok) throw new Error('Airport not found');
+            return response.json();
+          })
+          .then(function(data) {
+            console.log('Airport data received:', data);
+            if (nameInput) nameInput.value = data.name || '';
+            if (cityInput) cityInput.value = data.city || '';
+            if (countryInput) countryInput.value = data.country || '';
+            if (latInput) latInput.value = data.latitude || '';
+            if (lonInput) lonInput.value = data.longitude || '';
+            if (altInput) altInput.value = data.altitude_ft || '';
+            console.log('Fields populated successfully');
+          })
+          .catch(function(error) {
+            console.error('Error fetching airport data:', error);
+            if (nameInput) nameInput.value = 'Not Found';
+            if (cityInput) cityInput.value = 'Not Found';
+            if (countryInput) countryInput.value = '';
+            if (latInput) latInput.value = '';
+            if (lonInput) lonInput.value = '';
+            if (altInput) altInput.value = '';
+          });
+      }
+    });
+    
+    // Re-enable fields before form submission
+    const form = document.getElementById('airport-form');
+    if (form) {
+      form.addEventListener('submit', function() {
+        console.log('Form submitting, re-enabling fields');
+        if (nameInput) nameInput.readOnly = false;
+        if (cityInput) cityInput.readOnly = false;
+        if (countryInput) countryInput.readOnly = false;
+      });
+    }
+  } else {
+    console.error('IATA input not found!');
+  }
+})();
+</script>
