@@ -5,47 +5,61 @@
     <h1 class="aircraft-title">Add New Airport</h1>
   </div>
   <div class="aircraft-form-container">
-    <form method="post" action="/add-airport/" id="airport-form">
+    <style>
+      .fixed-scroll-form {
+        max-width: 900px;
+        min-width: 600px;
+        max-height: 80vh;
+        overflow-y: auto;
+        margin: 0 auto;
+        background: #181c22;
+        border-radius: 8px;
+        padding: 2rem;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+      }
+      .unified-spacing {
+        gap: 2rem !important;
+        margin-bottom: 2rem !important;
+      }
+      .aircraft-form-section {
+        margin-bottom: 2rem !important;
+      }
+      .aircraft-section-title {
+        margin-bottom: 1rem !important;
+      }
+    </style>
+    <form method="post" action="/add-airport/" id="airport-form" class="fixed-scroll-form">
       {% csrf_token %}
       <div class="aircraft-form-section">
         <div class="aircraft-section-title">Basic Information</div>
-        <div class="aircraft-form-row three-col">
-          <div class="aircraft-form-group">
-            {{ form.iata_code|as_crispy_field|safe }}
-          </div>
-          <div class="aircraft-form-group">
-            {{ form.name|as_crispy_field|safe }}
-          </div>
-          <div class="aircraft-form-group">
-            {{ form.city|as_crispy_field|safe }}
-          </div>
-          <div class="aircraft-form-group">
-            {{ form.country|as_crispy_field|safe }}
-          </div>
+        <div class="aircraft-form-row three-col unified-spacing">
+          <div class="aircraft-form-group">{{ form.iata_code|as_crispy_field|safe }}</div>
+          <div class="aircraft-form-group">{{ form.name|as_crispy_field|safe }}</div>
+          <div class="aircraft-form-group">{{ form.city|as_crispy_field|safe }}</div>
+          <div class="aircraft-form-group">{{ form.country|as_crispy_field|safe }}</div>
         </div>
       </div>
       <hr class="aircraft-section-separator" />
       <div class="aircraft-form-section">
         <div class="aircraft-section-title">Cost Information</div>
-        <div class="aircraft-form-row three-col">
-          {{ form.fuel_cost_gl|as_crispy_field }}
-          {{ form.cargo_handling_cost_kg|as_crispy_field }}
-          {{ form.airport_fee|as_crispy_field }}
-          {{ form.turnaround_cost|as_crispy_field }}
+        <div class="aircraft-form-row three-col unified-spacing">
+          <div class="aircraft-form-group">{{ form.fuel_cost_gl|as_crispy_field }}</div>
+          <div class="aircraft-form-group">{{ form.cargo_handling_cost_kg|as_crispy_field }}</div>
+          <div class="aircraft-form-group">{{ form.airport_fee|as_crispy_field }}</div>
+          <div class="aircraft-form-group">{{ form.turnaround_cost|as_crispy_field }}</div>
         </div>
       </div>
       <hr class="aircraft-section-separator" />
       <div class="aircraft-form-section">
         <div class="aircraft-section-title">Additional & Location Information</div>
-        <div class="aircraft-form-row three-col">
-          {{ form.other_desc|as_crispy_field }}
-          {{ form.other_cost|as_crispy_field }}
-          {{ form.altitude_ft|as_crispy_field }}
+        <div class="aircraft-form-row three-col unified-spacing">
+          <div class="aircraft-form-group">{{ form.other_desc|as_crispy_field }}</div>
+          <div class="aircraft-form-group">{{ form.other_cost|as_crispy_field }}</div>
+          <div class="aircraft-form-group">{{ form.altitude_ft|as_crispy_field }}</div>
         </div>
       </div>
       <input type="hidden" id="id_latitude" name="latitude">
       <input type="hidden" id="id_longitude" name="longitude">
-      <input type="hidden" id="id_altitude_ft" name="altitude_ft">
       <button type="submit" class="aircraft-btn">Add Airport</button>
     </form>
   </div>
@@ -54,8 +68,8 @@
 
 <script>
 console.log('=== Airport form script loaded ===');
+// Airport form logic
 (function() {
-  console.log('=== Script executing immediately ===');
   const iataInput = document.getElementById('id_iata_code');
   const nameInput = document.getElementById('id_name');
   const cityInput = document.getElementById('id_city');
@@ -63,58 +77,46 @@ console.log('=== Airport form script loaded ===');
   const latInput = document.getElementById('id_latitude');
   const lonInput = document.getElementById('id_longitude');
   const altInput = document.getElementById('id_altitude_ft');
-  
-  console.log('IATA input element:', iataInput);
-  console.log('Name input element:', nameInput);
-  console.log('City input element:', cityInput);
-  console.log('Country input element:', countryInput);
-  
+  const form = document.getElementById('airport-form');
+
+  // Format numeric fields on blur
+  function formatNumberInput(input) {
+    let val = input.value.replace(/,/g, '');
+    if (val && !isNaN(val)) {
+      let parts = val.split('.');
+      parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+      input.value = parts.join('.');
+    }
+  }
+  const numericFields = [
+    'id_fuel_cost_gl', 'id_cargo_handling_cost_kg', 'id_airport_fee', 'id_turnaround_cost',
+    'id_other_cost', 'id_altitude_ft', 'id_latitude', 'id_longitude'
+  ];
+  numericFields.forEach(function(id) {
+    const el = document.getElementById(id);
+    if (el) {
+      el.addEventListener('blur', function() { formatNumberInput(el); });
+    }
+  });
+
   if (iataInput) {
-    console.log('Adding event listener to IATA input');
-    
-    // Auto-uppercase as user types
     iataInput.addEventListener('input', function() {
-      console.log('Input event fired! Value:', this.value);
       this.value = this.value.toUpperCase();
-      
       if (this.value.length === 3) {
-        console.log('IATA code filled:', this.value);
-        const iataCode = this.value;
-        
-        // Clear and disable fields while searching
-        if (nameInput) {
-          nameInput.value = 'Searching...';
-          nameInput.readOnly = true;
-        }
-        if (cityInput) {
-          cityInput.value = 'Searching...';
-          cityInput.readOnly = true;
-        }
-        if (countryInput) {
-          countryInput.value = '';
-          countryInput.readOnly = true;
-        }
-        
-        // Fetch airport data from API
-        console.log('Fetching airport data for:', iataCode);
-        fetch('/api/airport-lookup/?iata_code=' + encodeURIComponent(iataCode))
-          .then(function(response) {
-            console.log('API response status:', response.status);
-            if (!response.ok) throw new Error('Airport not found');
-            return response.json();
-          })
+        if (nameInput) { nameInput.value = 'Searching...'; nameInput.readOnly = true; }
+        if (cityInput) { cityInput.value = 'Searching...'; cityInput.readOnly = true; }
+        if (countryInput) { countryInput.value = ''; countryInput.readOnly = true; }
+        fetch('/api/airport-lookup/?iata_code=' + encodeURIComponent(this.value))
+          .then(function(response) { if (!response.ok) throw new Error('Airport not found'); return response.json(); })
           .then(function(data) {
-            console.log('Airport data received:', data);
             if (nameInput) nameInput.value = data.name || '';
             if (cityInput) cityInput.value = data.city || '';
             if (countryInput) countryInput.value = data.country || '';
             if (latInput) latInput.value = data.latitude || '';
             if (lonInput) lonInput.value = data.longitude || '';
             if (altInput) altInput.value = data.altitude_ft || '';
-            console.log('Fields populated successfully');
           })
-          .catch(function(error) {
-            console.error('Error fetching airport data:', error);
+          .catch(function() {
             if (nameInput) nameInput.value = 'Not Found';
             if (cityInput) cityInput.value = 'Not Found';
             if (countryInput) countryInput.value = '';
@@ -124,19 +126,37 @@ console.log('=== Airport form script loaded ===');
           });
       }
     });
-    
-    // Re-enable fields before form submission
-    const form = document.getElementById('airport-form');
-    if (form) {
-      form.addEventListener('submit', function() {
-        console.log('Form submitting, re-enabling fields');
-        if (nameInput) nameInput.readOnly = false;
-        if (cityInput) cityInput.readOnly = false;
-        if (countryInput) countryInput.readOnly = false;
+  }
+
+  // AJAX form submit
+  if (form) {
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      if (nameInput) nameInput.readOnly = false;
+      if (cityInput) cityInput.readOnly = false;
+      if (countryInput) countryInput.readOnly = false;
+      const formData = new FormData(form);
+      fetch(form.action, {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        body: formData
+      })
+      .then(function(resp) { return resp.json(); })
+      .then(function(data) {
+        if (data.success) {
+          // Close the tab using VS Code tab logic
+          if (window.closeCurrentTab) {
+            window.closeCurrentTab();
+          } else {
+            // Fallback: reload page
+            window.location.reload();
+          }
+        }
+      })
+      .catch(function() {
+        alert('Error saving airport.');
       });
-    }
-  } else {
-    console.error('IATA input not found!');
+    });
   }
 })();
 </script>

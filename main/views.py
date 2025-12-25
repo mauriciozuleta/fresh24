@@ -24,6 +24,9 @@ def add_airport(request):
 		form = AirportForm(request.POST)
 		if form.is_valid():
 			form.save()
+			if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+				from django.http import JsonResponse
+				return JsonResponse({'success': True})
 			return redirect('home')
 	else:
 		form = AirportForm()

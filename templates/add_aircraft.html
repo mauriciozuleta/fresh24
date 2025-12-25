@@ -1,3 +1,27 @@
+// Format numeric fields on blur
+function formatNumberInput(input) {
+  let val = input.value.replace(/,/g, '');
+  if (val && !isNaN(val)) {
+    let parts = val.split('.');
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    input.value = parts.join('.');
+  }
+}
+document.addEventListener('DOMContentLoaded', function() {
+  const numericFields = [
+    'id_mtow_kg', 'id_mtow_lbs', 'id_empty_weight_kg', 'id_empty_weight_lbs',
+    'id_max_payload_kg', 'id_max_payload_lbs', 'id_zero_fuel_kg', 'id_zero_fuel_lbs',
+    'id_fuel_capacity_gal', 'id_fuel_capacity_lbs', 'id_fuel_burn_gal', 'id_fuel_burn_lbs',
+    'id_cruise_speed', 'id_acmi_cost',
+    'id_cargo_positions_main_deck', 'id_cargo_positions_lower_deck'
+  ];
+  numericFields.forEach(function(id) {
+    const el = document.getElementById(id);
+    if (el) {
+      el.addEventListener('blur', function() { formatNumberInput(el); });
+    }
+  });
+});
 {% load crispy_forms_tags %}
 {% if form %}
 <div class="tab-content-inner aircraft-form-page">

@@ -397,6 +397,25 @@
             }
         }
 
+        // Global function to close only the current tab
+        window.closeCurrentTab = function() {
+          if (!currentWorkspace) return;
+          var ws = workspaces[currentWorkspace];
+          var tabName = ws.activeTab;
+          if (tabName && ws.openTabs[tabName]) {
+            var tab = ws.openTabs[tabName];
+            tabBar.removeChild(tab);
+            delete ws.openTabs[tabName];
+            var tabKeys = Object.keys(ws.openTabs);
+            if (tabKeys.length > 0) {
+              setActiveTab(tabKeys[tabKeys.length - 1]);
+            } else {
+              ws.activeTab = null;
+              tabContent.innerHTML = '<h1>Welcome to the Financial Simulator</h1><p>This is your home page. The UI uses a dark, cold color palette inspired by VS Code.</p>';
+            }
+          }
+        };
+
         function switchWorkspace(label) {
             // If workspace doesn't exist, create it
             if (!workspaces[label]) {
@@ -426,3 +445,5 @@
         }
     });
     </script>
+</body>
+</html>
