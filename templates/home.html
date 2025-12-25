@@ -347,8 +347,7 @@
                         '<div class="tab-content-inner airports-tab">' +
                             '<h2>Airports</h2>' +
                             '<section class="airports-list-section">' +
-                                '<h3>Available Airports</h3>' +
-                                '<div class="airports-list-placeholder">No airports loaded yet.</div>' +
+                                `{% include 'airport_list_table.html' %}` +
                             '</section>' +
                             '<section class="airports-actions">' +
                                 '<button id="add-airport-btn" class="primary-button">Add New Airport</button>' +

@@ -5,7 +5,9 @@ from .models import Aircraft, Airport
 
 
 def home(request):
-	return render(request, 'home.html')
+	from .models import Airport
+	airports = Airport.objects.all().order_by('country', 'city', 'name')
+	return render(request, 'home.html', {'airports': airports})
 
 
 def add_aircraft(request):
@@ -20,6 +22,7 @@ def add_aircraft(request):
 
 
 def add_airport(request):
+	airports = Airport.objects.all().order_by('country', 'city', 'name')
 	if request.method == 'POST':
 		form = AirportForm(request.POST)
 		if form.is_valid():
@@ -30,4 +33,4 @@ def add_airport(request):
 			return redirect('home')
 	else:
 		form = AirportForm()
-	return render(request, 'add_airport.html', {'form': form})
+	return render(request, 'add_airport.html', {'form': form, 'airports': airports})
