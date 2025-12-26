@@ -31,12 +31,13 @@
             {{ form.block_hour_cost|as_crispy_field }}
           </div>
         </div>
-        <button type="submit" class="aircraft-btn">Save Provider</button>
+        <button type="submit" class="aircraft-btn" id="save-provider-btn">Save Provider</button>
       </form>
     </div>
   </div>
 </div>
 <script>
+(function() {
 function toggleCharterProviderForm() {
   var form = document.getElementById('charter-provider-form');
   if (form.style.display === 'none') {
@@ -60,4 +61,47 @@ function toggleCharterProviderForm() {
     form.style.display = 'none';
   }
 }
+// Make toggleCharterProviderForm global
+window.toggleCharterProviderForm = toggleCharterProviderForm;
+
+// AJAX submit for Charter Provider form - runs immediately when script loads
+var providerForm = document.getElementById('charter-provider-form');
+if (providerForm && !providerForm.dataset.handlerAttached) {
+  providerForm.dataset.handlerAttached = 'true';
+  providerForm.addEventListener('submit', function(e) {
+    e.preventDefault();
+    var formData = new FormData(providerForm);
+    fetch('/mode-tab/', {
+      method: 'POST',
+      headers: { 'X-Requested-With': 'XMLHttpRequest' },
+      body: formData
+    })
+    .then(function(resp) { return resp.json(); })
+    .then(function(data) {
+      if (data.success) {
+        // Reload just the mode tab content via AJAX
+        fetch('/mode-tab/')
+          .then(function(response) { return response.text(); })
+          .then(function(html) {
+            var parser = new DOMParser();
+            var doc = parser.parseFromString(html, 'text/html');
+            var content = doc.querySelector('.tab-content-inner.mode-tab');
+            if (content) {
+              var tabContent = document.getElementById('tab-content');
+              if (tabContent) {
+                tabContent.innerHTML = content.outerHTML;
+              }
+            }
+          });
+      } else {
+        alert('Error saving provider: ' + JSON.stringify(data.errors || 'Unknown error'));
+      }
+    })
+    .catch(function(err) { 
+      console.error('Error:', err);
+      alert('Error saving provider.');
+    });
+  });
+}
+})();
 </script>

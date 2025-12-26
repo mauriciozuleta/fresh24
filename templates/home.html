@@ -252,6 +252,24 @@
             }
         });
 
+        // Function to refresh airport list from server
+        window.refreshAirportList = function() {
+            fetch('/')
+                .then(function(response) { return response.text(); })
+                .then(function(html) {
+                    var parser = new DOMParser();
+                    var doc = parser.parseFromString(html, 'text/html');
+                    var freshList = doc.querySelector('#airport-list-container');
+                    if (freshList) {
+                        document.getElementById('airport-list-container').innerHTML = freshList.innerHTML;
+                        // If Airports tab is currently active, refresh it
+                        if (currentWorkspace && workspaces[currentWorkspace].activeTab === 'Airports') {
+                            setActiveTab('Airports');
+                        }
+                    }
+                });
+        };
+
         // Helper to create a tab in the current workspace
         function createTab(tabName, options) {
             if (!currentWorkspace) return null;

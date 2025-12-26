@@ -1,9 +1,20 @@
+from django.http import JsonResponse
 def mode_tab(request):
-		from .forms import CharterProviderForm
-		from .models import CharterProvider
-		providers = CharterProvider.objects.all().order_by('name')
+	from .forms import CharterProviderForm
+	from .models import CharterProvider
+	providers = CharterProvider.objects.all().order_by('name')
+	if request.method == 'POST':
+		form = CharterProviderForm(request.POST)
+		if form.is_valid():
+			form.save()
+			if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+				return JsonResponse({'success': True})
+		# If invalid, return errors
+		if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+			return JsonResponse({'success': False, 'errors': form.errors}, status=400)
+	else:
 		form = CharterProviderForm()
-		return render(request, 'mode.html', {'form': form, 'providers': providers})
+	return render(request, 'mode.html', {'form': form, 'providers': providers})
 def edit_aircraft(request, pk):
 	aircraft = Aircraft.objects.get(pk=pk)
 	if request.method == 'POST':

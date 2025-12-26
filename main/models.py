@@ -54,7 +54,7 @@ class CharterProvider(models.Model):
 	name = models.CharField(max_length=100)
 	country = models.ForeignKey(Country, on_delete=models.CASCADE)
 	main_base = models.ForeignKey('Airport', on_delete=models.CASCADE, related_name='charter_providers')
-	aircraft = models.ManyToManyField(Aircraft, related_name='charter_providers')
+	aircraft = models.ForeignKey(Aircraft, on_delete=models.CASCADE, related_name='charter_providers')
 	block_hour_cost = models.DecimalField(max_digits=12, decimal_places=2)
 
 	def __str__(self):

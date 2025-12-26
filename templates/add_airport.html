@@ -150,6 +150,10 @@ console.log('=== Airport form script loaded ===');
       .then(function(resp) { return resp.json(); })
       .then(function(data) {
         if (data.success) {
+          // Refresh the airport list
+          if (window.refreshAirportList) {
+            window.refreshAirportList();
+          }
           // Close the tab using VS Code tab logic
           if (window.closeCurrentTab) {
             window.closeCurrentTab();
