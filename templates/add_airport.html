@@ -5,31 +5,6 @@
     <h1 class="aircraft-title">Add New Airport</h1>
   </div>
   <div class="aircraft-form-container">
-        <div class="airport-list-section" style="margin-bottom:2rem;">
-          <h2 class="aircraft-section-title">Available Airports</h2>
-          <table style="width:100%;border-collapse:collapse;background:#23272e;color:#fff;">
-            <thead>
-              <tr style="background:#26304a;">
-                <th style="padding:8px 12px;text-align:left;">Country</th>
-                <th style="padding:8px 12px;text-align:left;">City</th>
-                <th style="padding:8px 12px;text-align:left;">Airport Name</th>
-                <th style="padding:8px 12px;text-align:left;">IATA Code</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for airport in airports %}
-              <tr style="border-bottom:1px solid #26304a;">
-                <td style="padding:8px 12px;">{{ airport.country }}</td>
-                <td style="padding:8px 12px;">{{ airport.city }}</td>
-                <td style="padding:8px 12px;">{{ airport.name }}</td>
-                <td style="padding:8px 12px;">{{ airport.iata_code }}</td>
-              </tr>
-              {% empty %}
-              <tr><td colspan="4" style="padding:8px 12px;">No airports available.</td></tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
     <style>
       .fixed-scroll-form {
         max-width: 900px;

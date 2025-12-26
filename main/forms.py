@@ -19,6 +19,7 @@ class AircraftForm(forms.ModelForm):
             'cargo_positions_main_deck', 'cargo_positions_lower_deck',
             'cruise_speed'
         ]
+        widgets = {field: forms.TextInput(attrs={'class': 'aircraft-form-control'}) for field in fields}
 
 class AirportForm(forms.ModelForm):
     class Meta:
@@ -29,8 +30,4 @@ class AirportForm(forms.ModelForm):
             'fuel_cost_gl', 'cargo_handling_cost_kg', 'airport_fee', 'turnaround_cost',
             'other_desc', 'other_cost'
         ]
-        widgets = {
-            'name': forms.TextInput(attrs={'id': 'id_name'}),
-            'city': forms.TextInput(attrs={'id': 'id_city'}),
-            'country': forms.TextInput(attrs={'id': 'id_country'}),
-        }
+        widgets = {field: forms.TextInput(attrs={'class': 'aircraft-form-control'}) for field in fields}

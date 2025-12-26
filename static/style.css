@@ -158,11 +158,12 @@
         width: 100%;
         padding: 0.55rem 0.7rem;
         background-color: #23293a;
-        border: 1px solid #26304a;
+        border: 2px solid #193366;
         border-radius: 4px;
-        color: #e0e6ed;
+        color: #f7fafc;
         font-size: 0.9rem;
         transition: all 0.2s ease;
+        box-shadow: none;
     }
     .aircraft-form-control:focus {
         outline: none;
