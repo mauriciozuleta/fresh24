@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import '../styles/vscode-theme.css';
 
 function Tabs() {
@@ -8,6 +8,30 @@ function Tabs() {
     { id: 3, title: 'Tab 3', content: 'Content of Tab 3' },
   ]);
   const [activeTab, setActiveTab] = useState(1);
+
+  // Listen for 'openTab' event to open Add Airport tab
+  useEffect(() => {
+    function handleOpenTab(e) {
+      if (e.detail && e.detail.tab === 'add_airport') {
+        // Check if Add Airport tab already exists
+        let addAirportTab = tabs.find(tab => tab.title === 'Add Airport');
+        if (!addAirportTab) {
+          const newId = tabs.length ? Math.max(...tabs.map(t => t.id)) + 1 : 1;
+          addAirportTab = {
+            id: newId,
+            title: 'Add Airport',
+            content: document.getElementById('add-airport-fragment')?.innerHTML || 'Add Airport Form'
+          };
+          setTabs(prevTabs => [...prevTabs, addAirportTab]);
+          setActiveTab(newId);
+        } else {
+          setActiveTab(addAirportTab.id);
+        }
+      }
+    }
+    window.addEventListener('openTab', handleOpenTab);
+    return () => window.removeEventListener('openTab', handleOpenTab);
+  }, [tabs]);
 
   const closeTab = (id) => {
     setTabs((prevTabs) => prevTabs.filter((tab) => tab.id !== id));

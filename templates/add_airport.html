@@ -95,6 +95,12 @@ console.log('=== Airport form script loaded ===');
   numericFields.forEach(function(id) {
     const el = document.getElementById(id);
     if (el) {
+      // Ensure cost fields are never readonly/disabled
+      if (id === 'id_fuel_cost_gl' || id === 'id_cargo_handling_cost_kg' || 
+          id === 'id_airport_fee' || id === 'id_turnaround_cost' || id === 'id_other_cost') {
+        el.readOnly = false;
+        el.disabled = false;
+      }
       el.addEventListener('blur', function() { formatNumberInput(el); });
     }
   });

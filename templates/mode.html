@@ -41,6 +41,21 @@ function toggleCharterProviderForm() {
   var form = document.getElementById('charter-provider-form');
   if (form.style.display === 'none') {
     form.style.display = 'block';
+    // Set up the event listener when form is shown
+    setTimeout(function() {
+      var mainBaseSelect = document.getElementById('id_main_base');
+      if (mainBaseSelect && !mainBaseSelect.dataset.listenerAdded) {
+        mainBaseSelect.dataset.listenerAdded = 'true';
+        mainBaseSelect.addEventListener('change', function() {
+          if (mainBaseSelect.value === 'add') {
+            // Open the add_airport form in a new tab
+            window.dispatchEvent(new CustomEvent('openTab', { detail: { tab: 'add_airport' } }));
+            // Reset selection
+            mainBaseSelect.value = '';
+          }
+        });
+      }
+    }, 100);
   } else {
     form.style.display = 'none';
   }

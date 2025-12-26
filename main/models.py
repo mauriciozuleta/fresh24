@@ -1,4 +1,15 @@
+
 from django.db import models
+
+class Country(models.Model):
+    name = models.CharField(max_length=100)
+    country_code = models.CharField(max_length=4)
+    currency = models.CharField(max_length=64)
+    currency_code = models.CharField(max_length=8)
+    region = models.CharField(max_length=64)
+
+    def __str__(self):
+        return f"{self.name} ({self.country_code})"
 
 
 class Aircraft(models.Model):
@@ -39,9 +50,10 @@ class Aircraft(models.Model):
 
 
 class CharterProvider(models.Model):
+
 	name = models.CharField(max_length=100)
-	country = models.CharField(max_length=100)
-	main_base = models.CharField(max_length=100)
+	country = models.ForeignKey(Country, on_delete=models.CASCADE)
+	main_base = models.ForeignKey('Airport', on_delete=models.CASCADE, related_name='charter_providers')
 	aircraft = models.ManyToManyField(Aircraft, related_name='charter_providers')
 	block_hour_cost = models.DecimalField(max_digits=12, decimal_places=2)
 

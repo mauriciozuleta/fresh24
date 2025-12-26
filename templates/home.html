@@ -243,6 +243,15 @@
         // Hide user menu by default
         userMenu.style.display = 'none';
 
+        // Listen for openTab event to open Add Airport tab
+        window.addEventListener('openTab', function(e) {
+            if (e.detail && e.detail.tab === 'add_airport') {
+                if (!currentWorkspace) return;
+                createTab('Add Airport', { nonClosable: false });
+                setActiveTab('Add Airport');
+            }
+        });
+
         // Helper to create a tab in the current workspace
         function createTab(tabName, options) {
             if (!currentWorkspace) return null;

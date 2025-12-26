@@ -3,14 +3,38 @@ from django import forms
 from .models import CharterProvider, Aircraft, Airport
 
 class CharterProviderForm(forms.ModelForm):
+    country = forms.ModelChoiceField(
+        queryset=None,
+        widget=forms.Select(attrs={'class': 'aircraft-form-control'}),
+        label='Country',
+        required=True
+    )
+
+    main_base = forms.ModelChoiceField(
+        queryset=None,
+        widget=forms.Select(attrs={'class': 'aircraft-form-control', 'id': 'id_main_base'}),
+        label='Main Base',
+        required=True
+    )
+
+    def __init__(self, *args, **kwargs):
+        from .models import Country, Airport
+        super().__init__(*args, **kwargs)
+        self.fields['country'].queryset = Country.objects.all().order_by('name')
+        airports = list(Airport.objects.all().order_by('iata_code'))
+        self.fields['main_base'].queryset = Airport.objects.all().order_by('iata_code')
+        # Add 'Add Base' option at the end
+        choices = [(a.pk, a.iata_code) for a in airports]
+        choices.append(('add', 'Add Base'))
+        self.fields['main_base'].choices = choices
+
     class Meta:
         model = CharterProvider
         fields = ['name', 'country', 'main_base', 'aircraft', 'block_hour_cost']
         widgets = {
             'name': forms.TextInput(attrs={'class': 'aircraft-form-control'}),
-            'country': forms.TextInput(attrs={'class': 'aircraft-form-control'}),
             'main_base': forms.TextInput(attrs={'class': 'aircraft-form-control'}),
-            'aircraft': forms.SelectMultiple(attrs={'class': 'aircraft-form-control'}),
+            'aircraft': forms.Select(attrs={'class': 'aircraft-form-control'}),
             'block_hour_cost': forms.NumberInput(attrs={'class': 'aircraft-form-control', 'step': '0.01'}),
         }
 from django import forms
