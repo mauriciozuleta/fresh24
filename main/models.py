@@ -1,6 +1,27 @@
 
 from django.db import models
 
+class Route(models.Model):
+	leg = models.CharField(max_length=16)  # e.g., 'JFK-LHR'
+	distance = models.FloatField(help_text='Distance in nautical miles')
+	aircraft_type = models.ForeignKey('Aircraft', on_delete=models.CASCADE)
+	flight_time = models.FloatField(help_text='Flight time in hours')
+	adjusted_flight_time = models.FloatField(help_text='Adjusted flight time in hours')
+	max_payload = models.FloatField(help_text='Max payload in lbs')
+	service_type = models.CharField(max_length=16)
+	block_hours_cost = models.DecimalField(max_digits=12, decimal_places=2)
+	route_fuel_gls = models.FloatField(help_text='Route fuel in gallons')
+	fuel_cost = models.DecimalField(max_digits=12, decimal_places=2)
+	overflight_cost = models.DecimalField(max_digits=12, decimal_places=2)
+	airport_fees_cost = models.DecimalField(max_digits=12, decimal_places=2)
+
+	def __str__(self):
+		return f"{self.leg} | {self.aircraft_type} | {self.service_type}"
+
+
+
+from django.db import models
+
 class Country(models.Model):
     name = models.CharField(max_length=100)
     country_code = models.CharField(max_length=4)
