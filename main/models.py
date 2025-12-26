@@ -5,6 +5,7 @@ class Route(models.Model):
 	leg = models.CharField(max_length=16)  # e.g., 'JFK-LHR'
 	distance = models.FloatField(help_text='Distance in nautical miles')
 	aircraft_type = models.ForeignKey('Aircraft', on_delete=models.CASCADE)
+	provider = models.ForeignKey('CharterProvider', on_delete=models.CASCADE)
 	flight_time = models.FloatField(help_text='Flight time in hours')
 	adjusted_flight_time = models.FloatField(help_text='Adjusted flight time in hours')
 	max_payload = models.FloatField(help_text='Max payload in lbs')
@@ -12,11 +13,13 @@ class Route(models.Model):
 	block_hours_cost = models.DecimalField(max_digits=12, decimal_places=2)
 	route_fuel_gls = models.FloatField(help_text='Route fuel in gallons')
 	fuel_cost = models.DecimalField(max_digits=12, decimal_places=2)
+	overflight_fee = models.DecimalField(max_digits=12, decimal_places=2, default=0)
 	overflight_cost = models.DecimalField(max_digits=12, decimal_places=2)
 	airport_fees_cost = models.DecimalField(max_digits=12, decimal_places=2)
+	total_flight_cost = models.DecimalField(max_digits=14, decimal_places=2, default=0)
 
 	def __str__(self):
-		return f"{self.leg} | {self.aircraft_type} | {self.service_type}"
+		return f"{self.leg} | {self.aircraft_type} | {self.provider} | {self.service_type}"
 
 
 
