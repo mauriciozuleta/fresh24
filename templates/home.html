@@ -110,6 +110,7 @@
                                 <div><a href="#" class="admin-option menu-option">Mode</a></div>
                                 <div><a href="#" class="admin-option menu-option">Airports</a></div>
                                 <div><a href="#" class="admin-option menu-option">Aircraft</a></div>
+                                <div><a href="#" class="admin-option menu-option">Routes</a></div>
                             </div>
                             <div class="vscode-tree-item">Land</div>
                             <div class="vscode-tree-item">Sea</div>
@@ -546,6 +547,15 @@
                         })
                         .catch(function() {
                             tabContent.innerHTML = '<div class="tab-content-inner"><h2>Add Airport</h2><p>Form could not be loaded.</p></div>';
+                        });
+                } else if (tabName === 'Routes') {
+                    fetch('/static/Routes.html')
+                        .then(function(response) { return response.text(); })
+                        .then(function(html) {
+                            tabContent.innerHTML = html;
+                        })
+                        .catch(function() {
+                            tabContent.innerHTML = '<div class="tab-content-inner"><h2>Routes</h2><p>Routes content could not be loaded.</p></div>';
                         });
                 } else {
                     tabContent.innerHTML = '<div class="tab-content-inner"><h2>' + tabName + '</h2><p>Content for ' + tabName + '.</p></div>';
