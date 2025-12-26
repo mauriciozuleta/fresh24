@@ -85,172 +85,127 @@ function toggleCharterProviderForm() {
 window.toggleCharterProviderForm = toggleCharterProviderForm;
 
 function initializeModeTabHandlers() {
-    // Filter main base dropdown by selected country
-    var countrySelect = document.getElementById('id_country');
-    var mainBaseSelect = document.getElementById('id_main_base');
-    if (countrySelect && mainBaseSelect) {
-      if (countrySelect._countryChangeHandler) {
-        countrySelect.removeEventListener('change', countrySelect._countryChangeHandler);
-      }
-      countrySelect._countryChangeHandler = function() {
-        var countryId = countrySelect.value;
-        if (!countryId) return;
-        fetch('/api/airports-by-country/?country_id=' + countryId)
-          .then(response => response.json())
-          .then(data => {
-            while (mainBaseSelect.options.length > 0) mainBaseSelect.remove(0);
-            if (Array.isArray(data.airports) && data.airports.length > 0) {
-              data.airports.forEach(function(airport) {
-                if (airport && airport.id && airport.iata_code) {
-                  var opt = document.createElement('option');
-                  opt.value = airport.id;
-                  opt.textContent = airport.iata_code;
-                  if (mainBaseSelect && typeof mainBaseSelect.appendChild === 'function') {
-                    mainBaseSelect.appendChild(opt);
-                  } else {
-                    console.error('mainBaseSelect is not a valid Node:', mainBaseSelect, 'airports:', data.airports);
-                  }
+  // Filter main base dropdown by selected country
+  var countrySelect = document.getElementById('id_country');
+  var mainBaseSelect = document.getElementById('id_main_base');
+  if (countrySelect && mainBaseSelect) {
+    if (countrySelect._countryChangeHandler) {
+      countrySelect.removeEventListener('change', countrySelect._countryChangeHandler);
+    }
+    countrySelect._countryChangeHandler = function() {
+      var countryId = countrySelect.value;
+      if (!countryId) return;
+      fetch('/api/airports-by-country/?country_id=' + countryId)
+        .then(response => response.json())
+        .then(data => {
+          while (mainBaseSelect.options.length > 0) mainBaseSelect.remove(0);
+          if (Array.isArray(data.airports) && data.airports.length > 0) {
+            data.airports.forEach(function(airport) {
+              if (airport && airport.id && airport.iata_code) {
+                var opt = document.createElement('option');
+                opt.value = airport.id;
+                opt.textContent = airport.iata_code;
+                if (mainBaseSelect && typeof mainBaseSelect.appendChild === 'function') {
+                  mainBaseSelect.appendChild(opt);
+                } else {
+                  console.error('mainBaseSelect is not a valid Node:', mainBaseSelect, 'airports:', data.airports);
                 }
-              });
-            } else {
-              if (!Array.isArray(data.airports)) {
-                console.error('data.airports is not an array:', data.airports);
               }
-            }
-            var addOpt = document.createElement('option');
-            addOpt.value = 'add';
-            addOpt.textContent = 'Add Base';
-            mainBaseSelect.appendChild(addOpt);
-          })
-          .catch(err => console.error('Error fetching airports:', err));
-      };
-      countrySelect.addEventListener('change', countrySelect._countryChangeHandler);
-    }
-
-    // Charter Provider single-selection logic and Edit Selected button
-    const checkboxes = document.querySelectorAll('.charter-provider-select-checkbox');
-    const editBtn = document.getElementById('edit-charter-provider-btn');
-    const deleteBtn = document.getElementById('delete-charter-provider-btn');
-    function updateEditBtn() {
-      const anyChecked = Array.from(checkboxes).some(cb => cb.checked);
-      if (editBtn) editBtn.disabled = !anyChecked;
-      if (deleteBtn) deleteBtn.disabled = !anyChecked;
-    }
-    checkboxes.forEach(checkbox => {
-      checkbox.addEventListener('change', function() {
-        if (this.checked) {
-          checkboxes.forEach(cb => {
-            if (cb !== this) cb.checked = false;
-          });
-        }
-        updateEditBtn();
-      });
-    });
-    updateEditBtn();
-    if (editBtn) {
-      editBtn.addEventListener('click', function() {
-        const selected = Array.from(checkboxes).find(cb => cb.checked);
-        if (selected) {
-          alert('Edit provider ID: ' + selected.value);
-        }
-      });
-    }
-    if (deleteBtn) {
-      deleteBtn.addEventListener('click', function() {
-        const selected = Array.from(checkboxes).find(cb => cb.checked);
-        if (selected) {
-          if (confirm('Are you sure you want to delete this Charter Provider? This action cannot be undone.')) {
-            fetch(`/delete-charter-provider/${selected.value}/`, {
-              method: 'POST',
-              headers: { 'X-Requested-With': 'XMLHttpRequest' },
-            })
-            .then(response => response.json())
-            .then(data => {
-              if (data.success) {
-                const checkbox = document.querySelector('.charter-provider-select-checkbox[value="' + selected.value + '"]');
-                if (checkbox) {
-                  const row = checkbox.closest('tr');
-                  if (row) row.remove();
-                }
-                if (window.initializeModeTabHandlers) {
-                  setTimeout(window.initializeModeTabHandlers, 100);
-                }
-              } else {
-                alert('Error deleting provider: ' + (data.error || 'Unknown error'));
-              }
-            })
-            .catch(() => alert('Error deleting provider.'));
-          }
-        }
-      });
-    }
-
-    // Toggle Charter Provider form
-    var addBtn = document.getElementById('add-charter-provider-btn');
-    if (addBtn) {
-      addBtn.onclick = function() {
-        var form = document.getElementById('charter-provider-form');
-        if (form.style.display === 'none') {
-          form.style.display = 'block';
-          setTimeout(function() {
-            var mainBaseSelect = document.getElementById('id_main_base');
-            if (mainBaseSelect && !mainBaseSelect.dataset.listenerAdded) {
-              mainBaseSelect.dataset.listenerAdded = 'true';
-              mainBaseSelect.addEventListener('change', function() {
-                if (mainBaseSelect.value === 'add') {
-                  window.dispatchEvent(new CustomEvent('openTab', { detail: { tab: 'add_airport' } }));
-                  mainBaseSelect.value = '';
-                }
-              });
-            }
-          }, 100);
-        } else {
-          form.style.display = 'none';
-        }
-      };
-    }
-
-    // AJAX submit for Charter Provider form
-    var providerForm = document.getElementById('charter-provider-form');
-    if (providerForm) {
-      providerForm.onsubmit = function(e) {
-        e.preventDefault();
-        var formData = new FormData(providerForm);
-        fetch('/mode-tab/', {
-          method: 'POST',
-          headers: { 'X-Requested-With': 'XMLHttpRequest' },
-          body: formData
-        })
-        .then(function(resp) { return resp.json(); })
-        .then(function(data) {
-          if (data.success) {
-            fetch('/mode-tab/')
-              .then(function(response) { return response.text(); })
-              .then(function(html) {
-                var parser = new DOMParser();
-                var doc = parser.parseFromString(html, 'text/html');
-                var content = doc.querySelector('.tab-content-inner.mode-tab');
-                if (content) {
-                  var tabContent = document.getElementById('tab-content');
-                  if (tabContent) {
-                    tabContent.innerHTML = content.outerHTML;
-                    if (window.initializeModeTabHandlers) {
-                      setTimeout(window.initializeModeTabHandlers, 100);
-                    }
-                  }
-                }
-              });
+            });
           } else {
-            alert('Error saving provider: ' + JSON.stringify(data.errors || 'Unknown error'));
+            if (!Array.isArray(data.airports)) {
+              console.error('data.airports is not an array:', data.airports);
+            }
           }
+          var addOpt = document.createElement('option');
+          addOpt.value = 'add';
+          addOpt.textContent = 'Add Base';
+          mainBaseSelect.appendChild(addOpt);
         })
-        .catch(function(err) { 
-          console.error('Error:', err);
-          alert('Error saving provider.');
-        });
-      };
-    }
+        .catch(err => console.error('Error fetching airports:', err));
+    };
+    countrySelect.addEventListener('change', countrySelect._countryChangeHandler);
   }
+
+  // Charter Provider single-selection logic, delete button, and AJAX submit
+  const checkboxes = document.querySelectorAll('.charter-provider-select-checkbox');
+  const editBtn = document.getElementById('edit-charter-provider-btn');
+  const deleteBtn = document.getElementById('delete-charter-provider-btn');
+  const providerForm = document.getElementById('charter-provider-form');
+
+  function updateEditBtn() {
+    const anyChecked = Array.from(checkboxes).some(cb => cb.checked);
+    if (editBtn) editBtn.disabled = !anyChecked;
+    if (deleteBtn) deleteBtn.disabled = !anyChecked;
+  }
+
+  checkboxes.forEach(checkbox => {
+    checkbox.addEventListener('change', function() {
+      if (this.checked) {
+        checkboxes.forEach(cb => {
+          if (cb !== this) cb.checked = false;
+        });
+      }
+      updateEditBtn();
+    });
+  });
+  updateEditBtn();
+
+  if (editBtn) {
+    if (editBtn._editHandler) editBtn.removeEventListener('click', editBtn._editHandler);
+    editBtn._editHandler = function() {
+      const selected = Array.from(checkboxes).find(cb => cb.checked);
+      if (selected) {
+        alert('Edit provider ID: ' + selected.value);
+      }
+    };
+    editBtn.addEventListener('click', editBtn._editHandler);
+  }
+
+  // Delete behavior is handled globally in home.html to avoid duplicate bindings
+
+  if (providerForm) {
+    if (providerForm._submitHandler) providerForm.removeEventListener('submit', providerForm._submitHandler);
+    providerForm._submitHandler = function(e) {
+      e.preventDefault();
+      var formData = new FormData(providerForm);
+      fetch('/mode-tab/', {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        body: formData
+      })
+      .then(function(resp) { return resp.json(); })
+      .then(function(data) {
+        if (data.success) {
+          fetch('/mode-tab/')
+            .then(function(response) { return response.text(); })
+            .then(function(html) {
+              var parser = new DOMParser();
+              var doc = parser.parseFromString(html, 'text/html');
+              var content = doc.querySelector('.tab-content-inner.mode-tab');
+              if (content) {
+                var tabContent = document.getElementById('tab-content');
+                if (tabContent) {
+                  tabContent.innerHTML = content.outerHTML;
+                  if (window.initializeModeTabHandlers) {
+                    setTimeout(window.initializeModeTabHandlers, 100);
+                  }
+                }
+              }
+            });
+        } else {
+          alert('Error saving provider: ' + JSON.stringify(data.errors || 'Unknown error'));
+        }
+      })
+      .catch(function(err) { 
+        console.error('Error:', err);
+        alert('Error saving provider.');
+      });
+    };
+    providerForm.addEventListener('submit', providerForm._submitHandler);
+  }
+}
+
 window.initializeModeTabHandlers = initializeModeTabHandlers;
 
 // Initialize immediately if document is already ready (AJAX case), otherwise wait for DOMContentLoaded
