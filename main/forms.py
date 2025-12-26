@@ -17,6 +17,13 @@ class CharterProviderForm(forms.ModelForm):
         required=True
     )
 
+    type = forms.ChoiceField(
+        choices=[('charter', 'Charter'), ('acmi', 'ACMI'), ('by_kg', 'By Kg.')],
+        widget=forms.Select(attrs={'class': 'aircraft-form-control'}),
+        label='Type',
+        required=True
+    )
+
     def __init__(self, *args, **kwargs):
         from .models import Country, Airport
         super().__init__(*args, **kwargs)
@@ -30,12 +37,13 @@ class CharterProviderForm(forms.ModelForm):
 
     class Meta:
         model = CharterProvider
-        fields = ['name', 'country', 'main_base', 'aircraft', 'block_hour_cost']
+        fields = ['name', 'country', 'main_base', 'aircraft', 'block_hour_cost', 'type']
         widgets = {
             'name': forms.TextInput(attrs={'class': 'aircraft-form-control'}),
             'main_base': forms.TextInput(attrs={'class': 'aircraft-form-control'}),
             'aircraft': forms.Select(attrs={'class': 'aircraft-form-control'}),
             'block_hour_cost': forms.NumberInput(attrs={'class': 'aircraft-form-control', 'step': '0.01'}),
+            'type': forms.Select(attrs={'class': 'aircraft-form-control'}),
         }
 from django import forms
 from django import forms

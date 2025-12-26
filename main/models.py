@@ -56,6 +56,12 @@ class CharterProvider(models.Model):
 	main_base = models.ForeignKey('Airport', on_delete=models.CASCADE, related_name='charter_providers')
 	aircraft = models.ForeignKey(Aircraft, on_delete=models.CASCADE, related_name='charter_providers')
 	block_hour_cost = models.DecimalField(max_digits=12, decimal_places=2)
+	TYPE_CHOICES = [
+		('charter', 'Charter'),
+		('acmi', 'ACMI'),
+		('by_kg', 'By Kg.')
+	]
+	type = models.CharField(max_length=16, choices=TYPE_CHOICES, default='charter')
 
 	def __str__(self):
 		return self.name

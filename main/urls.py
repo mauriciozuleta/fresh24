@@ -1,6 +1,6 @@
 from django.urls import path
 from . import views
-from .airport_api import airport_lookup
+from .airport_api import airport_lookup, airports_by_country
 
 urlpatterns = [
     path('', views.home, name='home'),
@@ -9,6 +9,7 @@ urlpatterns = [
     path('edit-aircraft/<int:pk>/', views.edit_aircraft, name='edit_aircraft'),
     path('edit-airport/<int:pk>/', views.edit_airport, name='edit_airport'),
     path('api/airport-lookup/', airport_lookup, name='airport_lookup'),
+    path('api/airports-by-country/', airports_by_country, name='airports_by_country'),
     path('mode-tab/', views.mode_tab, name='mode_tab'),
 
     # Delete endpoints

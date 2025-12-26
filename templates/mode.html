@@ -16,6 +16,7 @@
               <th style="padding:8px 12px;text-align:left;">Main Base</th>
               <th style="padding:8px 12px;text-align:left;">Aircraft</th>
               <th style="padding:8px 12px;text-align:left;">Block Hour Cost</th>
+              <th style="padding:8px 12px;text-align:left;">Type</th>
             </tr>
           </thead>
           <tbody>
@@ -27,16 +28,17 @@
               <td style="padding:8px 12px;">{{ provider.main_base }}</td>
               <td style="padding:8px 12px;">{{ provider.aircraft }}</td>
               <td style="padding:8px 12px;">{{ provider.block_hour_cost }}</td>
+              <td style="padding:8px 12px;">{{ provider.get_type_display }}</td>
             </tr>
             {% empty %}
-            <tr><td colspan="6" style="padding:8px 12px;text-align:center;"><em>No providers yet.</em></td></tr>
+            <tr><td colspan="7" style="padding:8px 12px;text-align:center;"><em>No providers yet.</em></td></tr>
             {% endfor %}
           </tbody>
         </table>
         <div style="display:flex;gap:0.75rem;margin-top:1rem;">
           <button id="add-charter-provider-btn" class="primary-button" type="button" onclick="toggleCharterProviderForm()">Add Charter Provider</button>
-          <button id="edit-charter-provider-btn" class="primary-button" disabled>Edit Selected</button>
-          <button id="delete-charter-provider-btn" class="danger-button" disabled>Delete Selected</button>
+          <button id="edit-charter-provider-btn" class="primary-button" type="button" disabled>Edit Selected</button>
+          <button id="delete-charter-provider-btn" class="danger-button" type="button" disabled>Delete Selected</button>
         </div>
       </div>
     </div>
@@ -51,6 +53,7 @@
             {{ form.main_base|as_crispy_field }}
             {{ form.aircraft|as_crispy_field }}
             {{ form.block_hour_cost|as_crispy_field }}
+            {{ form.type|as_crispy_field }}
           </div>
         </div>
         <button type="submit" class="aircraft-btn" id="save-provider-btn">Save Provider</button>
@@ -59,6 +62,47 @@
   </div>
 </div>
 <script>
+// Filter main base dropdown by selected country
+(function initCountryFilter() {
+  var countrySelect = document.getElementById('id_country');
+  var mainBaseSelect = document.getElementById('id_main_base');
+  
+  if (countrySelect && mainBaseSelect) {
+    // Remove any existing listener
+    if (countrySelect._countryChangeHandler) {
+      countrySelect.removeEventListener('change', countrySelect._countryChangeHandler);
+    }
+    
+    countrySelect._countryChangeHandler = function() {
+      var countryId = countrySelect.value;
+      if (!countryId) return;
+      
+      fetch('/api/airports-by-country/?country_id=' + countryId)
+        .then(response => response.json())
+        .then(data => {
+          // Remove all options
+          while (mainBaseSelect.options.length > 0) mainBaseSelect.remove(0);
+          
+          if (data.airports && data.airports.length > 0) {
+            data.airports.forEach(function(airport) {
+              var opt = document.createElement('option');
+              opt.value = airport.id;
+              opt.textContent = airport.iata_code;
+              mainBaseSelect.appendChild(opt);
+            });
+          }
+          // Always add 'Add Base' option
+          var addOpt = document.createElement('option');
+          addOpt.value = 'add';
+          addOpt.textContent = 'Add Base';
+          mainBaseSelect.appendChild(addOpt);
+        })
+        .catch(err => console.error('Error fetching airports:', err));
+    };
+    
+    countrySelect.addEventListener('change', countrySelect._countryChangeHandler);
+  }
+})();
 // Charter Provider single-selection logic and Edit Selected button
 document.addEventListener('DOMContentLoaded', function() {
   const checkboxes = document.querySelectorAll('.charter-provider-select-checkbox');
@@ -102,7 +146,16 @@ document.addEventListener('DOMContentLoaded', function() {
           .then(response => response.json())
           .then(data => {
             if (data.success) {
-              location.reload();
+              // Remove the row from the table instead of reloading
+              const checkbox = document.querySelector('.charter-provider-select-checkbox[value="' + selected.value + '"]');
+              if (checkbox) {
+                const row = checkbox.closest('tr');
+                if (row) row.remove();
+              }
+              // Reset button states by re-initializing
+              if (window.initializeCheckboxHandlers) {
+                setTimeout(window.initializeCheckboxHandlers, 100);
+              }
             } else {
               alert('Error deleting provider: ' + (data.error || 'Unknown error'));
             }

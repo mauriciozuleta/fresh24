@@ -645,7 +645,14 @@
                         .then(response => response.json())
                         .then(data => {
                             if (data.success) {
-                                location.reload();
+                                // Remove the row from the table instead of reloading
+                                const checkbox = document.querySelector('.aircraft-select-checkbox[value="' + selected.value + '"]');
+                                if (checkbox) {
+                                    const row = checkbox.closest('tr');
+                                    if (row) row.remove();
+                                }
+                                // Reset button states
+                                initializeCheckboxHandlers();
                             } else {
                                 alert('Error deleting aircraft: ' + (data.error || 'Unknown error'));
                             }
@@ -704,7 +711,14 @@
                         .then(response => response.json())
                         .then(data => {
                             if (data.success) {
-                                location.reload();
+                                // Remove the row from the table instead of reloading
+                                const checkbox = document.querySelector('.airport-select-checkbox[value="' + selected.value + '"]');
+                                if (checkbox) {
+                                    const row = checkbox.closest('tr');
+                                    if (row) row.remove();
+                                }
+                                // Reset button states
+                                initializeCheckboxHandlers();
                             } else {
                                 alert('Error deleting airport: ' + (data.error || 'Unknown error'));
                             }
@@ -763,7 +777,14 @@
                         .then(response => response.json())
                         .then(data => {
                             if (data.success) {
-                                location.reload();
+                                // Remove the row from the table instead of reloading
+                                const checkbox = document.querySelector('.charter-provider-select-checkbox[value="' + selected.value + '"]');
+                                if (checkbox) {
+                                    const row = checkbox.closest('tr');
+                                    if (row) row.remove();
+                                }
+                                // Reset button states
+                                initializeCheckboxHandlers();
                             } else {
                                 alert('Error deleting provider: ' + (data.error || 'Unknown error'));
                             }
