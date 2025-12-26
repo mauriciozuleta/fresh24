@@ -5,9 +5,10 @@ from .models import Aircraft, Airport
 
 
 def home(request):
-	from .models import Airport
+	from .models import Airport, Aircraft
 	airports = Airport.objects.all().order_by('country', 'city', 'name')
-	return render(request, 'home.html', {'airports': airports})
+	aircraft_list = Aircraft.objects.all().order_by('manufacturer', 'model', 'short_name')
+	return render(request, 'home.html', {'airports': airports, 'aircraft_list': aircraft_list})
 
 
 def add_aircraft(request):

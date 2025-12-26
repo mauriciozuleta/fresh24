@@ -1,0 +1,32 @@
+{% load humanize %}
+<h2 class="aircraft-section-title">Available Aircraft</h2>
+<table style="width:100%;border-collapse:collapse;background:#23272e;color:#fff;">
+  <thead>
+    <tr style="background:#26304a;">
+      <th style="padding:8px 12px;text-align:left;">Manufacturer</th>
+      <th style="padding:8px 12px;text-align:left;">Model</th>
+      <th style="padding:8px 12px;text-align:left;">Short Name</th>
+      <th style="padding:8px 12px;text-align:right;">Max Payload (kg)</th>
+      <th style="padding:8px 12px;text-align:right;">Max Payload (lbs)</th>
+      <th style="padding:8px 12px;text-align:right;">Fuel Capacity (lbs)</th>
+      <th style="padding:8px 12px;text-align:right;">Fuel Burn (lbs)</th>
+      <th style="padding:8px 12px;text-align:right;">Cruise Speed</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for aircraft in aircraft_list %}
+    <tr style="border-bottom:1px solid #26304a;">
+      <td style="padding:8px 12px;">{{ aircraft.manufacturer }}</td>
+      <td style="padding:8px 12px;">{{ aircraft.model }}</td>
+      <td style="padding:8px 12px;">{{ aircraft.short_name }}</td>
+      <td style="padding:8px 12px;text-align:right;">{{ aircraft.max_payload_kg|floatformat:0|intcomma }}</td>
+      <td style="padding:8px 12px;text-align:right;">{{ aircraft.max_payload_lbs|floatformat:0|intcomma }}</td>
+      <td style="padding:8px 12px;text-align:right;">{{ aircraft.fuel_capacity_lbs|floatformat:0|intcomma }}</td>
+      <td style="padding:8px 12px;text-align:right;">{{ aircraft.fuel_burn_lbs|floatformat:0|intcomma }}</td>
+      <td style="padding:8px 12px;text-align:right;">{{ aircraft.cruise_speed|floatformat:0|intcomma }}</td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="8" style="padding:8px 12px;">No aircraft available.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>

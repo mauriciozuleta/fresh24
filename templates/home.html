@@ -1,3 +1,4 @@
+{% load humanize %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -308,8 +309,7 @@
                         '<div class="tab-content-inner aircraft-tab">' +
                             '<h2>Aircraft</h2>' +
                             '<section class="aircraft-list-section">' +
-                                '<h3>Available Aircraft</h3>' +
-                                '<div class="aircraft-list-placeholder">No aircraft loaded yet.</div>' +
+                                `{% include 'aircraft_list_table.html' %}` +
                             '</section>' +
                             '<section class="aircraft-actions">' +
                                 '<button id="add-aircraft-btn" class="primary-button">Add New Aircraft</button>' +
