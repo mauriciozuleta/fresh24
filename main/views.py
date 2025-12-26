@@ -1,3 +1,43 @@
+from .models import Route
+from django.views.decorators.csrf import csrf_exempt
+@csrf_exempt
+def route_records_api(request):
+	"""API endpoint to fetch all Route records for a given departure and arrival airport."""
+	if request.method != 'POST':
+		return JsonResponse({'error': 'POST required'}, status=405)
+	import json
+	try:
+		data = json.loads(request.body.decode('utf-8'))
+		departure = data.get('departure')
+		arrival = data.get('arrival')
+		if not departure or not arrival:
+			return JsonResponse({'error': 'Both departure and arrival required'}, status=400)
+		# Find all matching Route records (leg = 'DEP-ARR')
+		leg = f"{departure} - {arrival}"
+		routes = Route.objects.filter(leg=leg)
+		results = []
+		for r in routes:
+			results.append({
+				'id': r.id,
+				'leg': r.leg,
+				'distance': r.distance,
+				'aircraft_type': str(r.aircraft_type),
+				'provider': str(r.provider),
+				'flight_time': r.flight_time,
+				'adjusted_flight_time': r.adjusted_flight_time,
+				'max_payload': r.max_payload,
+				'service_type': r.service_type,
+				'block_hours_cost': float(r.block_hours_cost),
+				'route_fuel_gls': r.route_fuel_gls,
+				'fuel_cost': float(r.fuel_cost),
+				'overflight_fee': float(r.overflight_fee),
+				'overflight_cost': float(r.overflight_cost),
+				'airport_fees_cost': float(r.airport_fees_cost),
+				'total_flight_cost': float(r.total_flight_cost),
+			})
+		return JsonResponse({'routes': results})
+	except Exception as e:
+		return JsonResponse({'error': str(e)}, status=500)
 # --- Airport list API for Routes tab ---
 from django.http import JsonResponse
 from .models import Airport

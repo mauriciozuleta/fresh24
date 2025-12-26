@@ -616,11 +616,14 @@
     </script>
     
     <script>
-    // Initialize Routes tab dropdowns
+
+    // Initialize Routes tab dropdowns and button
     window.initializeRoutesTab = function() {
         var departureSelect = document.getElementById('departure-select');
         var arrivalSelect = document.getElementById('arrival-select');
-        if (!departureSelect || !arrivalSelect) return;
+        var loadBtn = document.getElementById('load-route-info-btn');
+        var recordsContainer = document.getElementById('route-records-container');
+        if (!departureSelect || !arrivalSelect || !loadBtn || !recordsContainer) return;
 
         function populateDropdown(select, airports, excludeCode) {
             var which = select.id.indexOf('departure') !== -1 ? 'departure' : 'arrival';
@@ -655,6 +658,76 @@
             .catch(function(err) {
                 console.error('Failed to load airports for Routes tab', err);
             });
+
+        loadBtn.addEventListener('click', function() {
+            var dep = departureSelect.value;
+            var arr = arrivalSelect.value;
+            recordsContainer.innerHTML = '';
+            if (!dep || !arr) {
+                recordsContainer.innerHTML = '<div style="color:#f44336;">Please select both departure and arrival airports.</div>';
+                return;
+            }
+            recordsContainer.innerHTML = '<div>Loading route records...</div>';
+            fetch('/api/route-records/', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({departure: dep, arrival: arr})
+            })
+            .then(function(response) { return response.json(); })
+            .then(function(data) {
+                if (data.routes && data.routes.length > 0) {
+                    var table = document.createElement('table');
+                    table.style.width = '100%';
+                    table.style.borderCollapse = 'collapse';
+                    table.style.background = '#23272e';
+                    table.style.color = '#fff';
+                    table.style.marginTop = '1.5rem';
+                    var thead = document.createElement('thead');
+                    var hideFields = ['route_fuel_gls','fuel_cost','overflight_fee','overflight_cost','airport_fees_cost'];
+                    var fields = Object.keys(data.routes[0]).filter(function(f){ return hideFields.indexOf(f) === -1; });
+                    var tr = document.createElement('tr');
+                    tr.style.background = '#26304a';
+                    fields.forEach(function(f) {
+                        var th = document.createElement('th');
+                        th.textContent = f.replace(/_/g, ' ');
+                        th.style.padding = '8px 12px';
+                        th.style.textAlign = 'left';
+                        th.style.borderBottom = '1px solid #26304a';
+                        tr.appendChild(th);
+                    });
+                    thead.appendChild(tr);
+                    table.appendChild(thead);
+                    var tbody = document.createElement('tbody');
+                    data.routes.forEach(function(route) {
+                        var tr = document.createElement('tr');
+                        fields.forEach(function(f) {
+                            var td = document.createElement('td');
+                            var val = route[f];
+                            td.style.padding = '8px 12px';
+                            td.style.borderBottom = '1px solid #26304a';
+                            if (typeof val === 'number') {
+                                td.textContent = val.toFixed(2);
+                                td.style.textAlign = 'right';
+                            } else {
+                                td.textContent = val;
+                                td.style.textAlign = 'left';
+                            }
+                            tr.appendChild(td);
+                        });
+                        tbody.appendChild(tr);
+                    });
+                    table.appendChild(tbody);
+                    recordsContainer.innerHTML = '';
+                    recordsContainer.appendChild(table);
+                } else {
+                    recordsContainer.innerHTML = '<div>No route records found for this pair.</div>';
+                }
+            })
+            .catch(function(err) {
+                recordsContainer.innerHTML = '<div style="color:#f44336;">Failed to load route records.</div>';
+                console.error('Failed to load route records', err);
+            });
+        });
     };
 
     // Handle aircraft, airport, and charter provider checkboxes and buttons
