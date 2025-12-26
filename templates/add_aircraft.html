@@ -1,27 +1,174 @@
-// Format numeric fields on blur
+<script>
+// Format numeric fields on blur - plain numbers, max 2 decimals
 function formatNumberInput(input) {
   let val = input.value.replace(/,/g, '');
   if (val && !isNaN(val)) {
-    let parts = val.split('.');
-    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-    input.value = parts.join('.');
+    let num = parseFloat(val);
+    // Round to 2 decimals
+    let rounded = Math.round(num * 100) / 100;
+    input.value = rounded.toString();
   }
 }
-document.addEventListener('DOMContentLoaded', function() {
+function parseNumber(val) {
+  if (!val) return 0;
+  return parseFloat(val.replace(/,/g, '')) || 0;
+}
+
+// Conversion helpers
+function kgToLbs(kg) { return kg * 2.20462; }
+function lbsToKg(lbs) { return lbs / 2.20462; }
+function galToLbs(gal) { return gal * 6.7; } // Approximate for Jet-A
+function lbsToGal(lbs) { return lbs / 6.7; }
+
+// Format number for input value - plain numbers, max 2 decimals
+function formatNumber(num) {
+  if (!num && num !== 0) return '';
+  // Round to 2 decimals
+  let rounded = Math.round(num * 100) / 100;
+  return rounded.toString();
+}
+
+function persistAircraftForm() {
+  const form = document.querySelector('form[action="/add-aircraft/"]');
+  if (!form) return;
+  const data = {};
+  Array.from(form.elements).forEach(function(el) {
+    if (el.name && (el.type === 'text' || el.type === 'number')) {
+      data[el.name] = el.value;
+    }
+  });
+  localStorage.setItem('add_aircraft_form', JSON.stringify(data));
+}
+function restoreAircraftForm() {
+  const form = document.querySelector('form[action="/add-aircraft/"]');
+  if (!form) return;
+  const data = JSON.parse(localStorage.getItem('add_aircraft_form') || '{}');
+  Array.from(form.elements).forEach(function(el) {
+    if (el.name && data[el.name] !== undefined) {
+      el.value = data[el.name];
+    }
+  });
+}
+
+
+(function() {
+  // Track last edited field for each kg/lbs and gal/lbs pair
+  const pairs = [
+    // [kg, lbs, type]
+    ['id_mtow_kg', 'id_mtow_lbs', 'weight'],
+    ['id_mldgw_kg', 'id_mldgw_lbs', 'weight'],
+    ['id_max_ramp_kg', 'id_max_ramp_lbs', 'weight'],
+    ['id_empty_weight_kg', 'id_empty_weight_lbs', 'weight'],
+    ['id_max_payload_kg', 'id_max_payload_lbs', 'weight'],
+    ['id_zero_fuel_kg', 'id_zero_fuel_lbs', 'weight'],
+    ['id_fuel_capacity_gal', 'id_fuel_capacity_lbs', 'volume'],
+    ['id_fuel_burn_gal', 'id_fuel_burn_lbs', 'volume'],
+    ['id_min_fuel_landed_gal', 'id_min_fuel_landed_lbs', 'volume'],
+    ['id_min_fuel_alternate_gal', 'id_min_fuel_alternate_lbs', 'volume']
+  ];
+  // Restore form data if present, but only fill the last edited field and trigger conversion
+  const lastEdited = JSON.parse(localStorage.getItem('add_aircraft_last_edited') || '{}');
+  const formData = JSON.parse(localStorage.getItem('add_aircraft_form') || '{}');
+  pairs.forEach(function([firstId, secondId, type]) {
+    const firstInput = document.getElementById(firstId);
+    const secondInput = document.getElementById(secondId);
+    if (!firstInput || !secondInput) {
+      if (firstId.includes('mldgw') || secondId.includes('mldgw')) {
+        console.warn('MLDGW field not found:', firstId, secondId);
+      }
+      return;
+    }
+    // Restore only the last edited field
+    if (lastEdited[firstId] && formData[firstId]) {
+      firstInput.value = formData[firstId];
+      firstInput.dispatchEvent(new Event('blur'));
+    } else if (lastEdited[secondId] && formData[secondId]) {
+      secondInput.value = formData[secondId];
+      secondInput.dispatchEvent(new Event('blur'));
+    }
+    // Conversion logic
+    firstInput.addEventListener('blur', function() {
+      let val = parseNumber(firstInput.value);
+      if (val) {
+        let converted;
+        if (type === 'weight') {
+          converted = kgToLbs(val);
+        } else if (type === 'volume') {
+          converted = galToLbs(val);
+        }
+        secondInput.value = formatNumber(converted);
+        firstInput.value = formatNumber(val);
+      } else {
+        secondInput.value = '';
+      }
+      // Mark first as last edited
+      let le = JSON.parse(localStorage.getItem('add_aircraft_last_edited') || '{}');
+      le[firstId] = true; le[secondId] = false;
+      localStorage.setItem('add_aircraft_last_edited', JSON.stringify(le));
+      persistAircraftForm();
+    });
+    secondInput.addEventListener('blur', function() {
+      let val = parseNumber(secondInput.value);
+      if (val) {
+        let converted;
+        if (type === 'weight') {
+          converted = lbsToKg(val);
+        } else if (type === 'volume') {
+          converted = lbsToGal(val);
+        }
+        firstInput.value = formatNumber(converted);
+        secondInput.value = formatNumber(val);
+      } else {
+        firstInput.value = '';
+      }
+      // Mark second as last edited
+      let le = JSON.parse(localStorage.getItem('add_aircraft_last_edited') || '{}');
+      le[firstId] = false; le[secondId] = true;
+      localStorage.setItem('add_aircraft_last_edited', JSON.stringify(le));
+      persistAircraftForm();
+    });
+    firstInput.addEventListener('input', function() {
+      let le = JSON.parse(localStorage.getItem('add_aircraft_last_edited') || '{}');
+      le[firstId] = true; le[secondId] = false;
+      localStorage.setItem('add_aircraft_last_edited', JSON.stringify(le));
+      persistAircraftForm();
+    });
+    secondInput.addEventListener('input', function() {
+      let le = JSON.parse(localStorage.getItem('add_aircraft_last_edited') || '{}');
+      le[firstId] = false; le[secondId] = true;
+      localStorage.setItem('add_aircraft_last_edited', JSON.stringify(le));
+      persistAircraftForm();
+    });
+  });
+
+  // Format all numeric fields on blur and persist (exclude conversion pairs)
   const numericFields = [
-    'id_mtow_kg', 'id_mtow_lbs', 'id_empty_weight_kg', 'id_empty_weight_lbs',
-    'id_max_payload_kg', 'id_max_payload_lbs', 'id_zero_fuel_kg', 'id_zero_fuel_lbs',
-    'id_fuel_capacity_gal', 'id_fuel_capacity_lbs', 'id_fuel_burn_gal', 'id_fuel_burn_lbs',
     'id_cruise_speed', 'id_acmi_cost',
     'id_cargo_positions_main_deck', 'id_cargo_positions_lower_deck'
   ];
   numericFields.forEach(function(id) {
     const el = document.getElementById(id);
     if (el) {
-      el.addEventListener('blur', function() { formatNumberInput(el); });
+      el.addEventListener('blur', function() { formatNumberInput(el); persistAircraftForm(); });
+      el.addEventListener('input', persistAircraftForm);
     }
   });
-});
+
+  // Persist all text fields
+  const form = document.querySelector('form[action="/add-aircraft/"]');
+  if (form) {
+    Array.from(form.elements).forEach(function(el) {
+      if (el.type === 'text' && !numericFields.includes(el.id)) {
+        el.addEventListener('input', persistAircraftForm);
+        el.addEventListener('blur', persistAircraftForm);
+      }
+    });
+    form.addEventListener('submit', function() {
+      localStorage.removeItem('add_aircraft_form');
+    });
+  }
+})();
+</script>
 {% load crispy_forms_tags %}
 {% if form %}
 <div class="tab-content-inner aircraft-form-page">
@@ -39,7 +186,6 @@ document.addEventListener('DOMContentLoaded', function() {
       <div class="aircraft-form-section">
         <div class="aircraft-section-title">Basic Information</div>
         <div class="aircraft-form-row three-col">
-          {{ form.aircraft_id|as_crispy_field }}
           {{ form.manufacturer|as_crispy_field }}
           {{ form.model|as_crispy_field }}
           {{ form.short_name|as_crispy_field }}
@@ -51,6 +197,10 @@ document.addEventListener('DOMContentLoaded', function() {
         <div class="aircraft-form-row three-col">
           {{ form.mtow_kg|as_crispy_field }}
           {{ form.mtow_lbs|as_crispy_field }}
+          {{ form.mldgw_kg|as_crispy_field }}
+          {{ form.mldgw_lbs|as_crispy_field }}
+          {{ form.max_ramp_kg|as_crispy_field }}
+          {{ form.max_ramp_lbs|as_crispy_field }}
           {{ form.empty_weight_kg|as_crispy_field }}
           {{ form.empty_weight_lbs|as_crispy_field }}
           {{ form.max_payload_kg|as_crispy_field }}
@@ -61,6 +211,10 @@ document.addEventListener('DOMContentLoaded', function() {
           {{ form.fuel_capacity_lbs|as_crispy_field }}
           {{ form.fuel_burn_gal|as_crispy_field }}
           {{ form.fuel_burn_lbs|as_crispy_field }}
+          {{ form.min_fuel_landed_gal|as_crispy_field }}
+          {{ form.min_fuel_landed_lbs|as_crispy_field }}
+          {{ form.min_fuel_alternate_gal|as_crispy_field }}
+          {{ form.min_fuel_alternate_lbs|as_crispy_field }}
         </div>
       </div>
       <hr class="aircraft-section-separator" />
@@ -70,7 +224,6 @@ document.addEventListener('DOMContentLoaded', function() {
           {{ form.cargo_positions_main_deck|as_crispy_field }}
           {{ form.cargo_positions_lower_deck|as_crispy_field }}
           {{ form.cruise_speed|as_crispy_field }}
-          {{ form.acmi_cost|as_crispy_field }}
         </div>
       </div>
       <button type="submit" class="aircraft-btn">Add Aircraft</button>

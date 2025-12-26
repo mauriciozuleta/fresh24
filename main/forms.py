@@ -5,12 +5,19 @@ class AircraftForm(forms.ModelForm):
     class Meta:
         model = Aircraft
         fields = [
-            'aircraft_id', 'manufacturer', 'model', 'short_name',
-            'mtow_kg', 'mtow_lbs', 'empty_weight_kg', 'empty_weight_lbs',
-            'max_payload_kg', 'max_payload_lbs', 'zero_fuel_kg', 'zero_fuel_lbs',
-            'fuel_capacity_gal', 'fuel_capacity_lbs', 'fuel_burn_gal', 'fuel_burn_lbs',
+            'manufacturer', 'model', 'short_name',
+            'mtow_kg', 'mtow_lbs',
+            'mldgw_kg', 'mldgw_lbs',
+            'zero_fuel_kg', 'zero_fuel_lbs',
+            'max_ramp_kg', 'max_ramp_lbs',
+            'empty_weight_kg', 'empty_weight_lbs',
+            'max_payload_kg', 'max_payload_lbs',
+            'fuel_capacity_gal', 'fuel_capacity_lbs',
+            'fuel_burn_gal', 'fuel_burn_lbs',
+            'min_fuel_landed_gal', 'min_fuel_landed_lbs',
+            'min_fuel_alternate_gal', 'min_fuel_alternate_lbs',
             'cargo_positions_main_deck', 'cargo_positions_lower_deck',
-            'cruise_speed', 'acmi_cost'
+            'cruise_speed'
         ]
 
 class AirportForm(forms.ModelForm):

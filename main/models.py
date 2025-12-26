@@ -2,26 +2,37 @@ from django.db import models
 
 
 class Aircraft(models.Model):
-	aircraft_id = models.CharField(max_length=20, unique=True)
-	manufacturer = models.CharField(max_length=100)
-	model = models.CharField(max_length=100)
-	short_name = models.CharField(max_length=20)
+	aircraft_id = models.CharField(max_length=64, unique=True)
+	manufacturer = models.CharField(max_length=64)
+	model = models.CharField(max_length=64)
+	short_name = models.CharField(max_length=32)
+
 	mtow_kg = models.FloatField()
 	mtow_lbs = models.FloatField()
+	mldgw_kg = models.FloatField(blank=True, null=True)
+	mldgw_lbs = models.FloatField(blank=True, null=True)
+	zero_fuel_kg = models.FloatField()
+	zero_fuel_lbs = models.FloatField()
+	max_ramp_kg = models.FloatField(blank=True, null=True)
+	max_ramp_lbs = models.FloatField(blank=True, null=True)
+
 	empty_weight_kg = models.FloatField()
 	empty_weight_lbs = models.FloatField()
 	max_payload_kg = models.FloatField()
 	max_payload_lbs = models.FloatField()
-	zero_fuel_kg = models.FloatField()
-	zero_fuel_lbs = models.FloatField()
+
 	fuel_capacity_gal = models.FloatField()
 	fuel_capacity_lbs = models.FloatField()
 	fuel_burn_gal = models.FloatField()
 	fuel_burn_lbs = models.FloatField()
+	min_fuel_landed_gal = models.FloatField(blank=True, null=True)
+	min_fuel_landed_lbs = models.FloatField(blank=True, null=True)
+	min_fuel_alternate_gal = models.FloatField(blank=True, null=True)
+	min_fuel_alternate_lbs = models.FloatField(blank=True, null=True)
+
 	cargo_positions_main_deck = models.IntegerField()
 	cargo_positions_lower_deck = models.IntegerField()
 	cruise_speed = models.FloatField()
-	acmi_cost = models.FloatField()
 
 	def __str__(self):
 		return f"{self.short_name} ({self.model})"

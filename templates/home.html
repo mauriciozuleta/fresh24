@@ -6,6 +6,16 @@
     <title>Fresh-24 Financial Simulator</title>
     <link rel="stylesheet" href="/static/style.css">
     <script>
+            // On full page reload, clear Aircraft form persistence (but not on tab switch)
+            if (window.performance && performance.navigation && performance.navigation.type === 1) {
+                // Hard reload (type 1)
+                localStorage.removeItem('add_aircraft_form');
+                localStorage.removeItem('add_aircraft_last_edited');
+            } else if (performance.getEntriesByType && performance.getEntriesByType('navigation')[0]?.type === 'reload') {
+                // Newer Navigation Timing API
+                localStorage.removeItem('add_aircraft_form');
+                localStorage.removeItem('add_aircraft_last_edited');
+            }
     document.addEventListener('DOMContentLoaded', function() {
         var icons = document.querySelectorAll('.sidebar-icon');
         var optionsSidebarContent = document.getElementById('options-sidebar-content');
@@ -334,6 +344,15 @@
                                     }
                                     document.body.appendChild(newScript);
                                 });
+                                // Restore form data from localStorage after script execution
+                                // Wait a tick to ensure DOM is ready and script is loaded
+                                setTimeout(function() {
+                                    if (typeof restoreAircraftForm === 'function') {
+                                        restoreAircraftForm();
+                                    } else if (window.restoreAircraftForm) {
+                                        window.restoreAircraftForm();
+                                    }
+                                }, 50);
                             } else {
                                 // Fallback: show the full HTML response so errors are visible
                                 tabContent.innerHTML = html;

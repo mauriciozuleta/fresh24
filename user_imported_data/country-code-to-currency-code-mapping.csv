@@ -1,0 +1,250 @@
+Country,CountryCode,Currency,Code,Region
+Afghanistan,AF,Afghani,AFN,Asia-Pacific
+Aland Islands,AX,Euro,EUR,Western Europe
+Albania,AL,Lek,ALL,Eastern Europe
+Algeria,DZ,Algerian Dinar,DZD,Africa
+American Samoa,AS,Euros,EUR,Oceania
+Andorra,AD,Euros,EUR,Western Europe
+Angola,AO,Angolan kwanza,AOA,Africa
+Anguilla,AI,East Caribbean Dollar,XCD,Caribbean
+Antarctica,AQ,Antarctican dollar,AQD,Antarctica
+Antigua and Barbuda,AG,East Caribbean Dollar,XCD,Caribbean
+Argentina,AR,Peso,ARS,South-Central America
+Armenia,AM,Dram,AMD,Asia-Pacific
+Aruba,AW,Netherlands Antilles Guilder,ANG,Caribbean
+Australian,AU,Australian Dollars,AUD,Oceania
+Austria,AT,Euros,EUR,Western Europe
+Azerbaijan,AZ,Manat,AZN,Asia-Pacific
+Bahamas,BS,Bahamian Dollar,BSD,Caribbean
+Bahrain,BH,Bahraini Dinar,BHD,Asia-Pacific
+Bangladesh,BD,Taka,BDT,Asia-Pacific
+Barbados,BB,Barbadian Dollar,BBD,Caribbean
+Belarus,BY,Belarus Ruble,BYR,Eastern Europe
+Belgium,BE,Euros,EUR,Western Europe
+Belize,BZ,Belizean Dollar,BZD,South-Central America
+Benin,BJ,CFA Franc BCEAO,XOF,Africa
+Bermuda,BM,Bermudian Dollar,BMD,North America
+Bhutan,BT,Indian Rupee,INR,Asia-Pacific
+Bolivia,BO,Boliviano,BOB,South-Central America
+Bosnia and Herzegovina,BA,Bosnia and Herzegovina convertible mark,BAM,Eastern Europe
+Botswana,BW,Pula,BWP,Africa
+Bouvet Island,BV,Norwegian Krone,NOK,Antarctica
+Brazil,BR,Brazil,BRL,South-Central America
+British Indian Ocean Territory,IO,USD,USD,Africa
+Brunei Darussalam,BN,Bruneian Dollar,BND,Asia-Pacific
+Bulgaria,BG,Lev,BGN,Eastern Europe
+Burkina Faso,BF,CFA Franc BCEAO,XOF,Africa
+Burundi,BI,Burundi Franc,BIF,Africa
+Cambodia,KH,Riel,KHR,Asia-Pacific
+Cameroon,CM,CFA Franc BEAC,XAF,Africa
+Canada,CA,Canadian Dollar,CAD,North America
+Cape Verde,CV,Escudo,CVE,Africa
+Cayman Islands,KY,Caymanian Dollar,KYD,Caribbean
+Central African Republic,CF,CFA Franc BEAC,XAF,Africa
+Chad,TD,CFA Franc BEAC,XAF,Africa
+Chile,CL,Chilean Peso,CLP,South-Central America
+China,CN,Yuan Renminbi,CNY,Asia-Pacific
+Christmas Island,CX,Australian Dollars,AUD,Oceania
+Cocos (Keeling) Islands,CC,Australian Dollars,AUD,Oceania
+Colombia,CO,Peso,COP,South-Central America
+Comoros,KM,Comoran Franc,KMF,Africa
+Congo (Kinshasa),CD,Congolese Frank,CDF,Africa
+Congo Republic of the Democratic,CG,CFA Franc BEAC,XAF,Africa
+Congo-Brazzaville,CD,Congolese Frank,CDF,Africa
+Cook Islands,CK,New Zealand Dollars,NZD,Oceania
+Costa Rica,CR,Costa Rican Colon,CRC,South-Central America
+Croatia (Hrvatska),HR,Croatian Dinar,HRK,Eastern Europe
+Cuba,CU,Cuban Peso,CUP,Caribbean
+Cyprus,CY,Cypriot Pound,CYP,Asia-Pacific
+Czech Republic,CZ,Koruna,CZK,Eastern Europe
+Denmark,DK,Danish Krone,DKK,Western Europe
+Djibouti,DJ,Djiboutian Franc,DJF,Africa
+Dominica,DM,East Caribbean Dollar,XCD,Caribbean
+Dominican Republic,DO,Dominican Peso,DOP,Caribbean
+East Timor,TP,Indonesian Rupiah,IDR,Asia-Pacific
+Ecuador,EC,Sucre,ECS,South-Central America
+Egypt,EG,Egyptian Pound,EGP,Africa
+El Salvador,SV,Salvadoran Colon,SVC,South-Central America
+Equatorial Guinea,GQ,CFA Franc BEAC,XAF,Africa
+Eritrea,ER,Ethiopian Birr,ETB,Africa
+Estonia,EE,Estonian Kroon,EEK,Western Europe
+Ethiopia,ET,Ethiopian Birr,ETB,Africa
+Falkland Islands (Malvinas),FK,Falkland Pound,FKP,South-Central America
+Faroe Islands,FO,Danish Krone,DKK,Western Europe
+Fiji,FJ,Fijian Dollar,FJD,Oceania
+Finland,FI,Euros,EUR,Western Europe
+France,FR,Euros,EUR,Western Europe
+French Guiana,GF,Euros,EUR,South-Central America
+French Polynesia,PF,CFP Franc,XPF,Oceania
+French Southern Territories,TF,Euros,EUR,Oceania
+Gabon,GA,CFA Franc BEAC,XAF,Africa
+Gambia,GM,Dalasi,GMD,Africa
+Georgia,GE,Lari,GEL,Asia-Pacific
+Germany,DE,Euros,EUR,Western Europe
+Ghana,GH,Ghana cedi,GHS,Africa
+Gibraltar,GI,Gibraltar Pound,GIP,Western Europe
+Greece,GR,Euros,EUR,Western Europe
+Greenland,GL,Danish Krone,DKK,North America
+Grenada,GD,East Caribbean Dollar,XCD,Caribbean
+Guadeloupe,GP,Euros,EUR,Caribbean
+Guam,GU,USD,USD,Oceania
+Guatemala,GT,Quetzal,GTQ,South-Central America
+Guernsey,GG,Guernsey pound,GGP,Western Europe
+Guinea,GN,Guinean Franc,GNF,Africa
+Guinea-Bissau,GW,CFA Franc BCEAO,XOF,Africa
+Guyana,GY,Guyanaese Dollar,GYD,South-Central America
+Haiti,HT,Gourde,HTG,Caribbean
+Heard and Mc Donald Islands,HM,Australian Dollars,AUD,Oceania
+Honduras,HN,Lempira,HNL,South-Central America
+Hong Kong,HK,HKD,HKD,Asia-Pacific
+Hungary,HU,Forint,HUF,Eastern Europe
+Iceland,IS,Icelandic Krona,ISK,Western Europe
+India,IN,Indian Rupee,INR,Asia-Pacific
+Indonesia,ID,Indonesian Rupiah,IDR,Asia-Pacific
+Iran (Islamic Republic of),IR,Iranian Rial,IRR,Asia-Pacific
+Iraq,IQ,Iraqi Dinar,IQD,Asia-Pacific
+Ireland,IE,Euros,EUR,Western Europe
+Isle of Man,IM,Manx pound,GBP,Western Europe
+Israel,IL,Shekel,ILS,Asia-Pacific
+Italy,IT,Euros,EUR,Western Europe
+Ivory Coast,CI,CFA Franc BCEAO,XOF,Africa
+Jamaica,JM,Jamaican Dollar,JMD,Caribbean
+Japan,JP,Japanese Yen,JPY,Asia-Pacific
+Jersey,JE,Sterling,GBP,Western Europe
+Jordan,JO,Jordanian Dinar,JOD,Asia-Pacific
+Kazakhstan,KZ,Tenge,KZT,Asia-Pacific
+Kenya,KE,Kenyan Shilling,KES,Africa
+Kiribati,KI,Australian Dollars,AUD,Oceania
+Korea North,KP,Won,KPW,Asia-Pacific
+Korea South,KR,Won,KRW,Asia-Pacific
+Kuwait,KW,Kuwaiti Dinar,KWD,Asia-Pacific
+Kyrgyzstan,KG,Som,KGS,Asia-Pacific
+Lao Peoples Democratic Republic,LA,Kip,LAK,Asia-Pacific
+Laos,LA,Lao kip,LAK,Asia-Pacific
+Latvia,LV,Lat,LVL,Western Europe
+Lebanon,LB,Lebanese Pound,LBP,Asia-Pacific
+Lesotho,LS,Loti,LSL,Africa
+Liberia,LR,Liberian Dollar,LRD,Africa
+Libyan Arab Jamahiriya,LY,Libyan Dinar,LYD,Africa
+Liechtenstein,LI,Swiss Franc,CHF,Western Europe
+Lithuania,LT,Lita,LTL,Western Europe
+Luxembourg,LU,Euros,EUR,Western Europe
+Macao S.A.R.,MO,Macanese pataca,MOP,Asia-Pacific
+Macau,MO,Pataca,MOP,Asia-Pacific
+Macedonia,MK,Denar,MKD,Eastern Europe
+Madagascar,MG,Malagasy Franc,MGA,Africa
+Malawi,MW,Malawian Kwacha,MWK,Africa
+Malaysia,MY,Ringgit,MYR,Asia-Pacific
+Maldives,MV,Rufiyaa,MVR,Asia-Pacific
+Mali,ML,CFA Franc BCEAO,XOF,Africa
+Malta,MT,Maltese Lira,MTL,Western Europe
+Marshall Islands,MH,USD,USD,Oceania
+Martinique,MQ,Euros,EUR,Caribbean
+Mauritania,MR,Ouguiya,MRO,Africa
+Mauritius,MU,Mauritian Rupee,MUR,Africa
+Mayotte,YT,Euros,EUR,Africa
+Mexico,MX,Peso,MXN,North America
+Micronesia Federated States of,FM,USD,USD,Oceania
+Moldova Republic of,MD,Leu,MDL,Eastern Europe
+Monaco,MC,Euros,EUR,Western Europe
+Mongolia,MN,Tugrik,MNT,Asia-Pacific
+Montenegro,ME,Euro,EUR,Eastern Europe
+Montserrat,MS,East Caribbean Dollar,XCD,Caribbean
+Morocco,MA,Dirham,MAD,Africa
+Mozambique,MZ,Metical,MZN,Africa
+Myanmar,MM,Kyat,MMK,Asia-Pacific
+Namibia,NA,Dollar,NAD,Africa
+Nauru,NR,Australian Dollars,AUD,Oceania
+Nepal,NP,Nepalese Rupee,NPR,Asia-Pacific
+Netherlands,NL,Euros,EUR,Western Europe
+Netherlands Antilles,AN,Netherlands Antilles Guilder,ANG,Caribbean
+New Caledonia,NC,CFP Franc,XPF,Oceania
+New Zealand,NZ,New Zealand Dollars,NZD,Oceania
+Nicaragua,NI,Cordoba Oro,NIO,South-Central America
+Niger,NE,CFA Franc BCEAO,XOF,Africa
+Nigeria,NG,Naira,NGN,Africa
+Niue,NU,New Zealand Dollars,NZD,Oceania
+Norfolk Island,NF,Australian Dollars,AUD,Oceania
+Northern Mariana Islands,MP,USD,USD,Oceania
+Norway,NO,Norwegian Krone,NOK,Western Europe
+Oman,OM,Sul Rial,OMR,Asia-Pacific
+Pakistan,PK,Rupee,PKR,Asia-Pacific
+Palau,PW,USD,USD,Oceania
+Palestinian Territory,PS,Jordanian dinar,JOD,Asia-Pacific
+Panama,PA,Balboa,PAB,South-Central America
+Papua New Guinea,PG,Kina,PGK,Oceania
+Paraguay,PY,Guarani,PYG,South-Central America
+Peru,PE,Nuevo Sol,PEN,South-Central America
+Philippines,PH,Peso,PHP,Asia-Pacific
+Pitcairn,PN,New Zealand Dollars,NZD,Oceania
+Poland,PL,Zloty,PLN,Eastern Europe
+Portugal,PT,Euros,EUR,Western Europe
+Puerto Rico,PR,USD,USD,Caribbean
+Qatar,QA,Rial,QAR,Asia-Pacific
+Reunion,RE,Euros,EUR,Africa
+Romania,RO,Leu,RON,Eastern Europe
+Russian Federation,RU,Ruble,RUB,Eastern Europe
+Rwanda,RW,Rwanda Franc,RWF,Africa
+Saint Barthelemy,BL,Euro,EUR,Caribbean
+Saint Helena,SH,Saint Helena pound,GBP,Africa
+Saint Kitts,KN,East Caribbean Dollar,XCD,Caribbean
+Saint Lucia,LC,East Caribbean Dollar,XCD,Caribbean
+Saint Martin (French part),MF,Netherlands Antillean guilder,ANG,Caribbean
+Saint Pierre and Miquelon,PM,Euro,EUR,North America
+Saint Vincent Grenadines,VC,East Caribbean Dollar,XCD,Caribbean
+Samoa,WS,Euros,EUR,Oceania
+San Marino,SM,Euros,EUR,Western Europe
+Sao Tome and Principe,ST,Dobra,STD,Africa
+Saudi Arabia,SA,Riyal,SAR,Asia-Pacific
+Senegal,SN,CFA Franc BCEAO,XOF,Africa
+Serbia,RS,Serbian dinar,RSD,Eastern Europe
+Seychelles,SC,Rupee,SCR,Africa
+Sierra Leone,SL,Leone,SLL,Africa
+Singapore,SG,Dollar,SGD,Asia-Pacific
+Slovakia (Slovak Republic),SK,Koruna,SKK,Eastern Europe
+Slovenia,SI,Euros,EUR,Eastern Europe
+Solomon Islands,SB,Solomon Islands Dollar,SBD,Oceania
+Somalia,SO,Shilling,SOS,Africa
+South Africa,ZA,Rand,ZAR,Africa
+South Georgia and the South Sandwich Islands,GS,Sterling,GBP,South-Central America
+Spain,ES,Euros,EUR,Western Europe
+Sri Lanka,LK,Rupee,LKR,Asia-Pacific
+Sudan,SD,Dinar,SDG,Africa
+Suriname,SR,Surinamese Guilder,SRD,South-Central America
+Svalbard and Jan Mayen Islands,SJ,Norwegian Krone,NOK,Western Europe
+Swaziland,SZ,Lilangeni,SZL,Africa
+Sweden,SE,Krona,SEK,Western Europe
+Switzerland,CH,Swiss Franc,CHF,Western Europe
+Syrian Arab Republic,SY,Syrian Pound,SYP,Asia-Pacific
+Taiwan,TW,Dollar,TWD,Asia-Pacific
+Tajikistan,TJ,Tajikistan Ruble,TJS,Asia-Pacific
+Tanzania,TZ,Shilling,TZS,Africa
+Thailand,TH,Baht,THB,Asia-Pacific
+Togo,TG,CFA Franc BCEAO,XOF,Africa
+Tokelau,TK,New Zealand Dollars,NZD,Oceania
+Tonga,TO,PaÕanga,TOP,Oceania
+Trinidad and Tobago,TT,Trinidad and Tobago Dollar,TTD,Caribbean
+Tunisia,TN,Tunisian Dinar,TND,Africa
+Turkey,TR,Lira,TRY,Asia-Pacific
+Turkmenistan,TM,Manat,TMT,Asia-Pacific
+Turks and Caicos Islands,TC,USD,USD,Caribbean
+Tuvalu,TV,Australian Dollars,AUD,Oceania
+Uganda,UG,Shilling,UGX,Africa
+Ukraine,UA,Hryvnia,UAH,Eastern Europe
+United Arab Emirates,AE,Dirham,AED,Asia-Pacific
+United Kingdom,GB,Sterling,GBP,Western Europe
+United States,US,USD,USD,North America
+United States Minor Outlying Islands,UM,USD,USD,North America
+Uruguay,UY,Peso,UYU,South-Central America
+Uzbekistan,UZ,Som,UZS,Asia-Pacific
+Vanuatu,VU,Vatu,VUV,Oceania
+Vatican City State (Holy See),VA,Euros,EUR,Western Europe
+Venezuela,VE,Bolivar,VEF,South-Central America
+Vietnam,VN,Dong,VND,Asia-Pacific
+Virgin Islands (British),VG,USD,USD,Caribbean
+Virgin Islands (US),VI,USD,USD,Caribbean
+Wallis and Futuna Islands,WF,CFP Franc,XPF,Oceania
+Western Sahara,EH,Dirham,MAD,Africa
+Yemen,YE,Rial,YER,Asia-Pacific
+Zambia,ZM,Kwacha,ZMK,Africa
+Zimbabwe,ZW,Zimbabwe Dollar,ZWD,Africa
