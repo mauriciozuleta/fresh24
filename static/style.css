@@ -222,6 +222,41 @@
         font-weight: 600;
         margin-bottom: 0.4rem;
     }
+
+    /* Routes tab styling */
+    .routes-tab {
+        background-color: #181c24;
+        border-radius: 8px;
+        padding: 1.5rem 1.75rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        max-width: 1200px;
+        margin: 0 auto;
+        border: 1px solid #26304a;
+    }
+
+    .routes-tab h1 {
+        color: #f7c97e;
+        font-size: 1.25rem;
+        margin-top: 0;
+        margin-bottom: 1rem;
+    }
+
+    .routes-tab select {
+        min-width: 220px;
+        max-width: 320px;
+        padding: 0.55rem 0.7rem;
+        background-color: #23293a;
+        border: 2px solid #193366;
+        border-radius: 4px;
+        color: #f7fafc;
+        font-size: 0.9rem;
+    }
+
+    .routes-tab label {
+        color: #e0e6ed;
+        font-weight: 500;
+        margin-right: 0.4rem;
+    }
     .user-option {
         color: #fff;
         font-weight: 500;

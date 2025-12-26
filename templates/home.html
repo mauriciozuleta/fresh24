@@ -553,6 +553,9 @@
                         .then(function(response) { return response.text(); })
                         .then(function(html) {
                             tabContent.innerHTML = html;
+                            if (window.initializeRoutesTab) {
+                                window.initializeRoutesTab();
+                            }
                         })
                         .catch(function() {
                             tabContent.innerHTML = '<div class="tab-content-inner"><h2>Routes</h2><p>Routes content could not be loaded.</p></div>';
@@ -613,6 +616,47 @@
     </script>
     
     <script>
+    // Initialize Routes tab dropdowns
+    window.initializeRoutesTab = function() {
+        var departureSelect = document.getElementById('departure-select');
+        var arrivalSelect = document.getElementById('arrival-select');
+        if (!departureSelect || !arrivalSelect) return;
+
+        function populateDropdown(select, airports, excludeCode) {
+            var which = select.id.indexOf('departure') !== -1 ? 'departure' : 'arrival';
+            select.innerHTML = '<option value="">Select ' + which + ' airport</option>';
+            airports.forEach(function(airport) {
+                if (!excludeCode || airport.code !== excludeCode) {
+                    var opt = document.createElement('option');
+                    opt.value = airport.code;
+                    opt.textContent = airport.code + ' - ' + airport.name;
+                    select.appendChild(opt);
+                }
+            });
+        }
+
+        fetch('/api/airports/')
+            .then(function(response) { return response.json(); })
+            .then(function(data) {
+                var airports = data.airports || [];
+                populateDropdown(departureSelect, airports);
+
+                departureSelect.addEventListener('change', function() {
+                    var selectedDeparture = departureSelect.value;
+                    if (selectedDeparture) {
+                        arrivalSelect.disabled = false;
+                        populateDropdown(arrivalSelect, airports, selectedDeparture);
+                    } else {
+                        arrivalSelect.disabled = true;
+                        populateDropdown(arrivalSelect, airports);
+                    }
+                });
+            })
+            .catch(function(err) {
+                console.error('Failed to load airports for Routes tab', err);
+            });
+    };
+
     // Handle aircraft, airport, and charter provider checkboxes and buttons
     function initializeCheckboxHandlers() {
         // Aircraft checkboxes and buttons

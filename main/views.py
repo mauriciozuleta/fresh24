@@ -1,3 +1,14 @@
+# --- Airport list API for Routes tab ---
+from django.http import JsonResponse
+from .models import Airport
+
+def airport_list_api(request):
+	airports = Airport.objects.all().order_by('iata_code')
+	data = [
+		{'code': a.iata_code, 'name': a.name}
+		for a in airports
+	]
+	return JsonResponse({'airports': data})
 from django.http import JsonResponse, HttpResponseNotAllowed
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render, redirect
