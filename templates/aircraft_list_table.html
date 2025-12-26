@@ -1,8 +1,59 @@
+<script>
+  // Single-selection checkbox logic and Edit Selected button enable/disable
+  document.addEventListener('DOMContentLoaded', function() {
+    const checkboxes = document.querySelectorAll('.aircraft-select-checkbox');
+    const editBtn = document.getElementById('edit-aircraft-btn');
+    function updateEditBtn() {
+      if (editBtn) {
+        editBtn.disabled = !Array.from(checkboxes).some(cb => cb.checked);
+      }
+    }
+    checkboxes.forEach(checkbox => {
+      checkbox.addEventListener('change', function() {
+        if (this.checked) {
+          checkboxes.forEach(cb => {
+            if (cb !== this) cb.checked = false;
+          });
+        }
+        updateEditBtn();
+      });
+    });
+    updateEditBtn();
+  });
+</script>
+<!-- ...existing code... -->
+<table style="width:100%;border-collapse:collapse;background:#23272e;color:#fff;">
+  <!-- ...existing code... -->
+</table>
+<script>
+  // Single-selection checkbox logic and Edit Selected button enable/disable
+  document.addEventListener('DOMContentLoaded', function() {
+    const checkboxes = document.querySelectorAll('.aircraft-select-checkbox');
+    const editBtn = document.getElementById('edit-aircraft-btn');
+    function updateEditBtn() {
+      if (editBtn) {
+        editBtn.disabled = !Array.from(checkboxes).some(cb => cb.checked);
+      }
+    }
+    checkboxes.forEach(checkbox => {
+      checkbox.addEventListener('change', function() {
+        if (this.checked) {
+          checkboxes.forEach(cb => {
+            if (cb !== this) cb.checked = false;
+          });
+        }
+        updateEditBtn();
+      });
+    });
+    updateEditBtn();
+  });
+</script>
 {% load humanize %}
 <h2 class="aircraft-section-title">Available Aircraft</h2>
 <table style="width:100%;border-collapse:collapse;background:#23272e;color:#fff;">
   <thead>
     <tr style="background:#26304a;">
+      <th style="padding:8px 12px;width:40px;"></th>
       <th style="padding:8px 12px;text-align:left;">Manufacturer</th>
       <th style="padding:8px 12px;text-align:left;">Model</th>
       <th style="padding:8px 12px;text-align:left;">Short Name</th>
@@ -15,18 +66,20 @@
   </thead>
   <tbody>
     {% for aircraft in aircraft_list %}
-    <tr style="border-bottom:1px solid #26304a;">
-      <td style="padding:8px 12px;">{{ aircraft.manufacturer }}</td>
-      <td style="padding:8px 12px;">{{ aircraft.model }}</td>
-      <td style="padding:8px 12px;">{{ aircraft.short_name }}</td>
-      <td style="padding:8px 12px;text-align:right;">{{ aircraft.max_payload_kg|floatformat:0|intcomma }}</td>
-      <td style="padding:8px 12px;text-align:right;">{{ aircraft.max_payload_lbs|floatformat:0|intcomma }}</td>
-      <td style="padding:8px 12px;text-align:right;">{{ aircraft.fuel_capacity_lbs|floatformat:0|intcomma }}</td>
-      <td style="padding:8px 12px;text-align:right;">{{ aircraft.fuel_burn_lbs|floatformat:0|intcomma }}</td>
-      <td style="padding:8px 12px;text-align:right;">{{ aircraft.cruise_speed|floatformat:0|intcomma }}</td>
-    </tr>
+      <tr>
+        <td><input type="checkbox" class="aircraft-select-checkbox" value="{{ aircraft.id }}"></td>
+        <td>{{ aircraft.manufacturer }}</td>
+        <td>{{ aircraft.model }}</td>
+        <td>{{ aircraft.short_name }}</td>
+        <td style="text-align:right;">{{ aircraft.max_payload_kg|intcomma }}</td>
+        <td style="text-align:right;">{{ aircraft.max_payload_lbs|intcomma }}</td>
+        <td style="text-align:right;">{{ aircraft.fuel_capacity_lbs|intcomma }}</td>
+        <td style="text-align:right;">{{ aircraft.fuel_burn_lbs|intcomma }}</td>
+        <td style="text-align:right;">{{ aircraft.cruise_speed }}</td>
+      </tr>
     {% empty %}
-    <tr><td colspan="8" style="padding:8px 12px;">No aircraft available.</td></tr>
+      <tr><td colspan="9" style="padding:8px 12px;">No aircraft available.</td></tr>
     {% endfor %}
   </tbody>
 </table>
+<!-- Removed duplicate checkbox JS -->

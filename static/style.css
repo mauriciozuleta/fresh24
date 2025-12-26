@@ -76,6 +76,7 @@
     .aircraft-actions {
         display: flex;
         justify-content: flex-start;
+        /* margin removed; now handled inline in home.html for consistency */
     }
     .primary-button {
         background: #007acc;

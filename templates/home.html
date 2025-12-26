@@ -134,6 +134,31 @@
                 <p>This is your home page. The UI uses a dark, cold color palette inspired by VS Code.</p>
             </div>
         </main>
+        <!-- Hidden server-side rendered lists -->
+        <div id="aircraft-list-container" style="display:none;">
+            <div class="tab-content-inner aircraft-tab">
+                <h2>Aircraft</h2>
+                <section class="aircraft-list-section">
+                    {% include 'aircraft_list_table.html' %}
+                </section>
+                <section class="aircraft-actions" style="display:flex;gap:0.75rem;margin-top:1rem;">
+                    <button id="add-aircraft-btn" class="primary-button">Add New Aircraft</button>
+                    <button id="edit-aircraft-btn" class="primary-button">Edit Selected</button>
+                </section>
+            </div>
+        </div>
+        <div id="airport-list-container" style="display:none;">
+            <div class="tab-content-inner airports-tab">
+                <h2>Airports</h2>
+                <section class="airports-list-section">
+                    {% include 'airport_list_table.html' %}
+                </section>
+                <section class="airports-actions" style="display:flex;gap:0.75rem;margin-top:1rem;">
+                    <button id="add-airport-btn" class="primary-button">Add New Airport</button>
+                    <button id="edit-airport-btn-airport" class="primary-button">Edit Selected</button>
+                </section>
+            </div>
+        </div>
         </aside>
         <!-- Side menu removed for minimal layout -->
         <!-- main-content now inside <main> above -->
@@ -305,16 +330,8 @@
                 ws.activeTab = tabName;
                 // Show content for the tab
                 if (tabName === 'Aircraft') {
-                    tabContent.innerHTML = '' +
-                        '<div class="tab-content-inner aircraft-tab">' +
-                            '<h2>Aircraft</h2>' +
-                            '<section class="aircraft-list-section">' +
-                                `{% include 'aircraft_list_table.html' %}` +
-                            '</section>' +
-                            '<section class="aircraft-actions">' +
-                                '<button id="add-aircraft-btn" class="primary-button">Add New Aircraft</button>' +
-                            '</section>' +
-                        '</div>';
+                    var container = document.getElementById('aircraft-list-container');
+                    tabContent.innerHTML = container.innerHTML;
                     var addBtn = document.getElementById('add-aircraft-btn');
                     if (addBtn) {
                         addBtn.addEventListener('click', function() {
@@ -323,6 +340,27 @@
                             setActiveTab('Add Aircraft');
                         });
                     }
+                    // Re-apply single-selection logic after tab content is loaded
+                    setTimeout(function() {
+                        var checkboxes = tabContent.querySelectorAll('.aircraft-select-checkbox');
+                        var editBtn = tabContent.querySelector('#edit-aircraft-btn');
+                        function updateEditBtn() {
+                            if (editBtn) {
+                                editBtn.disabled = !Array.from(checkboxes).some(cb => cb.checked);
+                            }
+                        }
+                        checkboxes.forEach(function(checkbox) {
+                            checkbox.addEventListener('change', function() {
+                                if (this.checked) {
+                                    checkboxes.forEach(function(cb) {
+                                        if (cb !== this) cb.checked = false;
+                                    }.bind(this));
+                                }
+                                updateEditBtn();
+                            });
+                        });
+                        updateEditBtn();
+                    }, 50);
                 } else if (tabName === 'Add Aircraft') {
                     // Fetch the rendered form from the backend
                     fetch('/add-aircraft/')
@@ -362,17 +400,9 @@
                             tabContent.innerHTML = '<div class="tab-content-inner"><h2>Add Aircraft</h2><p>Form could not be loaded.</p></div>';
                         });
                 } else if (tabName === 'Airports') {
-                    tabContent.innerHTML = '' +
-                        '<div class="tab-content-inner airports-tab">' +
-                            '<h2>Airports</h2>' +
-                            '<section class="airports-list-section">' +
-                                `{% include 'airport_list_table.html' %}` +
-                            '</section>' +
-                            '<section class="airports-actions">' +
-                                '<button id="add-airport-btn" class="primary-button">Add New Airport</button>' +
-                            '</section>' +
-                        '</div>';
-                    var addBtn = document.getElementById('add-airport-btn');
+                    var container = document.getElementById('airport-list-container');
+                    tabContent.innerHTML = container.innerHTML;
+                    var addBtn = tabContent.querySelector('#add-airport-btn');
                     if (addBtn) {
                         addBtn.addEventListener('click', function() {
                             if (!currentWorkspace) return;
@@ -380,6 +410,27 @@
                             setActiveTab('Add Airport');
                         });
                     }
+                    // Re-apply single-selection logic after tab content is loaded
+                    setTimeout(function() {
+                        var checkboxes = tabContent.querySelectorAll('.airport-select-checkbox');
+                        var editBtn = tabContent.querySelector('#edit-airport-btn-airport');
+                        function updateEditBtn() {
+                            if (editBtn) {
+                                editBtn.disabled = !Array.from(checkboxes).some(cb => cb.checked);
+                            }
+                        }
+                        checkboxes.forEach(function(checkbox) {
+                            checkbox.addEventListener('change', function() {
+                                if (this.checked) {
+                                    checkboxes.forEach(function(cb) {
+                                        if (cb !== this) cb.checked = false;
+                                    }.bind(this));
+                                }
+                                updateEditBtn();
+                            });
+                        });
+                        updateEditBtn();
+                    }, 50);
                 } else if (tabName === 'Add Airport') {
                     // Fetch the rendered form from the backend
                     fetch('/add-airport/')
