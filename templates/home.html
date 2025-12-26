@@ -385,13 +385,15 @@
                                 // Execute inline scripts manually
                                 var scripts = doc.querySelectorAll('script');
                                 scripts.forEach(function(oldScript) {
-                                    var newScript = document.createElement('script');
-                                    if (oldScript.src) {
-                                        newScript.src = oldScript.src;
-                                    } else {
-                                        newScript.textContent = oldScript.textContent;
+                                    if (oldScript.src || (oldScript.textContent && oldScript.textContent.trim().length > 0)) {
+                                        var newScript = document.createElement('script');
+                                        if (oldScript.src) {
+                                            newScript.src = oldScript.src;
+                                        } else {
+                                            newScript.textContent = oldScript.textContent;
+                                        }
+                                        document.body.appendChild(newScript);
                                     }
-                                    document.body.appendChild(newScript);
                                 });
                                 // Initialize checkbox handlers after Mode content is loaded
                                 if (window.initializeCheckboxHandlers) {
@@ -418,13 +420,15 @@
                                 // Execute inline scripts manually (innerHTML doesn't execute them)
                                 var scripts = doc.querySelectorAll('script');
                                 scripts.forEach(function(oldScript) {
-                                    var newScript = document.createElement('script');
-                                    if (oldScript.src) {
-                                        newScript.src = oldScript.src;
-                                    } else {
-                                        newScript.textContent = oldScript.textContent;
+                                    if (oldScript.src || (oldScript.textContent && oldScript.textContent.trim().length > 0)) {
+                                        var newScript = document.createElement('script');
+                                        if (oldScript.src) {
+                                            newScript.src = oldScript.src;
+                                        } else {
+                                            newScript.textContent = oldScript.textContent;
+                                        }
+                                        document.body.appendChild(newScript);
                                     }
-                                    document.body.appendChild(newScript);
                                 });
                                 // Restore form data from localStorage after script execution
                                 // Wait a tick to ensure DOM is ready and script is loaded
@@ -494,13 +498,15 @@
                                                 tabContent.innerHTML = form.outerHTML;
                                                 var scripts = doc.querySelectorAll('script');
                                                 scripts.forEach(function(oldScript) {
-                                                    var newScript = document.createElement('script');
-                                                    if (oldScript.src) {
-                                                        newScript.src = oldScript.src;
-                                                    } else {
-                                                        newScript.textContent = oldScript.textContent;
+                                                    if (oldScript.src || (oldScript.textContent && oldScript.textContent.trim().length > 0)) {
+                                                        var newScript = document.createElement('script');
+                                                        if (oldScript.src) {
+                                                            newScript.src = oldScript.src;
+                                                        } else {
+                                                            newScript.textContent = oldScript.textContent;
+                                                        }
+                                                        document.body.appendChild(newScript);
                                                     }
-                                                    document.body.appendChild(newScript);
                                                 });
                                             } else {
                                                 tabContent.innerHTML = html;
@@ -523,13 +529,15 @@
                                 // Execute inline scripts manually (innerHTML doesn't execute them)
                                 var scripts = doc.querySelectorAll('script');
                                 scripts.forEach(function(oldScript) {
-                                    var newScript = document.createElement('script');
-                                    if (oldScript.src) {
-                                        newScript.src = oldScript.src;
-                                    } else {
-                                        newScript.textContent = oldScript.textContent;
+                                    if (oldScript.src || (oldScript.textContent && oldScript.textContent.trim().length > 0)) {
+                                        var newScript = document.createElement('script');
+                                        if (oldScript.src) {
+                                            newScript.src = oldScript.src;
+                                        } else {
+                                            newScript.textContent = oldScript.textContent;
+                                        }
+                                        document.body.appendChild(newScript);
                                     }
-                                    document.body.appendChild(newScript);
                                 });
                             } else {
                                 // Fallback: show the full HTML response so errors are visible
