@@ -9,4 +9,5 @@ urlpatterns = [
     path('edit-aircraft/<int:pk>/', views.edit_aircraft, name='edit_aircraft'),
     path('edit-airport/<int:pk>/', views.edit_airport, name='edit_airport'),
     path('api/airport-lookup/', airport_lookup, name='airport_lookup'),
+    path('mode-tab/', views.mode_tab, name='mode_tab'),
 ]

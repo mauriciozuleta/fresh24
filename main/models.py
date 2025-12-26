@@ -38,6 +38,17 @@ class Aircraft(models.Model):
 		return f"{self.short_name} ({self.model})"
 
 
+class CharterProvider(models.Model):
+	name = models.CharField(max_length=100)
+	country = models.CharField(max_length=100)
+	main_base = models.CharField(max_length=100)
+	aircraft = models.ManyToManyField(Aircraft, related_name='charter_providers')
+	block_hour_cost = models.DecimalField(max_digits=12, decimal_places=2)
+
+	def __str__(self):
+		return self.name
+
+
 
 class Airport(models.Model):
 	iata_code = models.CharField(max_length=3, unique=True)

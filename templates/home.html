@@ -340,62 +340,34 @@
                             setActiveTab('Add Aircraft');
                         });
                     }
-                    // Re-apply single-selection logic after tab content is loaded
+                    // ...existing code for Aircraft tab...
                     setTimeout(function() {
-                        var checkboxes = tabContent.querySelectorAll('.aircraft-select-checkbox');
-                        var editBtn = tabContent.querySelector('#edit-aircraft-btn');
-                        function updateEditBtn() {
-                            if (editBtn) {
-                                editBtn.disabled = !Array.from(checkboxes).some(cb => cb.checked);
-                            }
-                        }
-                        checkboxes.forEach(function(checkbox) {
-                            checkbox.addEventListener('change', function() {
-                                if (this.checked) {
-                                    checkboxes.forEach(function(cb) {
-                                        if (cb !== this) cb.checked = false;
-                                    }.bind(this));
-                                }
-                                updateEditBtn();
-                            });
-                        });
-                        updateEditBtn();
-                        if (editBtn) {
-                            editBtn.addEventListener('click', function() {
-                                var selected = Array.from(checkboxes).find(cb => cb.checked);
-                                if (selected) {
-                                    // Get aircraft name for tab label
-                                    var row = selected.closest('tr');
-                                    var name = row ? row.querySelectorAll('td')[2].textContent : 'Aircraft';
-                                    var tabLabel = 'Edit ' + name;
-                                    createTab(tabLabel, { nonClosable: false });
-                                    setActiveTab(tabLabel);
-                                    fetch('/edit-aircraft/' + selected.value + '/')
-                                        .then(function(response) { return response.text(); })
-                                        .then(function(html) {
-                                            var parser = new DOMParser();
-                                            var doc = parser.parseFromString(html, 'text/html');
-                                            var form = doc.querySelector('.tab-content-inner');
-                                            if (form) {
-                                                tabContent.innerHTML = form.outerHTML;
-                                                var scripts = doc.querySelectorAll('script');
-                                                scripts.forEach(function(oldScript) {
-                                                    var newScript = document.createElement('script');
-                                                    if (oldScript.src) {
-                                                        newScript.src = oldScript.src;
-                                                    } else {
-                                                        newScript.textContent = oldScript.textContent;
-                                                    }
-                                                    document.body.appendChild(newScript);
-                                                });
-                                            } else {
-                                                tabContent.innerHTML = html;
-                                            }
-                                        });
-                                }
-                            });
-                        }
+                        // ...existing code for single-selection and edit...
                     }, 50);
+                } else if (tabName === 'Mode') {
+                    fetch('/mode-tab/')
+                        .then(function(response) { return response.text(); })
+                        .then(function(html) {
+                            var parser = new DOMParser();
+                            var doc = parser.parseFromString(html, 'text/html');
+                            var content = doc.querySelector('.tab-content-inner');
+                            if (content) {
+                                tabContent.innerHTML = content.outerHTML;
+                                // Execute inline scripts manually
+                                var scripts = doc.querySelectorAll('script');
+                                scripts.forEach(function(oldScript) {
+                                    var newScript = document.createElement('script');
+                                    if (oldScript.src) {
+                                        newScript.src = oldScript.src;
+                                    } else {
+                                        newScript.textContent = oldScript.textContent;
+                                    }
+                                    document.body.appendChild(newScript);
+                                });
+                            } else {
+                                tabContent.innerHTML = html;
+                            }
+                        });
                 } else if (tabName === 'Add Aircraft') {
                     // Fetch the rendered form from the backend
                     fetch('/add-aircraft/')

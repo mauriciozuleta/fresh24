@@ -1,3 +1,19 @@
+from .models import CharterProvider
+from django import forms
+from .models import CharterProvider, Aircraft, Airport
+
+class CharterProviderForm(forms.ModelForm):
+    class Meta:
+        model = CharterProvider
+        fields = ['name', 'country', 'main_base', 'aircraft', 'block_hour_cost']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'aircraft-form-control'}),
+            'country': forms.TextInput(attrs={'class': 'aircraft-form-control'}),
+            'main_base': forms.TextInput(attrs={'class': 'aircraft-form-control'}),
+            'aircraft': forms.SelectMultiple(attrs={'class': 'aircraft-form-control'}),
+            'block_hour_cost': forms.NumberInput(attrs={'class': 'aircraft-form-control', 'step': '0.01'}),
+        }
+from django import forms
 from django import forms
 from .models import Aircraft, Airport
 

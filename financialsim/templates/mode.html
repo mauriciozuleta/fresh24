@@ -1,0 +1,49 @@
+<div class="tab-content-inner mode-tab">
+  <h2>Mode Settings</h2>
+  <div class="mode-section">
+    <h3>Charter</h3>
+    <div class="charter-subsection">
+      <h4>Available Charter Providers</h4>
+      <div class="charter-provider-list">
+        <!-- Placeholder for provider list -->
+        <p><em>No providers yet. (Placeholder)</em></p>
+      </div>
+    </div>
+    <div class="charter-subsection">
+      <button type="button" class="aircraft-btn" onclick="toggleCharterProviderForm()">Add Charter Provider</button>
+      <form id="charter-provider-form" style="display:none; margin-top:16px;">
+        <div class="form-row">
+          <label>Name</label>
+          <input name="name" />
+        </div>
+        <div class="form-row">
+          <label>Country</label>
+          <input name="country" />
+        </div>
+        <div class="form-row">
+          <label>Main base</label>
+          <input name="mainBase" />
+        </div>
+        <div class="form-row">
+          <label>Aircraft</label>
+          <input name="aircraft" />
+        </div>
+        <div class="form-row">
+          <label>Block hour cost</label>
+          <input name="blockHourCost" type="number" step="0.01" />
+        </div>
+        <button type="submit" class="aircraft-btn">Save Provider</button>
+      </form>
+    </div>
+  </div>
+</div>
+<script>
+function toggleCharterProviderForm() {
+  var form = document.getElementById('charter-provider-form');
+  if (form.style.display === 'none') {
+    form.style.display = 'block';
+  } else {
+    form.style.display = 'none';
+  }
+}
+</script>

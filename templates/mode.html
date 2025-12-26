@@ -1,0 +1,48 @@
+{% load crispy_forms_tags %}
+<div class="tab-content-inner mode-tab">
+  <h2>Mode Settings</h2>
+  <div class="mode-section">
+    <h3>Charter</h3>
+    <div class="charter-subsection">
+      <h4>Available Charter Providers</h4>
+      <div class="charter-provider-list">
+        {% if providers %}
+          <ul>
+            {% for provider in providers %}
+              <li>{{ provider.name }} ({{ provider.country }}) - Main base: {{ provider.main_base }} | Block hour cost: {{ provider.block_hour_cost }}</li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p><em>No providers yet.</em></p>
+        {% endif %}
+      </div>
+    </div>
+    <div class="charter-subsection">
+      <button type="button" class="aircraft-btn" onclick="toggleCharterProviderForm()">Add Charter Provider</button>
+      <form id="charter-provider-form" method="post" style="display:none; margin-top:16px;">
+        {% csrf_token %}
+        <div class="aircraft-form-section">
+          <div class="aircraft-section-title">Add Charter Provider</div>
+          <div class="aircraft-form-row three-col unified-spacing">
+            {{ form.name|as_crispy_field }}
+            {{ form.country|as_crispy_field }}
+            {{ form.main_base|as_crispy_field }}
+            {{ form.aircraft|as_crispy_field }}
+            {{ form.block_hour_cost|as_crispy_field }}
+          </div>
+        </div>
+        <button type="submit" class="aircraft-btn">Save Provider</button>
+      </form>
+    </div>
+  </div>
+</div>
+<script>
+function toggleCharterProviderForm() {
+  var form = document.getElementById('charter-provider-form');
+  if (form.style.display === 'none') {
+    form.style.display = 'block';
+  } else {
+    form.style.display = 'none';
+  }
+}
+</script>

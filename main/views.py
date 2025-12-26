@@ -1,3 +1,9 @@
+def mode_tab(request):
+		from .forms import CharterProviderForm
+		from .models import CharterProvider
+		providers = CharterProvider.objects.all().order_by('name')
+		form = CharterProviderForm()
+		return render(request, 'mode.html', {'form': form, 'providers': providers})
 def edit_aircraft(request, pk):
 	aircraft = Aircraft.objects.get(pk=pk)
 	if request.method == 'POST':
