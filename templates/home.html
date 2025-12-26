@@ -625,7 +625,7 @@
         var recordsContainer = document.getElementById('route-records-container');
         if (!departureSelect || !arrivalSelect || !loadBtn || !recordsContainer) return;
 
-        function populateDropdown(select, airports, excludeCode) {
+        function populateDropdown(select, airports, excludeCode, selectedValue) {
             var which = select.id.indexOf('departure') !== -1 ? 'departure' : 'arrival';
             select.innerHTML = '<option value="">Select ' + which + ' airport</option>';
             airports.forEach(function(airport) {
@@ -633,17 +633,32 @@
                     var opt = document.createElement('option');
                     opt.value = airport.code;
                     opt.textContent = airport.code + ' - ' + airport.name;
+                    if (selectedValue && airport.code === selectedValue) opt.selected = true;
                     select.appendChild(opt);
                 }
             });
         }
 
+        // Restore last state if available
+        var lastState = null;
+        try {
+            lastState = JSON.parse(localStorage.getItem('routes_tab_state') || '{}');
+        } catch (e) { lastState = {}; }
+
         fetch('/api/airports/')
             .then(function(response) { return response.json(); })
             .then(function(data) {
                 var airports = data.airports || [];
-                populateDropdown(departureSelect, airports);
-
+                var lastDep = lastState.departure || '';
+                var lastArr = lastState.arrival || '';
+                populateDropdown(departureSelect, airports, null, lastDep);
+                if (lastDep) {
+                    arrivalSelect.disabled = false;
+                    populateDropdown(arrivalSelect, airports, lastDep, lastArr);
+                } else {
+                    arrivalSelect.disabled = true;
+                    populateDropdown(arrivalSelect, airports, null, '');
+                }
                 departureSelect.addEventListener('change', function() {
                     var selectedDeparture = departureSelect.value;
                     if (selectedDeparture) {
@@ -653,11 +668,31 @@
                         arrivalSelect.disabled = true;
                         populateDropdown(arrivalSelect, airports);
                     }
+                    // Clear arrival and table on departure change
+                    arrivalSelect.value = '';
+                    recordsContainer.innerHTML = '';
+                    saveState();
                 });
+                arrivalSelect.addEventListener('change', function() {
+                    saveState();
+                });
+                // Restore table if present
+                if (lastState.tableHtml && lastDep && lastArr) {
+                    recordsContainer.innerHTML = lastState.tableHtml;
+                }
             })
             .catch(function(err) {
                 console.error('Failed to load airports for Routes tab', err);
             });
+
+        function saveState(tableHtml) {
+            var state = {
+                departure: departureSelect.value,
+                arrival: arrivalSelect.value,
+                tableHtml: tableHtml !== undefined ? tableHtml : (recordsContainer ? recordsContainer.innerHTML : '')
+            };
+            localStorage.setItem('routes_tab_state', JSON.stringify(state));
+        }
 
         loadBtn.addEventListener('click', function() {
             var dep = departureSelect.value;
@@ -665,6 +700,7 @@
             recordsContainer.innerHTML = '';
             if (!dep || !arr) {
                 recordsContainer.innerHTML = '<div style="color:#f44336;">Please select both departure and arrival airports.</div>';
+                saveState();
                 return;
             }
             recordsContainer.innerHTML = '<div>Loading route records...</div>';
@@ -719,12 +755,15 @@
                     table.appendChild(tbody);
                     recordsContainer.innerHTML = '';
                     recordsContainer.appendChild(table);
+                    saveState(recordsContainer.innerHTML);
                 } else {
                     recordsContainer.innerHTML = '<div>No route records found for this pair.</div>';
+                    saveState();
                 }
             })
             .catch(function(err) {
                 recordsContainer.innerHTML = '<div style="color:#f44336;">Failed to load route records.</div>';
+                saveState();
                 console.error('Failed to load route records', err);
             });
         });

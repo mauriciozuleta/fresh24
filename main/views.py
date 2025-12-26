@@ -1,4 +1,5 @@
 from .models import Route
+from operational_functions.routes_utils import calculate_route_on_the_fly
 from django.views.decorators.csrf import csrf_exempt
 @csrf_exempt
 def route_records_api(request):
@@ -16,6 +17,9 @@ def route_records_api(request):
 		leg = f"{departure} - {arrival}"
 		routes = Route.objects.filter(leg=leg)
 		results = []
+		if not routes.exists():
+			calculate_route_on_the_fly(departure, arrival)
+			routes = Route.objects.filter(leg=leg)
 		for r in routes:
 			results.append({
 				'id': r.id,
