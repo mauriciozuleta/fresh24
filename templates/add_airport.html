@@ -28,7 +28,7 @@
         margin-bottom: 1rem !important;
       }
     </style>
-    <form method="post" action="/add-airport/" id="airport-form" class="fixed-scroll-form">
+    <form method="post" action="{% if edit_mode %}/edit-airport/{{ airport_id }}/{% else %}/add-airport/{% endif %}" id="airport-form" class="fixed-scroll-form">
       {% csrf_token %}
       <div class="aircraft-form-section">
         <div class="aircraft-section-title">Basic Information</div>
@@ -60,7 +60,7 @@
       </div>
       <input type="hidden" id="id_latitude" name="latitude">
       <input type="hidden" id="id_longitude" name="longitude">
-      <button type="submit" class="aircraft-btn">Add Airport</button>
+      <button type="submit" class="aircraft-btn">{% if edit_mode %}Save Changes{% else %}Add Airport{% endif %}</button>
     </form>
   </div>
 </div>

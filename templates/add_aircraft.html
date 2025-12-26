@@ -180,7 +180,7 @@ function restoreAircraftForm() {
     <p>Enter values in either unit (kg/lbs or gal/lbs); the corresponding field will be calculated automatically.</p>
   </div>
   <div class="aircraft-form-container">
-    <form method="post" action="/add-aircraft/">
+    <form method="post" action="{% if edit_mode %}/edit-aircraft/{{ aircraft_id }}/{% else %}/add-aircraft/{% endif %}">
       {% csrf_token %}
       <!-- Render Django form fields with custom layout -->
       <div class="aircraft-form-section">
@@ -226,7 +226,7 @@ function restoreAircraftForm() {
           {{ form.cruise_speed|as_crispy_field }}
         </div>
       </div>
-      <button type="submit" class="aircraft-btn">Add Aircraft</button>
+      <button type="submit" class="aircraft-btn">{% if edit_mode %}Save Changes{% else %}Add Aircraft{% endif %}</button>
     </form>
   </div>
 </div>

@@ -1,3 +1,24 @@
+def edit_aircraft(request, pk):
+	aircraft = Aircraft.objects.get(pk=pk)
+	if request.method == 'POST':
+		form = AircraftForm(request.POST, instance=aircraft)
+		if form.is_valid():
+			form.save()
+			return redirect('home')
+	else:
+		form = AircraftForm(instance=aircraft)
+	return render(request, 'add_aircraft.html', {'form': form, 'edit_mode': True, 'aircraft_id': pk})
+
+def edit_airport(request, pk):
+	airport = Airport.objects.get(pk=pk)
+	if request.method == 'POST':
+		form = AirportForm(request.POST, instance=airport)
+		if form.is_valid():
+			form.save()
+			return redirect('home')
+	else:
+		form = AirportForm(instance=airport)
+	return render(request, 'add_airport.html', {'form': form, 'edit_mode': True, 'airport_id': pk})
 
 from django.shortcuts import render, redirect
 from .forms import AircraftForm, AirportForm

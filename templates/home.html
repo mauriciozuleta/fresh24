@@ -360,6 +360,41 @@
                             });
                         });
                         updateEditBtn();
+                        if (editBtn) {
+                            editBtn.addEventListener('click', function() {
+                                var selected = Array.from(checkboxes).find(cb => cb.checked);
+                                if (selected) {
+                                    // Get aircraft name for tab label
+                                    var row = selected.closest('tr');
+                                    var name = row ? row.querySelectorAll('td')[2].textContent : 'Aircraft';
+                                    var tabLabel = 'Edit ' + name;
+                                    createTab(tabLabel, { nonClosable: false });
+                                    setActiveTab(tabLabel);
+                                    fetch('/edit-aircraft/' + selected.value + '/')
+                                        .then(function(response) { return response.text(); })
+                                        .then(function(html) {
+                                            var parser = new DOMParser();
+                                            var doc = parser.parseFromString(html, 'text/html');
+                                            var form = doc.querySelector('.tab-content-inner');
+                                            if (form) {
+                                                tabContent.innerHTML = form.outerHTML;
+                                                var scripts = doc.querySelectorAll('script');
+                                                scripts.forEach(function(oldScript) {
+                                                    var newScript = document.createElement('script');
+                                                    if (oldScript.src) {
+                                                        newScript.src = oldScript.src;
+                                                    } else {
+                                                        newScript.textContent = oldScript.textContent;
+                                                    }
+                                                    document.body.appendChild(newScript);
+                                                });
+                                            } else {
+                                                tabContent.innerHTML = html;
+                                            }
+                                        });
+                                }
+                            });
+                        }
                     }, 50);
                 } else if (tabName === 'Add Aircraft') {
                     // Fetch the rendered form from the backend
@@ -430,6 +465,41 @@
                             });
                         });
                         updateEditBtn();
+                        if (editBtn) {
+                            editBtn.addEventListener('click', function() {
+                                var selected = Array.from(checkboxes).find(cb => cb.checked);
+                                if (selected) {
+                                    // Get airport code for tab label
+                                    var row = selected.closest('tr');
+                                    var code = row ? row.querySelectorAll('td')[4].textContent : 'Airport';
+                                    var tabLabel = 'Edit ' + code;
+                                    createTab(tabLabel, { nonClosable: false });
+                                    setActiveTab(tabLabel);
+                                    fetch('/edit-airport/' + selected.value + '/')
+                                        .then(function(response) { return response.text(); })
+                                        .then(function(html) {
+                                            var parser = new DOMParser();
+                                            var doc = parser.parseFromString(html, 'text/html');
+                                            var form = doc.querySelector('.tab-content-inner');
+                                            if (form) {
+                                                tabContent.innerHTML = form.outerHTML;
+                                                var scripts = doc.querySelectorAll('script');
+                                                scripts.forEach(function(oldScript) {
+                                                    var newScript = document.createElement('script');
+                                                    if (oldScript.src) {
+                                                        newScript.src = oldScript.src;
+                                                    } else {
+                                                        newScript.textContent = oldScript.textContent;
+                                                    }
+                                                    document.body.appendChild(newScript);
+                                                });
+                                            } else {
+                                                tabContent.innerHTML = html;
+                                            }
+                                        });
+                                }
+                            });
+                        }
                     }, 50);
                 } else if (tabName === 'Add Airport') {
                     // Fetch the rendered form from the backend
