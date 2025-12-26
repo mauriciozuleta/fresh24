@@ -1,7 +1,44 @@
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseNotAllowed
+from django.views.decorators.csrf import csrf_exempt
+from django.shortcuts import render, redirect
+from .forms import AircraftForm, AirportForm, CharterProviderForm
+from .models import Aircraft, Airport, CharterProvider
+
+# --- DELETE ENDPOINTS ---
+@csrf_exempt
+def delete_charter_provider(request, pk):
+	if request.method == 'POST':
+		try:
+			provider = CharterProvider.objects.get(pk=pk)
+			provider.delete()
+			return JsonResponse({'success': True})
+		except CharterProvider.DoesNotExist:
+			return JsonResponse({'success': False, 'error': 'Provider not found'}, status=404)
+	return HttpResponseNotAllowed(['POST'])
+
+@csrf_exempt
+def delete_airport(request, pk):
+	if request.method == 'POST':
+		try:
+			airport = Airport.objects.get(pk=pk)
+			airport.delete()
+			return JsonResponse({'success': True})
+		except Airport.DoesNotExist:
+			return JsonResponse({'success': False, 'error': 'Airport not found'}, status=404)
+	return HttpResponseNotAllowed(['POST'])
+
+@csrf_exempt
+def delete_aircraft(request, pk):
+	if request.method == 'POST':
+		try:
+			aircraft = Aircraft.objects.get(pk=pk)
+			aircraft.delete()
+			return JsonResponse({'success': True})
+		except Aircraft.DoesNotExist:
+			return JsonResponse({'success': False, 'error': 'Aircraft not found'}, status=404)
+	return HttpResponseNotAllowed(['POST'])
+
 def mode_tab(request):
-	from .forms import CharterProviderForm
-	from .models import CharterProvider
 	providers = CharterProvider.objects.all().order_by('name')
 	if request.method == 'POST':
 		form = CharterProviderForm(request.POST)
@@ -15,6 +52,7 @@ def mode_tab(request):
 	else:
 		form = CharterProviderForm()
 	return render(request, 'mode.html', {'form': form, 'providers': providers})
+
 def edit_aircraft(request, pk):
 	aircraft = Aircraft.objects.get(pk=pk)
 	if request.method == 'POST':
@@ -37,13 +75,7 @@ def edit_airport(request, pk):
 		form = AirportForm(instance=airport)
 	return render(request, 'add_airport.html', {'form': form, 'edit_mode': True, 'airport_id': pk})
 
-from django.shortcuts import render, redirect
-from .forms import AircraftForm, AirportForm
-from .models import Aircraft, Airport
-
-
 def home(request):
-	from .models import Airport, Aircraft
 	airports = Airport.objects.all().order_by('country', 'city', 'name')
 	aircraft_list = Aircraft.objects.all().order_by('manufacturer', 'model', 'short_name')
 	return render(request, 'home.html', {'airports': airports, 'aircraft_list': aircraft_list})
@@ -67,7 +99,6 @@ def add_airport(request):
 		if form.is_valid():
 			form.save()
 			if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-				from django.http import JsonResponse
 				return JsonResponse({'success': True})
 			return redirect('home')
 	else:

@@ -6,19 +6,41 @@
     <div class="charter-subsection">
       <h4>Available Charter Providers</h4>
       <div class="charter-provider-list">
-        {% if providers %}
-          <ul>
+        <h2 class="aircraft-section-title">Available Charter Providers</h2>
+        <table style="width:100%;border-collapse:collapse;background:#23272e;color:#fff;">
+          <thead>
+            <tr style="background:#26304a;">
+              <th style="padding:8px 12px;width:40px;"></th>
+              <th style="padding:8px 12px;text-align:left;">Name</th>
+              <th style="padding:8px 12px;text-align:left;">Country</th>
+              <th style="padding:8px 12px;text-align:left;">Main Base</th>
+              <th style="padding:8px 12px;text-align:left;">Aircraft</th>
+              <th style="padding:8px 12px;text-align:left;">Block Hour Cost</th>
+            </tr>
+          </thead>
+          <tbody>
             {% for provider in providers %}
-              <li>{{ provider.name }} ({{ provider.country }}) - Main base: {{ provider.main_base }} | Block hour cost: {{ provider.block_hour_cost }}</li>
+            <tr>
+              <td style="padding:8px 12px;text-align:center;"><input type="checkbox" class="charter-provider-select-checkbox" value="{{ provider.id }}" /></td>
+              <td style="padding:8px 12px;">{{ provider.name }}</td>
+              <td style="padding:8px 12px;">{{ provider.country }}</td>
+              <td style="padding:8px 12px;">{{ provider.main_base }}</td>
+              <td style="padding:8px 12px;">{{ provider.aircraft }}</td>
+              <td style="padding:8px 12px;">{{ provider.block_hour_cost }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6" style="padding:8px 12px;text-align:center;"><em>No providers yet.</em></td></tr>
             {% endfor %}
-          </ul>
-        {% else %}
-          <p><em>No providers yet.</em></p>
-        {% endif %}
+          </tbody>
+        </table>
+        <div style="display:flex;gap:0.75rem;margin-top:1rem;">
+          <button id="add-charter-provider-btn" class="primary-button" type="button" onclick="toggleCharterProviderForm()">Add Charter Provider</button>
+          <button id="edit-charter-provider-btn" class="primary-button" disabled>Edit Selected</button>
+          <button id="delete-charter-provider-btn" class="danger-button" disabled>Delete Selected</button>
+        </div>
       </div>
     </div>
     <div class="charter-subsection">
-      <button type="button" class="aircraft-btn" onclick="toggleCharterProviderForm()">Add Charter Provider</button>
       <form id="charter-provider-form" method="post" style="display:none; margin-top:16px;">
         {% csrf_token %}
         <div class="aircraft-form-section">
@@ -37,21 +59,72 @@
   </div>
 </div>
 <script>
-(function() {
+// Charter Provider single-selection logic and Edit Selected button
+document.addEventListener('DOMContentLoaded', function() {
+  const checkboxes = document.querySelectorAll('.charter-provider-select-checkbox');
+  const editBtn = document.getElementById('edit-charter-provider-btn');
+  const deleteBtn = document.getElementById('delete-charter-provider-btn');
+  function updateEditBtn() {
+    const anyChecked = Array.from(checkboxes).some(cb => cb.checked);
+    if (editBtn) editBtn.disabled = !anyChecked;
+    if (deleteBtn) deleteBtn.disabled = !anyChecked;
+  }
+  checkboxes.forEach(checkbox => {
+    checkbox.addEventListener('change', function() {
+      if (this.checked) {
+        checkboxes.forEach(cb => {
+          if (cb !== this) cb.checked = false;
+        });
+      }
+      updateEditBtn();
+    });
+  });
+  updateEditBtn();
+  if (editBtn) {
+    editBtn.addEventListener('click', function() {
+      const selected = Array.from(checkboxes).find(cb => cb.checked);
+      if (selected) {
+        // TODO: Open edit provider form (implement as needed)
+        alert('Edit provider ID: ' + selected.value);
+      }
+    });
+  }
+
+  if (deleteBtn) {
+    deleteBtn.addEventListener('click', function() {
+      const selected = Array.from(checkboxes).find(cb => cb.checked);
+      if (selected) {
+        if (confirm('Are you sure you want to delete this Charter Provider? This action cannot be undone.')) {
+          fetch(`/delete-charter-provider/${selected.value}/`, {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              location.reload();
+            } else {
+              alert('Error deleting provider: ' + (data.error || 'Unknown error'));
+            }
+          })
+          .catch(() => alert('Error deleting provider.'));
+        }
+      }
+    });
+  }
+});
+
 function toggleCharterProviderForm() {
   var form = document.getElementById('charter-provider-form');
   if (form.style.display === 'none') {
     form.style.display = 'block';
-    // Set up the event listener when form is shown
     setTimeout(function() {
       var mainBaseSelect = document.getElementById('id_main_base');
       if (mainBaseSelect && !mainBaseSelect.dataset.listenerAdded) {
         mainBaseSelect.dataset.listenerAdded = 'true';
         mainBaseSelect.addEventListener('change', function() {
           if (mainBaseSelect.value === 'add') {
-            // Open the add_airport form in a new tab
             window.dispatchEvent(new CustomEvent('openTab', { detail: { tab: 'add_airport' } }));
-            // Reset selection
             mainBaseSelect.value = '';
           }
         });
@@ -61,10 +134,9 @@ function toggleCharterProviderForm() {
     form.style.display = 'none';
   }
 }
-// Make toggleCharterProviderForm global
 window.toggleCharterProviderForm = toggleCharterProviderForm;
 
-// AJAX submit for Charter Provider form - runs immediately when script loads
+// AJAX submit for Charter Provider form
 var providerForm = document.getElementById('charter-provider-form');
 if (providerForm && !providerForm.dataset.handlerAttached) {
   providerForm.dataset.handlerAttached = 'true';
@@ -79,7 +151,6 @@ if (providerForm && !providerForm.dataset.handlerAttached) {
     .then(function(resp) { return resp.json(); })
     .then(function(data) {
       if (data.success) {
-        // Reload just the mode tab content via AJAX
         fetch('/mode-tab/')
           .then(function(response) { return response.text(); })
           .then(function(html) {
@@ -103,5 +174,4 @@ if (providerForm && !providerForm.dataset.handlerAttached) {
     });
   });
 }
-})();
 </script>
