@@ -65,7 +65,9 @@ class AircraftForm(forms.ModelForm):
             'min_fuel_landed_gal', 'min_fuel_landed_lbs',
             'min_fuel_alternate_gal', 'min_fuel_alternate_lbs',
             'cargo_positions_main_deck', 'cargo_positions_lower_deck',
-            'cruise_speed'
+            'cruise_speed',
+            'max_range_at_max_payload',
+            'max_range_with_max_fuel'
         ]
         widgets = {field: forms.TextInput(attrs={'class': 'aircraft-form-control'}) for field in fields}
 

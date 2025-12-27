@@ -68,6 +68,8 @@ class Aircraft(models.Model):
 	cargo_positions_main_deck = models.IntegerField()
 	cargo_positions_lower_deck = models.IntegerField()
 	cruise_speed = models.FloatField()
+	max_range_at_max_payload = models.FloatField(blank=True, null=True, verbose_name="Max Range at Max Payload (nm)")
+	max_range_with_max_fuel = models.FloatField(blank=True, null=True, verbose_name="Max Range with Max Fuel (nm)")
 
 	def __str__(self):
 		return f"{self.short_name} ({self.model})"

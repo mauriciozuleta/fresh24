@@ -29,7 +29,7 @@ function formatNumber(num) {
 }
 
 function persistAircraftForm() {
-  const form = document.querySelector('form[action="/add-aircraft/"]');
+  const form = document.getElementById('aircraft-form');
   if (!form) return;
   const data = {};
   Array.from(form.elements).forEach(function(el) {
@@ -40,7 +40,7 @@ function persistAircraftForm() {
   localStorage.setItem('add_aircraft_form', JSON.stringify(data));
 }
 function restoreAircraftForm() {
-  const form = document.querySelector('form[action="/add-aircraft/"]');
+  const form = document.getElementById('aircraft-form');
   if (!form) return;
   const data = JSON.parse(localStorage.getItem('add_aircraft_form') || '{}');
   Array.from(form.elements).forEach(function(el) {
@@ -155,7 +155,7 @@ function restoreAircraftForm() {
   });
 
   // Persist all text fields
-  const form = document.querySelector('form[action="/add-aircraft/"]');
+  const form = document.getElementById('aircraft-form');
   if (form) {
     Array.from(form.elements).forEach(function(el) {
       if (el.type === 'text' && !numericFields.includes(el.id)) {
@@ -165,6 +165,57 @@ function restoreAircraftForm() {
     });
     form.addEventListener('submit', function() {
       localStorage.removeItem('add_aircraft_form');
+    });
+
+    // --- Auto-calculate Max Range at Max Payload ---
+    function val(id) {
+      const el = document.getElementById(id);
+      return el ? parseFloat(el.value.replace(/,/g, '')) || 0 : 0;
+    }
+    function calcMaxRangeAtMaxPayload() {
+      const mtow = val('id_mtow_lbs');
+      const ew = val('id_empty_weight_lbs');
+      const mp = val('id_max_payload_lbs');
+      const minLanded = val('id_min_fuel_landed_lbs');
+      const minAlt = val('id_min_fuel_alternate_lbs');
+      const fuelBurn = val('id_fuel_burn_lbs');
+      const cruise = val('id_cruise_speed');
+      if (fuelBurn > 0 && cruise > 0) {
+        const numer = mtow - (ew + mp + minLanded + minAlt);
+        const hours = numer / fuelBurn;
+        const range = hours * cruise;
+        const out = document.getElementById('id_max_range_at_max_payload');
+        if (out) out.value = isFinite(range) && range > 0 ? Math.round(range) : '';
+      }
+    }
+    function calcMaxRangeWithMaxFuel() {
+      const fuelCap = val('id_fuel_capacity_lbs');
+      const fuelBurn = val('id_fuel_burn_lbs');
+      const cruise = val('id_cruise_speed');
+      if (fuelBurn > 0 && cruise > 0) {
+        const hours = fuelCap / fuelBurn;
+        const range = hours * cruise;
+        const out = document.getElementById('id_max_range_with_max_fuel');
+        if (out) out.value = isFinite(range) && range > 0 ? Math.round(range) : '';
+      }
+    }
+    [
+      'id_mtow_lbs','id_empty_weight_lbs','id_max_payload_lbs','id_min_fuel_landed_lbs','id_min_fuel_alternate_lbs','id_fuel_burn_lbs','id_cruise_speed'
+    ].forEach(function(id) {
+      const el = document.getElementById(id);
+      if (el) {
+        el.addEventListener('input', calcMaxRangeAtMaxPayload);
+        el.addEventListener('blur', calcMaxRangeAtMaxPayload);
+      }
+    });
+    [
+      'id_fuel_capacity_lbs','id_fuel_burn_lbs','id_cruise_speed'
+    ].forEach(function(id) {
+      const el = document.getElementById(id);
+      if (el) {
+        el.addEventListener('input', calcMaxRangeWithMaxFuel);
+        el.addEventListener('blur', calcMaxRangeWithMaxFuel);
+      }
     });
   }
 })();
@@ -224,6 +275,8 @@ function restoreAircraftForm() {
           {{ form.cargo_positions_main_deck|as_crispy_field }}
           {{ form.cargo_positions_lower_deck|as_crispy_field }}
           {{ form.cruise_speed|as_crispy_field }}
+          {{ form.max_range_at_max_payload|as_crispy_field }}
+          {{ form.max_range_with_max_fuel|as_crispy_field }}
         </div>
       </div>
       <button type="submit" class="aircraft-btn">{% if edit_mode %}Save Changes{% else %}Add Aircraft{% endif %}</button>

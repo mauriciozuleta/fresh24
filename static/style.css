@@ -1,21 +1,18 @@
-    /* Force vertical stacking for form groups in aircraft form */
-    .form-group, .aircraft-form-group {
+    /* Three-column layout for aircraft form sections */
+    .aircraft-form-row.three-col {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        gap: 1.5rem !important;
+    }
+    .aircraft-form-row.three-col .form-group {
+        flex: 1 1 140px !important;
+        min-width: 140px !important;
+        max-width: 200px !important;
+        margin-right: 18px !important;
+        margin-bottom: 0.5rem !important;
         display: flex !important;
         flex-direction: column !important;
         align-items: stretch !important;
-    }
-    /* Three-column layout for aircraft form sections */
-    .aircraft-form-row.three-col {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 1.5rem;
-    }
-    .aircraft-form-row.three-col .form-group {
-        flex: 1 1 140px;
-        min-width: 140px;
-        max-width: 200px;
-        margin-right: 18px;
-        margin-bottom: 0.5rem;
     }
     .aircraft-form-row.three-col .form-group:last-child {
         margin-right: 0;
