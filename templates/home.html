@@ -746,9 +746,8 @@
     window.initializeRoutesTab = function() {
         var departureSelect = document.getElementById('departure-select');
         var arrivalSelect = document.getElementById('arrival-select');
-        var loadBtn = document.getElementById('load-route-info-btn');
         var recordsContainer = document.getElementById('route-records-container');
-        if (!departureSelect || !arrivalSelect || !loadBtn || !recordsContainer) return;
+        if (!departureSelect || !arrivalSelect || !recordsContainer) return;
 
         function populateDropdown(select, airports, excludeCode, selectedValue) {
             var which = select.id.indexOf('departure') !== -1 ? 'departure' : 'arrival';
@@ -819,7 +818,7 @@
             localStorage.setItem('routes_tab_state', JSON.stringify(state));
         }
 
-        loadBtn.addEventListener('click', function() {
+        function loadRouteInfo() {
             var dep = departureSelect.value;
             var arr = arrivalSelect.value;
             recordsContainer.innerHTML = '';
@@ -891,6 +890,26 @@
                 saveState();
                 console.error('Failed to load route records', err);
             });
+        }
+
+        departureSelect.addEventListener('change', function() {
+            var selectedDeparture = departureSelect.value;
+            if (selectedDeparture) {
+                arrivalSelect.disabled = false;
+                populateDropdown(arrivalSelect, airports, selectedDeparture);
+            } else {
+                arrivalSelect.disabled = true;
+                populateDropdown(arrivalSelect, airports);
+            }
+            // Clear arrival and table on departure change
+            arrivalSelect.value = '';
+            recordsContainer.innerHTML = '';
+            saveState();
+            loadRouteInfo();
+        });
+        arrivalSelect.addEventListener('change', function() {
+            saveState();
+            loadRouteInfo();
         });
     };
 
