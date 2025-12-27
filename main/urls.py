@@ -8,6 +8,7 @@ urlpatterns = [
     path('add-airport/', views.add_airport, name='add_airport'),
     path('edit-aircraft/<int:pk>/', views.edit_aircraft, name='edit_aircraft'),
     path('edit-airport/<int:pk>/', views.edit_airport, name='edit_airport'),
+    path('edit-charter-provider/<int:pk>/', views.edit_charter_provider, name='edit_charter_provider'),
     path('api/airport-lookup/', airport_lookup, name='airport_lookup'),
     path('api/airports-by-country/', airports_by_country, name='airports_by_country'),
     path('api/airports/', views.airport_list_api, name='airport_list_api'),

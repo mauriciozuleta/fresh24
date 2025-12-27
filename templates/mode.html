@@ -45,8 +45,9 @@
     <div class="charter-subsection">
       <form id="charter-provider-form" method="post" style="display:none; margin-top:16px;">
         {% csrf_token %}
+        <input type="hidden" id="provider-id" name="provider_id" value="">
         <div class="aircraft-form-section">
-          <div class="aircraft-section-title">Add Charter Provider</div>
+          <div class="aircraft-section-title" id="charter-form-title">Add Charter Provider</div>
           <div class="aircraft-form-row three-col unified-spacing">
             {{ form.name|as_crispy_field }}
             {{ form.country|as_crispy_field }}
@@ -62,10 +63,21 @@
   </div>
 </div>
 <script>
-function toggleCharterProviderForm() {
+function toggleCharterProviderForm(isEdit) {
   var form = document.getElementById('charter-provider-form');
-  if (form.style.display === 'none') {
+  var title = document.getElementById('charter-form-title');
+  var providerIdField = document.getElementById('provider-id');
+  
+  if (form.style.display === 'none' || isEdit) {
     form.style.display = 'block';
+    
+    if (!isEdit) {
+      // Reset form for add mode
+      form.reset();
+      if (title) title.textContent = 'Add Charter Provider';
+      if (providerIdField) providerIdField.value = '';
+    }
+    
     setTimeout(function() {
       var mainBaseSelect = document.getElementById('id_main_base');
       if (mainBaseSelect && !mainBaseSelect.dataset.listenerAdded) {
@@ -156,7 +168,55 @@ function initializeModeTabHandlers() {
     editBtn._editHandler = function() {
       const selected = Array.from(checkboxes).find(cb => cb.checked);
       if (selected) {
-        alert('Edit provider ID: ' + selected.value);
+        const providerId = selected.value;
+        
+        // Fetch provider data
+        fetch('/edit-charter-provider/' + providerId + '/', {
+          headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(resp => resp.json())
+        .then(data => {
+          if (data.success) {
+            // Populate form with provider data
+            const form = document.getElementById('charter-provider-form');
+            const title = document.getElementById('charter-form-title');
+            const providerIdField = document.getElementById('provider-id');
+            
+            if (title) title.textContent = 'Edit Charter Provider';
+            if (providerIdField) providerIdField.value = providerId;
+            
+            // Populate form fields
+            if (data.data.name) document.getElementById('id_name').value = data.data.name;
+            if (data.data.country) document.getElementById('id_country').value = data.data.country;
+            if (data.data.block_hour_cost) document.getElementById('id_block_hour_cost').value = data.data.block_hour_cost;
+            if (data.data.type) document.getElementById('id_type').value = data.data.type;
+            
+            // Trigger country change to populate airports, then set main_base
+            if (data.data.country) {
+              const countrySelect = document.getElementById('id_country');
+              const mainBaseSelect = document.getElementById('id_main_base');
+              
+              if (countrySelect && countrySelect._countryChangeHandler) {
+                countrySelect._countryChangeHandler();
+                
+                // Wait for airports to load, then set values
+                setTimeout(function() {
+                  if (data.data.main_base) mainBaseSelect.value = data.data.main_base;
+                  if (data.data.aircraft) document.getElementById('id_aircraft').value = data.data.aircraft;
+                }, 500);
+              }
+            }
+            
+            // Show the form
+            toggleCharterProviderForm(true);
+          } else {
+            alert('Error loading provider: ' + (data.error || 'Unknown error'));
+          }
+        })
+        .catch(err => {
+          console.error('Error:', err);
+          alert('Error loading provider data.');
+        });
       }
     };
     editBtn.addEventListener('click', editBtn._editHandler);
@@ -175,8 +235,12 @@ function initializeModeTabHandlers() {
       if (window.showProgressModal) {
         window.showProgressModal('Provider saved successfully!', 'Please wait while the system updates routes...');
       }
+      
       var formData = new FormData(providerForm);
-      fetch('/mode-tab/', {
+      var providerId = document.getElementById('provider-id').value;
+      var url = providerId ? '/edit-charter-provider/' + providerId + '/' : '/mode-tab/';
+      
+      fetch(url, {
         method: 'POST',
         headers: { 'X-Requested-With': 'XMLHttpRequest' },
         body: formData

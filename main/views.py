@@ -71,6 +71,41 @@ def delete_charter_provider(request, pk):
 			return JsonResponse({'success': False, 'error': 'Provider not found'}, status=404)
 	return HttpResponseNotAllowed(['POST'])
 
+def edit_charter_provider(request, pk):
+	try:
+		provider = CharterProvider.objects.get(pk=pk)
+	except CharterProvider.DoesNotExist:
+		return JsonResponse({'success': False, 'error': 'Provider not found'}, status=404)
+	
+	if request.method == 'POST':
+		form = CharterProviderForm(request.POST, instance=provider)
+		if form.is_valid():
+			form.save()
+			# Update routes after provider changes
+			update_routes_on_change()
+			if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+				return JsonResponse({'success': True})
+		if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+			return JsonResponse({'success': False, 'errors': form.errors}, status=400)
+	else:
+		form = CharterProviderForm(instance=provider)
+	
+	# Return JSON with form data for AJAX requests
+	if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+		form_data = {
+			'id': provider.id,
+			'name': provider.name,
+			'country': provider.country.id if provider.country else None,
+			'main_base': provider.main_base.id if provider.main_base else None,
+			'aircraft': provider.aircraft.id if provider.aircraft else None,
+			'block_hour_cost': str(provider.block_hour_cost),
+			'type': provider.type
+		}
+		return JsonResponse({'success': True, 'data': form_data})
+	
+	providers = CharterProvider.objects.all().order_by('name')
+	return render(request, 'mode.html', {'form': form, 'providers': providers, 'editing': True, 'editing_id': pk})
+
 @csrf_exempt
 def delete_airport(request, pk):
 	if request.method == 'POST':
