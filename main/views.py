@@ -1,5 +1,5 @@
 from .models import Route
-from operational_functions.routes_utils import calculate_route_on_the_fly
+from operational_functions.routes_utils import calculate_route_on_the_fly, generate_routes_list, update_routes_on_change
 from django.views.decorators.csrf import csrf_exempt
 @csrf_exempt
 def route_records_api(request):
@@ -99,6 +99,8 @@ def mode_tab(request):
 		form = CharterProviderForm(request.POST)
 		if form.is_valid():
 			form.save()
+			# Update routes after provider changes
+			update_routes_on_change()
 			if request.headers.get('x-requested-with') == 'XMLHttpRequest':
 				return JsonResponse({'success': True})
 		# If invalid, return errors
@@ -114,7 +116,14 @@ def edit_aircraft(request, pk):
 		form = AircraftForm(request.POST, instance=aircraft)
 		if form.is_valid():
 			form.save()
+			# Update routes after aircraft edits
+			update_routes_on_change()
+			if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+				return JsonResponse({'success': True})
 			return redirect('home')
+		# If invalid, return errors for AJAX
+		if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+			return JsonResponse({'success': False, 'errors': form.errors}, status=400)
 	else:
 		form = AircraftForm(instance=aircraft)
 	return render(request, 'add_aircraft.html', {'form': form, 'edit_mode': True, 'aircraft_id': pk})
@@ -125,12 +134,22 @@ def edit_airport(request, pk):
 		form = AirportForm(request.POST, instance=airport)
 		if form.is_valid():
 			form.save()
+			# Update routes after airport edits
+			update_routes_on_change()
+			if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+				return JsonResponse({'success': True})
 			return redirect('home')
+		# If invalid, return errors for AJAX
+		if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+			return JsonResponse({'success': False, 'errors': form.errors}, status=400)
 	else:
 		form = AirportForm(instance=airport)
 	return render(request, 'add_airport.html', {'form': form, 'edit_mode': True, 'airport_id': pk})
 
 def home(request):
+	# Populate routes if empty on initial page load
+	if not Route.objects.exists():
+		generate_routes_list()
 	airports = Airport.objects.all().order_by('country', 'city', 'name')
 	aircraft_list = Aircraft.objects.all().order_by('manufacturer', 'model', 'short_name')
 	return render(request, 'home.html', {'airports': airports, 'aircraft_list': aircraft_list})
@@ -141,7 +160,14 @@ def add_aircraft(request):
 		form = AircraftForm(request.POST)
 		if form.is_valid():
 			form.save()
+			# Update routes after adding aircraft
+			update_routes_on_change()
+			if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+				return JsonResponse({'success': True})
 			return redirect('home')
+		# If invalid, return errors for AJAX
+		if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+			return JsonResponse({'success': False, 'errors': form.errors}, status=400)
 	else:
 		form = AircraftForm()
 	return render(request, 'add_aircraft.html', {'form': form})
@@ -153,6 +179,8 @@ def add_airport(request):
 		form = AirportForm(request.POST)
 		if form.is_valid():
 			form.save()
+			# Update routes after adding airport
+			update_routes_on_change()
 			if request.headers.get('x-requested-with') == 'XMLHttpRequest':
 				return JsonResponse({'success': True})
 			return redirect('home')

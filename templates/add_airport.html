@@ -134,10 +134,17 @@ console.log('=== Airport form script loaded ===');
     });
   }
 
-  // AJAX form submit
+  // AJAX form submit with progress modal
   if (form) {
     form.addEventListener('submit', function(e) {
       e.preventDefault();
+      // Disable button to prevent double-clicks
+      const submitBtn = form.querySelector('button[type="submit"]');
+      if (submitBtn) submitBtn.disabled = true;
+      // Show progress modal
+      if (window.showProgressModal) {
+        window.showProgressModal('Airport saved successfully!', 'Please wait while the system updates routes...');
+      }
       if (nameInput) nameInput.readOnly = false;
       if (cityInput) cityInput.readOnly = false;
       if (countryInput) countryInput.readOnly = false;
@@ -149,6 +156,8 @@ console.log('=== Airport form script loaded ===');
       })
       .then(function(resp) { return resp.json(); })
       .then(function(data) {
+        if (window.hideProgressModal) window.hideProgressModal();
+        if (submitBtn) submitBtn.disabled = false;
         if (data.success) {
           // Refresh the airport list
           if (window.refreshAirportList) {
@@ -161,9 +170,13 @@ console.log('=== Airport form script loaded ===');
             // Fallback: reload page
             window.location.reload();
           }
+        } else {
+          alert('Error saving airport: ' + (data.error || 'Unknown error'));
         }
       })
       .catch(function() {
+        if (window.hideProgressModal) window.hideProgressModal();
+        if (submitBtn) submitBtn.disabled = false;
         alert('Error saving airport.');
       });
     });

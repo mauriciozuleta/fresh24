@@ -168,6 +168,13 @@ function initializeModeTabHandlers() {
     if (providerForm._submitHandler) providerForm.removeEventListener('submit', providerForm._submitHandler);
     providerForm._submitHandler = function(e) {
       e.preventDefault();
+      // Disable button to prevent double-clicks
+      var submitBtn = document.getElementById('save-provider-btn');
+      if (submitBtn) submitBtn.disabled = true;
+      // Show progress modal
+      if (window.showProgressModal) {
+        window.showProgressModal('Provider saved successfully!', 'Please wait while the system updates routes...');
+      }
       var formData = new FormData(providerForm);
       fetch('/mode-tab/', {
         method: 'POST',
@@ -176,6 +183,8 @@ function initializeModeTabHandlers() {
       })
       .then(function(resp) { return resp.json(); })
       .then(function(data) {
+        if (window.hideProgressModal) window.hideProgressModal();
+        if (submitBtn) submitBtn.disabled = false;
         if (data.success) {
           fetch('/mode-tab/')
             .then(function(response) { return response.text(); })
@@ -198,6 +207,8 @@ function initializeModeTabHandlers() {
         }
       })
       .catch(function(err) { 
+        if (window.hideProgressModal) window.hideProgressModal();
+        if (submitBtn) submitBtn.disabled = false;
         console.error('Error:', err);
         alert('Error saving provider.');
       });

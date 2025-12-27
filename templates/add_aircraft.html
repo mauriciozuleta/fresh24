@@ -180,7 +180,7 @@ function restoreAircraftForm() {
     <p>Enter values in either unit (kg/lbs or gal/lbs); the corresponding field will be calculated automatically.</p>
   </div>
   <div class="aircraft-form-container">
-    <form method="post" action="{% if edit_mode %}/edit-aircraft/{{ aircraft_id }}/{% else %}/add-aircraft/{% endif %}">
+    <form method="post" action="{% if edit_mode %}/edit-aircraft/{{ aircraft_id }}/{% else %}/add-aircraft/{% endif %}" id="aircraft-form">
       {% csrf_token %}
       <!-- Render Django form fields with custom layout -->
       <div class="aircraft-form-section">
@@ -231,3 +231,55 @@ function restoreAircraftForm() {
   </div>
 </div>
 {% endif %}
+
+<script>
+// AJAX submit with progress modal for aircraft form
+(function() {
+  const form = document.getElementById('aircraft-form');
+  if (form) {
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      // Disable button to prevent double-clicks
+      const submitBtn = form.querySelector('button[type="submit"]');
+      if (submitBtn) submitBtn.disabled = true;
+      // Show progress modal
+      if (window.showProgressModal) {
+        window.showProgressModal('Aircraft saved successfully!', 'Please wait while the system updates routes...');
+      }
+      localStorage.removeItem('add_aircraft_form');
+      localStorage.removeItem('add_aircraft_last_edited');
+      const formData = new FormData(form);
+      fetch(form.action, {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        body: formData
+      })
+      .then(function(resp) { return resp.json(); })
+      .then(function(data) {
+        if (window.hideProgressModal) window.hideProgressModal();
+        if (submitBtn) submitBtn.disabled = false;
+        if (data.success) {
+          // Refresh aircraft list if function exists
+          if (window.refreshAircraftList) {
+            window.refreshAircraftList();
+          }
+          // Close the tab using VS Code tab logic
+          if (window.closeCurrentTab) {
+            window.closeCurrentTab();
+          } else {
+            // Fallback: reload page
+            window.location.reload();
+          }
+        } else {
+          alert('Error saving aircraft: ' + (data.errors ? JSON.stringify(data.errors) : 'Unknown error'));
+        }
+      })
+      .catch(function() {
+        if (window.hideProgressModal) window.hideProgressModal();
+        if (submitBtn) submitBtn.disabled = false;
+        alert('Error saving aircraft.');
+      });
+    });
+  }
+})();
+</script>
