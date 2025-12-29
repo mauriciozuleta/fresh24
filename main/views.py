@@ -208,6 +208,12 @@ def add_aircraft(request):
 	return render(request, 'add_aircraft.html', {'form': form})
 
 
+def regions_api(request):
+	"""API endpoint to fetch all unique regions from Country table."""
+	from .models import Country
+	regions = Country.objects.values_list('region', flat=True).distinct().order_by('region')
+	return JsonResponse({'regions': list(regions)})
+
 def add_airport(request):
 	airports = Airport.objects.all().order_by('country', 'city', 'name')
 	if request.method == 'POST':

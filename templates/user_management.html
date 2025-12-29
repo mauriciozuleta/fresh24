@@ -1,0 +1,34 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Commercial Structure Management</title>
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+</head>
+<body>
+    <h1>Commercial Structure Management</h1>
+    <div class="aircraft-form-row">
+        <div class="form-group">
+            <label for="region-select">Select Region:</label>
+            <select id="region-select" class="aircraft-form-control">
+                <!-- Regions will be rendered here by backend or JS -->
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="regional-manager">Regional Manager</label>
+            <input type="text" id="regional-manager" class="aircraft-form-control" placeholder="Enter manager name">
+        </div>
+        <div class="form-group">
+            <label for="region-user">Region User</label>
+            <input type="text" id="region-user" class="aircraft-form-control" placeholder="Enter user name">
+        </div>
+        <div class="form-group" style="align-self: flex-end; margin-bottom: 0;">
+            <button id="edit-region-btn" class="primary-button" type="button">Edit Region</button>
+        </div>
+    </div>
+    <div id="region-list">
+        <!-- Region list will be rendered here -->
+    </div>
+</body>
+</html>

@@ -13,6 +13,7 @@ urlpatterns = [
     path('api/airports-by-country/', airports_by_country, name='airports_by_country'),
     path('api/airports/', views.airport_list_api, name='airport_list_api'),
     path('api/route-records/', views.route_records_api, name='route_records_api'),
+    path('api/regions/', views.regions_api, name='regions_api'),
     path('mode-tab/', views.mode_tab, name='mode_tab'),
 
     # Delete endpoints

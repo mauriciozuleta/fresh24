@@ -1,11 +1,14 @@
+
 import React, { useState, useEffect } from 'react';
 import '../styles/vscode-theme.css';
+import UserManagementTab from './UserManagementTab';
 
 function Tabs() {
   const [tabs, setTabs] = useState([
-    { id: 1, title: 'Tab 1', content: 'Content of Tab 1' },
-    { id: 2, title: 'Tab 2', content: 'Content of Tab 2' },
-    { id: 3, title: 'Tab 3', content: 'Content of Tab 3' },
+    { id: 1, title: 'Tab 1', content: 'Content of Tab 1', type: 'string' },
+    { id: 2, title: 'Tab 2', content: 'Content of Tab 2', type: 'string' },
+    { id: 3, title: 'Tab 3', content: 'Content of Tab 3', type: 'string' },
+    { id: 4, title: 'User Management', content: UserManagementTab, type: 'component' },
   ]);
   const [activeTab, setActiveTab] = useState(1);
 
@@ -57,7 +60,15 @@ function Tabs() {
         ))}
       </div>
       <div className="tab-content">
-        {tabs.find((tab) => tab.id === activeTab)?.content}
+        {(() => {
+          const activeTabData = tabs.find((tab) => tab.id === activeTab);
+          if (!activeTabData) return null;
+          if (activeTabData.type === 'component') {
+            const Component = activeTabData.content;
+            return <Component />;
+          }
+          return activeTabData.content;
+        })()}
       </div>
     </div>
   );
