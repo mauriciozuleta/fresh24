@@ -49,6 +49,8 @@ class AirportData:
 
 
 @dataclass
+
+@dataclass
 class AircraftData:
     """Lightweight aircraft data for computation."""
     id: int
@@ -57,6 +59,7 @@ class AircraftData:
     max_payload_lbs: float
     fuel_burn_gal: float
     mtow_kg: float
+    max_range_at_max_payload: float
 
 
 @dataclass
@@ -130,6 +133,7 @@ def load_aircraft() -> Dict[int, AircraftData]:
             max_payload_lbs=float(ac.max_payload_lbs or 0),
             fuel_burn_gal=float(ac.fuel_burn_gal or 0),
             mtow_kg=float(ac.mtow_kg or 0),
+            max_range_at_max_payload=float(ac.max_range_at_max_payload or 0),
         )
     return aircraft_dict
 
@@ -434,14 +438,16 @@ def generate_all_route_metrics(
             
             # Generate routes for each aircraft and its providers
             for ac_id, ac_data in aircraft.items():
+                # Restriction: skip aircraft if route distance > max_range_at_max_payload
+                if ac_data.max_range_at_max_payload and distance_nm > ac_data.max_range_at_max_payload:
+                    print(f"SKIP: {ac_data.short_name} (max_range_at_max_payload={ac_data.max_range_at_max_payload}) for route {from_iata}-{to_iata} (distance={distance_nm})")
+                    continue
                 providers = providers_by_aircraft.get(ac_id, [])
-                
                 for provider in providers:
                     # Check if route already exists
                     route_key = f"{from_iata} - {to_iata}|{ac_id}|{provider.id}"
                     if skip_existing and route_key in existing_keys:
                         continue
-                    
                     # Compute metrics
                     metrics = compute_route_metrics(
                         from_iata=from_iata,
