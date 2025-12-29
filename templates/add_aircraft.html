@@ -174,14 +174,13 @@ function restoreAircraftForm() {
     }
     function calcMaxRangeAtMaxPayload() {
       const mtow = val('id_mtow_lbs');
-      const ew = val('id_empty_weight_lbs');
-      const mp = val('id_max_payload_lbs');
+      const zfw = val('id_zero_fuel_lbs');
       const minLanded = val('id_min_fuel_landed_lbs');
       const minAlt = val('id_min_fuel_alternate_lbs');
       const fuelBurn = val('id_fuel_burn_lbs');
       const cruise = val('id_cruise_speed');
       if (fuelBurn > 0 && cruise > 0) {
-        const numer = mtow - (ew + mp + minLanded + minAlt);
+        const numer = mtow - zfw - minAlt - minLanded;
         const hours = numer / fuelBurn;
         const range = hours * cruise;
         const out = document.getElementById('id_max_range_at_max_payload');
@@ -190,10 +189,13 @@ function restoreAircraftForm() {
     }
     function calcMaxRangeWithMaxFuel() {
       const fuelCap = val('id_fuel_capacity_lbs');
+      const minLanded = val('id_min_fuel_landed_lbs');
+      const minAlt = val('id_min_fuel_alternate_lbs');
       const fuelBurn = val('id_fuel_burn_lbs');
       const cruise = val('id_cruise_speed');
       if (fuelBurn > 0 && cruise > 0) {
-        const hours = fuelCap / fuelBurn;
+        const usableFuel = fuelCap - minLanded - minAlt;
+        const hours = usableFuel / fuelBurn;
         const range = hours * cruise;
         const out = document.getElementById('id_max_range_with_max_fuel');
         if (out) out.value = isFinite(range) && range > 0 ? Math.round(range) : '';
@@ -209,7 +211,11 @@ function restoreAircraftForm() {
       }
     });
     [
-      'id_fuel_capacity_lbs','id_fuel_burn_lbs','id_cruise_speed'
+      'id_fuel_capacity_lbs',
+      'id_fuel_burn_lbs',
+      'id_cruise_speed',
+      'id_min_fuel_landed_lbs',
+      'id_min_fuel_alternate_lbs'
     ].forEach(function(id) {
       const el = document.getElementById(id);
       if (el) {
