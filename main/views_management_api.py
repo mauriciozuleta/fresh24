@@ -34,7 +34,14 @@ def check_country_info(request):
         return JsonResponse({
             'exists': True,
             'country_manager': info.country_manager,
-            'country_user': info.country_user
+            'country_user': info.country_user,
+            'export_sales_tax': float(info.export_sales_tax) if info.export_sales_tax else None,
+            'export_other_tax': float(info.export_other_tax) if info.export_other_tax else None,
+            'country_profit': float(info.country_profit) if info.country_profit else None,
+            'country_revenue_tax': float(info.country_revenue_tax) if info.country_revenue_tax else None,
+            'import_tax': float(info.import_tax) if info.import_tax else None,
+            'other_tax': float(info.other_tax) if info.other_tax else None,
+            'country_import_profit': float(info.country_import_profit) if info.country_import_profit else None,
         })
     except (Country.DoesNotExist, CountryInfo.DoesNotExist):
         return JsonResponse({'exists': False})

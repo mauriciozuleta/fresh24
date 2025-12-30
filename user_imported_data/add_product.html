@@ -1,0 +1,458 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="content-section">
+<style>
+  .product-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  .product-title {
+    color: #FF5C00;
+    font-weight: bold;
+    letter-spacing: 1px;
+    margin: 0;
+  }
+  .product-form-container {
+    background-color: #181c22;
+    border-radius: 8px;
+    padding: 2rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  .product-form-section {
+    margin-bottom: 2rem;
+  }
+  .product-form-section:last-child {
+    margin-bottom: 0;
+  }
+  .product-section-title {
+    color: #FF5C00;
+    font-size: 1.1rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #2196f3;
+  }
+  .product-form-row {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+  }
+  .product-form-row .form-group {
+    flex: 1;
+    min-width: 0;
+    margin-bottom: 0;
+  }
+  .product-form-row .form-group.full-width {
+    flex: 100%;
+  }
+  .product-form-group {
+    margin-bottom: 1rem;
+  }
+  .product-form-group label {
+    display: block;
+    color: #fff;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+  }
+  .product-form-control {
+    width: 100%;
+    padding: 0.75rem;
+    background-color: #23272e;
+    border: 1px solid #2196f3;
+    border-radius: 4px;
+    color: #fff;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+  }
+  .product-form-control:focus {
+    outline: none;
+    border-color: #FF5C00;
+    box-shadow: 0 0 0 2px rgba(255, 92, 0, 0.2);
+  }
+  .product-form-control.is-invalid {
+    border-color: #f44336;
+    box-shadow: 0 0 0 2px rgba(244, 67, 54, 0.2);
+  }
+  .product-radio-group {
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+    margin-top: 0.5rem;
+  }
+  .product-radio-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .product-radio-item input[type="radio"] {
+    width: 16px;
+    height: 16px;
+    accent-color: #FF5C00;
+  }
+  .product-radio-item label {
+    color: #fff;
+    font-weight: normal;
+    margin: 0;
+    cursor: pointer;
+    font-size: 0.9rem;
+  }
+  .product-textarea {
+    min-height: 100px;
+    resize: vertical;
+  }
+  .product-btn {
+    background-color: #2196f3;
+    color: #fff;
+    border: none;
+    padding: 0.75rem 2rem;
+    border-radius: 4px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+    width: 100%;
+    margin-top: 1rem;
+  }
+  .product-btn:hover {
+    background-color: #1976d2;
+    transform: translateY(-1px);
+  }
+  .product-btn:active {
+    transform: translateY(0);
+  }
+  .matching-products {
+    background-color: #181c22;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-top: 2rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  }
+  .matching-products h3 {
+    color: #FF5C00;
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+  }
+  .matching-table {
+    width: 100%;
+    border-collapse: collapse;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .matching-table th {
+    background-color: #23272e;
+    color: #FF5C00;
+    padding: 0.75rem;
+    text-align: left;
+    font-weight: bold;
+    border-bottom: 2px solid #FF5C00;
+  }
+  .matching-table td {
+    background-color: #181c22;
+    color: #fff;
+    padding: 0.75rem;
+    border-bottom: 1px solid #2196f3;
+  }
+  .matching-table tbody tr:hover {
+    background-color: #23272e;
+  }
+</style>
+
+<div class="product-header">
+  <h1 class="product-title">{{ "Edit Product" if edit_id else "Add New Product" }}</h1>
+</div>
+
+<div class="product-form-container">
+  <form id="productForm" method="POST" action="{{ url_for('coredata.add_product') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+    <input type="hidden" name="edit_id" value="{{ edit_id }}">
+    
+    <!-- Basic Information Section -->
+    <div class="product-form-section">
+      <div class="product-section-title">Basic Information</div>
+      
+      <div class="product-form-row">
+        <div class="form-group">
+          <div class="product-form-group">
+            <label for="productType">Type of Product</label>
+            <select class="product-form-control" name="product_type" id="productType" required>
+              {% set selected_type = product.product_type if product else 'Produce' %}
+              <option value="Produce" {% if selected_type == "Produce" %}selected{% endif %}>Produce</option>
+              <option value="Meats" {% if selected_type == "Meats" %}selected{% endif %}>Meats</option>
+              <option value="Other Perishable" {% if selected_type == "Other Perishable" %}selected{% endif %}>Other Perishable</option>
+              <option value="Dry Goods" {% if selected_type == "Dry Goods" %}selected{% endif %}>Dry Goods</option>
+              <option value="Technology" {% if selected_type == "Technology" %}selected{% endif %}>Technology</option>
+              <option value="Other" {% if selected_type == "Other" %}selected{% endif %}>Other</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <div class="product-form-group">
+            <label for="productCode">Product Code</label>
+            <input type="text" class="product-form-control" name="product_code" id="productCode"
+                  value="{{ product.product_code if product else '' }}" readonly>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <div class="product-form-group">
+            <label for="productName">Product Name</label>
+            <input type="text" class="product-form-control" name="name" id="productName" required
+                   value="{{ product.name if product else '' }}" placeholder="Enter product name">
+          </div>
+        </div>
+      </div>
+
+      <div class="product-form-row">
+        <div class="form-group">
+          <div class="product-form-group">
+            <label for="productCountry">Country</label>
+            <select class="product-form-control" name="country_id" id="productCountry" required>              {% for country in countries %}
+                <option value="{{ country.country_code }}"
+                        data-currency="{{ country.currency_code }}"
+                        {% if product and country.country_code == product.country_id %}selected{% endif %}>
+                  {{ country.country_name }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <div class="product-form-group">
+            <label for="tradeUnit">Trade Unit</label>
+            <select class="product-form-control" name="trade_unit" id="tradeUnit" required>
+              {% set trade = product.trade_unit if product else '' %}
+              <option value="UN" {% if trade == "UN" %}selected{% endif %}>Unit (Un)</option>
+              <option value="BU" {% if trade == "BU" %}selected{% endif %}>Bunch (BU)</option>
+              <option value="KG" {% if trade == "KG" %}selected{% endif %}>Kilogram (Kg.)</option>
+              <option value="LBS" {% if trade == "LBS" %}selected{% endif %}>Pound (Lbs.)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cost Information Section -->
+    <div class="product-form-section">
+      <div class="product-section-title">Cost Information</div>
+      
+      <div class="product-form-row">
+        <div class="form-group">
+          <div class="product-form-group">
+            <label for="fcaCost">FCA Cost per WU</label>
+            <input type="number" step="0.01" class="product-form-control" name="fca_cost_per_wu" id="fcaCost" required
+                   value="{{ product.fca_cost_per_wu if product else '' }}" placeholder="0.00">
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <div class="product-form-group">
+            <label>Currency</label>
+            <div class="product-radio-group">
+              <div class="product-radio-item">
+                <input type="radio" name="currency_option" id="currencyLocal" value="local" 
+                       {% if not product or product.currency != 'USD' %}checked{% endif %}>
+                <label for="currencyLocal">Local</label>
+              </div>
+              <div class="product-radio-item">
+                <input type="radio" name="currency_option" id="currencyUSD" value="USD" 
+                       {% if product and product.currency == 'USD' %}checked{% endif %}>
+                <label for="currencyUSD">USD</label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Packaging Information Section -->
+    <div class="product-form-section">
+      <div class="product-section-title">Packaging Information</div>
+      
+      <div class="product-form-row">
+        <div class="form-group">
+          <div class="product-form-group">
+            <label for="productPackaging">Packaging Type</label>
+            <input type="text" class="product-form-control" name="packaging" id="productPackaging" required
+                   value="{{ product.packaging if product else '' }}" placeholder="e.g., Box, Bag, Container">
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <div class="product-form-group">
+            <label for="packagingWeight">Packaging Weight (kg)</label>
+            <input type="number" step="0.01" class="product-form-control" name="packaging_weight" id="packagingWeight" required
+                   value="{{ product.packaging_weight if product else '' }}" placeholder="0.00">
+          </div>
+        </div>
+      </div>
+
+      <div class="product-form-row">
+        <div class="form-group">
+          <div class="product-form-group">
+            <label for="packagingCost">Packaging Cost</label>
+            <input type="number" step="0.01" class="product-form-control" name="packaging_cost" id="packagingCost" required
+                   value="{{ product.packaging_cost if product else '' }}" placeholder="0.00">
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <div class="product-form-group">
+            <label for="unitsPerPack">Units per Pack</label>
+            <input type="number" class="product-form-control" name="units_per_pack" id="unitsPerPack" required
+                   value="{{ product.units_per_pack if product else '' }}" placeholder="1">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Additional Information Section -->
+    <div class="product-form-section">
+      <div class="product-section-title">Additional Information</div>
+      
+      <div class="product-form-group">
+        <label for="otherInfo">Other Information</label>
+        <textarea class="product-form-control product-textarea" name="other_info" id="otherInfo" 
+                  placeholder="Additional notes or specifications">{{ product.other_info if product else '' }}</textarea>
+      </div>
+    </div>
+
+    <input type="hidden" name="currency" id="currencyField" value="{{ product.currency if product else '' }}">
+    
+    <button type="submit" class="product-btn">{{ "Update Product" if edit_id else "Add Product" }}</button>
+  </form>
+</div>
+
+<!-- Matching Products Display -->
+<div class="matching-products" id="matchingList" style="display: none;">
+  <h3>Matching Products</h3>
+  <table class="matching-table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Country</th>
+      </tr>
+    </thead>
+    <tbody id="listResults">
+      <!-- Populated dynamically -->
+    </tbody>
+  </table>
+</div>
+
+{% if duplicate %}
+<div class="modal show" tabindex="-1" style="display:block; background-color: rgba(0,0,0,0.6);">
+  <div class="modal-dialog">
+    <div class="modal-content" style="background-color: #181c22; color: #fff; border: 1px solid #2196f3;">
+      <div class="modal-header" style="border-bottom: 1px solid #2196f3;">
+        <h5 class="modal-title" style="color: #FF5C00;">Product Already Exists</h5>
+      </div>
+      <div class="modal-body">
+        <p>The product <strong style="color: #FF5C00;">{{ duplicate_name }}</strong> for <strong style="color: #2196f3;">{{ duplicate_country }}</strong> already exists.</p>
+        <p>Do you want to save anyway?</p>
+      </div>
+      <div class="modal-footer" style="border-top: 1px solid #2196f3; gap: 1rem;">
+        <form method="POST">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+          {% for key, val in request.form.items() %}
+            {% if key != 'csrf_token' %}
+            <input type="hidden" name="{{ key }}" value="{{ val }}">
+            {% endif %}
+          {% endfor %}
+          <input type="hidden" name="force_submit" value="true">
+          <button type="submit" class="product-btn" style="background-color: #ff9800; width: auto; margin: 0; padding: 0.5rem 1rem;">Save Anyway</button>
+        </form>
+        <a href="{{ url_for('coredata.add_product') }}" class="product-btn" style="background-color: #666; width: auto; margin: 0; padding: 0.5rem 1rem; text-decoration: none; display: inline-block; text-align: center;">Cancel</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const localRadio = document.getElementById("currencyLocal");
+  const usdRadio = document.getElementById("currencyUSD");
+  const countrySelect = document.getElementById("productCountry");
+  const hiddenCurrency = document.getElementById("currencyField");
+
+  function setCurrencyValue() {
+    const selectedOption = countrySelect.selectedOptions[0];
+    const countryCurrencyCode = selectedOption?.getAttribute("data-currency");
+
+    if (usdRadio.checked) {
+      hiddenCurrency.value = "USD";
+    } else { // "local" is the only other option
+      hiddenCurrency.value = countryCurrencyCode || "";
+    }
+  }
+
+  // Attach event listeners
+  usdRadio.addEventListener("change", setCurrencyValue);
+  localRadio.addEventListener("change", setCurrencyValue);
+  countrySelect.addEventListener("change", setCurrencyValue);
+
+  // Set the initial value on page load
+  setCurrencyValue();
+});
+</script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const form = document.querySelector("form");
+    const productType = document.getElementById("productType");
+
+    // Prevent Enter key from submitting unintentionally
+    form.addEventListener("keydown", function(e) {
+      if (e.key === "Enter" && e.target.type !== "submit") {
+        e.preventDefault();
+      }
+    });
+
+    // Validate required fields before submission
+    const requiredIds = [
+      "productType",
+      "productName",
+      "productCountry",
+      "tradeUnit",
+      "fcaCost",
+      "productPackaging",
+      "packagingWeight",
+      "packagingCost",
+      "unitsPerPack",
+      "currencyField"
+    ];
+
+    form.addEventListener("submit", function (e) {
+      let isValid = true;
+      requiredIds.forEach(id => {
+        const input = document.getElementById(id);
+        const val = input?.value?.trim();
+
+        if (!val) {
+          isValid = false;
+          input.classList.add("is-invalid");
+        } else {
+          input.classList.remove("is-invalid");
+        }
+      });
+
+      if (!isValid) {
+        e.preventDefault();
+        alert("Please fill in all required fields before submitting.");
+      }
+    });
+  });
+</script>
+</div>
+{% endblock %}

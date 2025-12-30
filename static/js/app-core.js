@@ -528,6 +528,47 @@ document.addEventListener('DOMContentLoaded', function() {
 												countrySel.disabled = true;
 											});
 									});
+									
+									// Country selection handler - load existing CountryInfo data
+									countrySel.addEventListener('change', function() {
+										var region = regionSel.value;
+										var country = countrySel.value;
+										if (!region || !country) {
+											// Clear all tax/profit fields
+											document.getElementById('export-sales-tax').value = '';
+											document.getElementById('export-other-tax').value = '';
+											document.getElementById('country-profit').value = '';
+											document.getElementById('country-revenue-tax').value = '';
+											document.getElementById('import-tax').value = '';
+											document.getElementById('other-tax').value = '';
+											document.getElementById('country-import-profit').value = '';
+											branchAirportSelect.innerHTML = '<option value="">Select a country first</option>';
+											branchAirportSelect.disabled = true;
+											return;
+										}
+										
+										// Load existing CountryInfo data
+										fetch('/api/check-country-info/?country=' + encodeURIComponent(country))
+											.then(function(r) { return r.json(); })
+											.then(function(d) {
+												if (d.exists) {
+													// Populate tax/profit fields if they exist in the response
+													document.getElementById('export-sales-tax').value = d.export_sales_tax || '';
+													document.getElementById('export-other-tax').value = d.export_other_tax || '';
+													document.getElementById('country-profit').value = d.country_profit || '';
+													document.getElementById('country-revenue-tax').value = d.country_revenue_tax || '';
+													document.getElementById('import-tax').value = d.import_tax || '';
+													document.getElementById('other-tax').value = d.other_tax || '';
+													document.getElementById('country-import-profit').value = d.country_import_profit || '';
+												}
+											})
+											.catch(function(err) {
+												console.error('Error loading country info:', err);
+											});
+										
+										// Load airports for this country
+										updateBranchAirportsAndManager();
+									});
 								}, 30);
 							})
 							.catch(function() {

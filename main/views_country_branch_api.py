@@ -34,7 +34,7 @@ def update_country_information(request):
     except Country.DoesNotExist:
         return JsonResponse({'success': False, 'error': 'Country not found'}, status=404)
     except CountryInfo.DoesNotExist:
-        return JsonResponse({'success': False, 'error': 'Country information not found'}, status=404)
+        return JsonResponse({'success': False, 'error': 'Country information not found. Please create the country record first in the User Management tab.'}, status=404)
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
