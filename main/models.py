@@ -75,6 +75,7 @@ class Aircraft(models.Model):
 		return f"{self.short_name} ({self.model})"
 
 
+
 class CharterProvider(models.Model):
 
 	name = models.CharField(max_length=100)
