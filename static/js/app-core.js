@@ -1143,7 +1143,75 @@ document.addEventListener('DOMContentLoaded', function() {
 									var updateBtn = document.getElementById('update-country-info-btn');
 									if (updateBtn) {
 										updateBtn.addEventListener('click', function() {
-											alert('Update Country Information clicked!'); // Placeholder for future logic
+											var regionValue = document.getElementById('region-core-select').value;
+											var countryValue = document.getElementById('region-core-country').value;
+											if (!regionValue || !countryValue) {
+												alert('Please select a region and country first');
+												return;
+											}
+											var data = {
+												country_code: countryValue,
+												region: regionValue,
+												export_sales_tax: document.getElementById('export-sales-tax').value,
+												export_other_tax: document.getElementById('export-other-tax').value,
+												country_profit: document.getElementById('country-profit').value,
+												country_revenue_tax: document.getElementById('country-revenue-tax').value,
+												import_tax: document.getElementById('import-tax').value,
+												other_tax: document.getElementById('other-tax').value,
+												country_import_profit: document.getElementById('country-import-profit').value
+											};
+											fetch('/api/update-country-information/', {
+												method: 'POST',
+												headers: {'Content-Type': 'application/json'},
+												body: JSON.stringify(data)
+											})
+												.then(function(r) { return r.json(); })
+												.then(function(result) {
+													if (result.success) {
+														alert('Country information updated successfully!');
+													} else {
+														alert('Error: ' + result.error);
+													}
+												})
+												.catch(function(err) {
+													alert('Error updating country information: ' + err);
+												});
+										});
+									}
+									
+									var saveBranchBtn = document.getElementById('save-branch-costs-btn');
+									if (saveBranchBtn) {
+										saveBranchBtn.addEventListener('click', function() {
+											var airportValue = document.getElementById('branch-airport-select').value;
+											if (!airportValue) {
+												alert('Please select an airport first');
+												return;
+											}
+											var data = {
+												airport_code: airportValue,
+												marketing_expenses: document.getElementById('marketing-expenses').value,
+												payroll: document.getElementById('payroll').value,
+												rent_expenses: document.getElementById('rent-expenses').value,
+												utilities_expenses: document.getElementById('utilities-expenses').value,
+												office_supplies: document.getElementById('office-supplies').value,
+												other_expenses: document.getElementById('other-expenses').value
+											};
+											fetch('/api/save-branch-costs/', {
+												method: 'POST',
+												headers: {'Content-Type': 'application/json'},
+												body: JSON.stringify(data)
+											})
+												.then(function(r) { return r.json(); })
+												.then(function(result) {
+													if (result.success) {
+														alert('Branch costs saved successfully!');
+													} else {
+														alert('Error: ' + result.error);
+													}
+												})
+												.catch(function(err) {
+													alert('Error saving branch costs: ' + err);
+												});
 										});
 									}
 									var regionSel = document.getElementById('region-core-select');

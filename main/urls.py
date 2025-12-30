@@ -4,6 +4,7 @@ from . import views
 from . import views_countries_api
 from . import views_airports_api
 from . import views_management_api
+from . import views_country_branch_api
 from .airport_api import airport_lookup
 
 urlpatterns = [
@@ -29,6 +30,8 @@ urlpatterns = [
     path('api/save-country-info/', views_management_api.save_country_info, name='save_country_info'),
     path('api/save-branch-info/', views_management_api.save_branch_info, name='save_branch_info'),
     path('api/get-management-table-data/', views_management_api.get_management_table_data, name='get_management_table_data'),
+    path('api/update-country-information/', views_country_branch_api.update_country_information, name='update_country_information'),
+    path('api/save-branch-costs/', views_country_branch_api.save_branch_costs, name='save_branch_costs'),
 
     # Delete endpoints
     path('delete-charter-provider/<int:pk>/', views.delete_charter_provider, name='delete_charter_provider'),
