@@ -1,0 +1,284 @@
+{% if form %}
+<div class="tab-content-inner aircraft-form-page">
+  <div class="aircraft-header">
+    <h1 class="aircraft-title">{{ "Edit Product" if edit_mode else "Add New Product" }}</h1>
+  </div>
+  <div class="aircraft-form-container">
+    <style>
+      .fixed-scroll-form {
+        max-width: 1400px;
+        min-width: 900px;
+        max-height: 80vh;
+        overflow-y: auto;
+        margin: 0 auto;
+        background: #181c22;
+        border-radius: 8px;
+        padding: 2rem;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+      }
+      .unified-spacing {
+        gap: 1rem !important;
+        margin-bottom: 1rem !important;
+      }
+      .aircraft-form-section {
+        margin-bottom: 2rem !important;
+      }
+      .aircraft-section-title {
+        margin-bottom: 1rem !important;
+      }
+      .product-radio-group {
+        display: flex;
+        gap: 1.5rem;
+        align-items: center;
+        padding-top: 0.5rem;
+      }
+      .product-radio-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+      .product-radio-item input[type="radio"] {
+        width: 16px;
+        height: 16px;
+        accent-color: #FF5C00;
+      }
+      .product-radio-item label {
+        color: #fff;
+        font-weight: normal;
+        margin: 0;
+        cursor: pointer;
+        font-size: 0.9rem;
+      }
+    </style>
+    <form method="post" action="{% if edit_mode %}/edit-product/{{ product_id }}/{% else %}/add-product/{% endif %}" id="product-form" class="fixed-scroll-form">
+      {% csrf_token %}
+      
+      <!-- Basic Information Section -->
+      <div class="aircraft-form-section">
+        <div class="aircraft-section-title">Basic Information</div>
+        <div class="aircraft-form-row five-col unified-spacing">
+          <div class="aircraft-form-group">
+            <label for="id_product_type">Type of Product</label>
+            <select class="aircraft-form-control" name="product_type" id="id_product_type" required>
+              <option value="Produce">Produce</option>
+              <option value="Meats">Meats</option>
+              <option value="Other Perishable">Other Perishable</option>
+              <option value="Dry Goods">Dry Goods</option>
+              <option value="Technology">Technology</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="aircraft-form-group">
+            <label for="id_product_code">Product Code</label>
+            <input type="text" class="aircraft-form-control" name="product_code" id="id_product_code" readonly>
+          </div>
+          <div class="aircraft-form-group">
+            <label for="id_name">Product Name</label>
+            <input type="text" class="aircraft-form-control" name="name" id="id_name" required placeholder="Enter product name">
+          </div>
+          <div class="aircraft-form-group">
+            <label for="id_country">Country</label>
+            <select class="aircraft-form-control" name="country_id" id="id_country" required>
+              <option value="">Select Country</option>
+            </select>
+          </div>
+          <div class="aircraft-form-group">
+            <label for="id_trade_unit">Trade Unit</label>
+            <select class="aircraft-form-control" name="trade_unit" id="id_trade_unit" required>
+              <option value="UN">Unit (Un)</option>
+              <option value="BU">Bunch (BU)</option>
+              <option value="KG">Kilogram (Kg.)</option>
+              <option value="LBS">Pound (Lbs.)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      
+      <hr class="aircraft-section-separator" />
+      
+      <!-- Cost Information Section -->
+      <div class="aircraft-form-section">
+        <div class="aircraft-section-title">Cost Information</div>
+        <div class="aircraft-form-row three-col unified-spacing">
+          <div class="aircraft-form-group">
+            <label for="id_fca_cost">FCA Cost per WU</label>
+            <input type="number" step="0.01" class="aircraft-form-control" name="fca_cost_per_wu" id="id_fca_cost" required placeholder="0.00">
+          </div>
+          <div class="aircraft-form-group">
+            <label>Currency</label>
+            <div class="product-radio-group">
+              <div class="product-radio-item">
+                <input type="radio" name="currency_option" id="currencyLocal" value="local" checked>
+                <label for="currencyLocal">Local</label>
+              </div>
+              <div class="product-radio-item">
+                <input type="radio" name="currency_option" id="currencyUSD" value="USD">
+                <label for="currencyUSD">USD</label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <hr class="aircraft-section-separator" />
+      
+      <!-- Packaging Information Section -->
+      <div class="aircraft-form-section">
+        <div class="aircraft-section-title">Packaging Information</div>
+        <div class="aircraft-form-row three-col unified-spacing">
+          <div class="aircraft-form-group">
+            <label for="id_packaging">Packaging Type</label>
+            <input type="text" class="aircraft-form-control" name="packaging" id="id_packaging" required placeholder="e.g., Box, Bag, Container">
+          </div>
+          <div class="aircraft-form-group">
+            <label for="id_packaging_weight">Packaging Weight (kg)</label>
+            <input type="number" step="0.01" class="aircraft-form-control" name="packaging_weight" id="id_packaging_weight" required placeholder="0.00">
+          </div>
+          <div class="aircraft-form-group">
+            <label for="id_packaging_cost">Packaging Cost</label>
+            <input type="number" step="0.01" class="aircraft-form-control" name="packaging_cost" id="id_packaging_cost" required placeholder="0.00">
+          </div>
+          <div class="aircraft-form-group">
+            <label for="id_units_per_pack">Units per Pack</label>
+            <input type="number" class="aircraft-form-control" name="units_per_pack" id="id_units_per_pack" required placeholder="1">
+          </div>
+        </div>
+      </div>
+      
+      <hr class="aircraft-section-separator" />
+      
+      <!-- Additional Information Section -->
+      <div class="aircraft-form-section">
+        <div class="aircraft-section-title">Additional Information</div>
+        <div class="aircraft-form-group">
+          <label for="id_other_info">Other Information</label>
+          <textarea class="aircraft-form-control" name="other_info" id="id_other_info" rows="4" placeholder="Additional notes or specifications"></textarea>
+        </div>
+      </div>
+      
+      <input type="hidden" name="currency" id="currencyField">
+      
+      <button type="submit" class="aircraft-btn">{% if edit_mode %}Save Changes{% else %}Add Product{% endif %}</button>
+    </form>
+  </div>
+</div>
+{% endif %}
+
+<script>
+console.log('=== Product form script loaded ===');
+
+(function() {
+  const form = document.getElementById('product-form');
+  const countrySelect = document.getElementById('id_country');
+  const localRadio = document.getElementById('currencyLocal');
+  const usdRadio = document.getElementById('currencyUSD');
+  const currencyField = document.getElementById('currencyField');
+  const productTypeSelect = document.getElementById('id_product_type');
+  const productCodeInput = document.getElementById('id_product_code');
+  
+  // Load countries
+  function loadCountries() {
+    // This should be populated by the backend, but here's a placeholder structure
+    // In your actual implementation, you'll pass countries from the view
+    console.log('Countries should be loaded from backend');
+  }
+  
+  // Currency management
+  function setCurrencyValue() {
+    const selectedOption = countrySelect.selectedOptions[0];
+    const countryCurrencyCode = selectedOption?.getAttribute('data-currency');
+    
+    if (usdRadio.checked) {
+      currencyField.value = 'USD';
+    } else {
+      currencyField.value = countryCurrencyCode || '';
+    }
+  }
+  
+  // Auto-generate product code based on product type
+  function generateProductCode() {
+    const type = productTypeSelect.value;
+    const timestamp = Date.now().toString().slice(-6);
+    let prefix = 'PRD';
+    
+    switch(type) {
+      case 'Produce': prefix = 'PROD'; break;
+      case 'Meats': prefix = 'MEAT'; break;
+      case 'Other Perishable': prefix = 'PERI'; break;
+      case 'Dry Goods': prefix = 'DRY'; break;
+      case 'Technology': prefix = 'TECH'; break;
+      case 'Other': prefix = 'OTH'; break;
+    }
+    
+    productCodeInput.value = `${prefix}-${timestamp}`;
+  }
+  
+  // Format numeric fields on blur
+  function formatNumberInput(input) {
+    let val = input.value.replace(/,/g, '');
+    if (val && !isNaN(val)) {
+      let num = parseFloat(val);
+      let rounded = Math.round(num * 100) / 100;
+      input.value = rounded.toString();
+    }
+  }
+  
+  // Attach event listeners
+  if (usdRadio && localRadio && countrySelect) {
+    usdRadio.addEventListener('change', setCurrencyValue);
+    localRadio.addEventListener('change', setCurrencyValue);
+    countrySelect.addEventListener('change', setCurrencyValue);
+    setCurrencyValue();
+  }
+  
+  if (productTypeSelect) {
+    productTypeSelect.addEventListener('change', generateProductCode);
+    // Generate initial code if empty
+    if (!productCodeInput.value) {
+      generateProductCode();
+    }
+  }
+  
+  // Format numeric fields
+  const numericFields = [
+    'id_fca_cost', 'id_packaging_weight', 'id_packaging_cost', 'id_units_per_pack'
+  ];
+  numericFields.forEach(function(id) {
+    const el = document.getElementById(id);
+    if (el) {
+      el.addEventListener('blur', function() {
+        formatNumberInput(el);
+      });
+    }
+  });
+  
+  // Prevent Enter key from submitting unintentionally
+  form.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && e.target.type !== 'submit') {
+      e.preventDefault();
+    }
+  });
+  
+  // Form validation
+  form.addEventListener('submit', function(e) {
+    const requiredFields = form.querySelectorAll('[required]');
+    let isValid = true;
+    
+    requiredFields.forEach(field => {
+      if (!field.value.trim()) {
+        isValid = false;
+        field.style.borderColor = '#f44336';
+      } else {
+        field.style.borderColor = '#2196f3';
+      }
+    });
+    
+    if (!isValid) {
+      e.preventDefault();
+      alert('Please fill in all required fields before submitting.');
+    }
+  });
+  
+  loadCountries();
+})();
+</script>

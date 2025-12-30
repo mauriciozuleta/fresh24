@@ -699,13 +699,29 @@ function renderAddProductTab(tabContent) {
 			}
 			.product-form-row {
 				display: flex;
-				gap: 1rem;
-				margin-bottom: 1rem;
 				flex-wrap: wrap;
+				gap: 1.5rem;
+				margin-bottom: 1rem;
+			}
+			.product-form-row.five-col {
+				display: flex;
+				flex-wrap: nowrap;
+				gap: 1.5rem;
 			}
 			.product-form-row .form-group {
-				flex: 1;
-				min-width: 200px;
+				flex: 1 1 140px;
+				min-width: 140px;
+				max-width: 200px;
+				margin-right: 18px;
+				margin-bottom: 0;
+				display: flex;
+				flex-direction: column;
+				align-items: stretch;
+			}
+			.product-form-row .form-group:last-child {
+				margin-right: 0;
+			}
+			.product-form-row .product-form-group {
 				margin-bottom: 0;
 			}
 			.product-form-group {
@@ -794,7 +810,7 @@ function renderAddProductTab(tabContent) {
 				<form id="productForm">
 					<div class="product-form-section">
 						<div class="product-section-title">Basic Information</div>
-						<div class="product-form-row">
+						<div class="product-form-row five-col">
 							<div class="form-group">
 								<div class="product-form-group">
 									<label for="productType">Type of Product</label>
@@ -820,8 +836,6 @@ function renderAddProductTab(tabContent) {
 									<input type="text" class="product-form-control" id="productName" required placeholder="Enter product name">
 								</div>
 							</div>
-						</div>
-						<div class="product-form-row">
 							<div class="form-group">
 								<div class="product-form-group">
 									<label for="productCountry">Country</label>
