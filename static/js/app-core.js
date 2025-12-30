@@ -1032,19 +1032,29 @@ document.addEventListener('DOMContentLoaded', function() {
 									'<label for="import-tax">Import Tax</label>' +
 									'<input type="number" id="import-tax" class="aircraft-form-control" placeholder="Enter import tax">' +
 									'</div>' +
-									'<div class="form-group">' +
+									'<div class="aircraft-form-row" style="margin-top:1rem; gap:1rem;">' +
+									'<div class="form-group" style="flex:1; max-width:180px;">' +
 									'<label for="other-tax">Other Tax</label>' +
 									'<input type="number" id="other-tax" class="aircraft-form-control" placeholder="Enter other tax">' +
 									'</div>' +
-									'<div class="form-group">' +
+									'<div class="form-group" style="flex:1; max-width:180px;">' +
 									'<label for="country-import-profit">Country Import Profit</label>' +
-									'<input type="number" id="country-import-profit" class="aircraft-form-control" placeholder="Enter country import profit">' +
+									'<input type="number" id="country-import-profit" class="aircraft-form-control" placeholder="Enter country import profit" style="max-width:180px;">' +
+									'</div>' +
+									'<div style="display:flex; align-items:flex-end;">' +
+									'<button id="update-country-info-btn" class="primary-button" type="button" style="white-space:nowrap; padding:0.5rem 1.5rem;">Update Country Information</button>' +
 									'</div>' +
 									'</div>' +
 									'</div>' +
 									'</div></div>';
 								// Wire up change handler
 								setTimeout(function() {
+									var updateBtn = document.getElementById('update-country-info-btn');
+									if (updateBtn) {
+										updateBtn.addEventListener('click', function() {
+											alert('Update Country Information clicked!'); // Placeholder for future logic
+										});
+									}
 									var regionSel = document.getElementById('region-core-select');
 									var managerInput = document.getElementById('region-core-manager');
 									var countrySel = document.getElementById('region-core-country');
