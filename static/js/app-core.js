@@ -1,3 +1,41 @@
+// Populate airports dropdown based on selected country
+function setupCountryAirports() {
+	var countrySelect = document.getElementById('country-select');
+	var airportSelect = document.getElementById('airport-select');
+	var airportsGroup = document.getElementById('airports-group');
+	if (!countrySelect || !airportSelect) return;
+	function resetAirportDropdown() {
+		airportSelect.innerHTML = '<option value="">Select a country first</option>';
+		airportSelect.disabled = true;
+		if (airportsGroup) {
+			airportsGroup.style.display = 'block';
+		}
+	}
+	resetAirportDropdown();
+	countrySelect.addEventListener('change', function() {
+		var country = countrySelect.value;
+		if (!country) {
+			resetAirportDropdown();
+			return;
+		}
+		fetch('/api/airports-by-country/?country=' + encodeURIComponent(country))
+			.then(function(response) { return response.json(); })
+			.then(function(data) {
+				var airports = data.airports || [];
+				if (airports.length > 0) {
+					airportSelect.innerHTML = airports.map(function(airport) {
+						return '<option value="' + airport.iata_code + '">' + airport.iata_code + ' - ' + airport.city + '</option>';
+					}).join('');
+					airportSelect.disabled = false;
+					if (airportsGroup) {
+						airportsGroup.style.display = 'block';
+					}
+				} else {
+					resetAirportDropdown();
+				}
+			});
+	});
+}
 
 // Main tab/workspace logic extracted from home.html
 document.addEventListener('DOMContentLoaded', function() {
@@ -140,6 +178,44 @@ document.addEventListener('DOMContentLoaded', function() {
 
 	// Expose createTab globally
 	window.createTab = createTab;
+
+	function setupRegionCountries() {
+		var regionSelect = document.getElementById('region-select');
+		var countrySelect = document.getElementById('country-select');
+		var countriesGroup = document.getElementById('countries-group');
+		if (!regionSelect || !countrySelect) return;
+		function resetCountryDropdown() {
+			countrySelect.innerHTML = '<option value="">Select a region first</option>';
+			countrySelect.disabled = true;
+			if (countriesGroup) {
+				countriesGroup.style.display = 'block';
+			}
+		}
+		resetCountryDropdown();
+		regionSelect.addEventListener('change', function() {
+			var region = regionSelect.value;
+			if (!region) {
+				resetCountryDropdown();
+				return;
+			}
+			fetch('/api/countries-by-region/?region=' + encodeURIComponent(region))
+				.then(function(response) { return response.json(); })
+				.then(function(data) {
+					var countries = data.countries || [];
+					if (countries.length > 0) {
+						countrySelect.innerHTML = countries.map(function(country) {
+							return '<option value="' + country.code + '">' + country.name + '</option>';
+						}).join('');
+						countrySelect.disabled = false;
+						if (countriesGroup) {
+							countriesGroup.style.display = 'block';
+						}
+					} else {
+						resetCountryDropdown();
+					}
+				});
+		});
+	}
 
 	// Tab logic (per workspace) for all menu options
 	document.querySelectorAll('.menu-option').forEach(function(option) {
@@ -476,7 +552,7 @@ document.addEventListener('DOMContentLoaded', function() {
 							return '<option value="' + region + '">' + region + '</option>';
 						}).join('');
 						tabContent.innerHTML = '<div class="tab-content-inner"><h1>Commercial Structure Management</h1>' +
-							'<div class="aircraft-form-row" style="margin-top:1.5rem;">' +
+							'<div class="aircraft-form-row" style="margin-top:1.5rem; gap:2rem;">' +
 							'<div class="form-group">' +
 							'<label for="region-select">Select Region</label>' +
 							'<select id="region-select" class="aircraft-form-control"><option value="">-- Select --</option>' + options + '</select>' +
@@ -489,14 +565,54 @@ document.addEventListener('DOMContentLoaded', function() {
 							'<label for="region-user">Region User</label>' +
 							'<input type="text" id="region-user" class="aircraft-form-control" placeholder="Enter user name">' +
 							'</div>' +
-							'<div class="form-group" style="align-self: flex-end; margin-bottom: 0;">' +
-							'<button id="edit-region-btn" class="primary-button" type="button">Edit Region</button>' +
+							'<div style="display: flex; align-items: flex-end; margin-left: 3rem;">' +
+							'<button id="edit-region-btn" class="primary-button" type="button" style="white-space: nowrap;">Edit Region</button>' +
+							'</div>' +
+							'</div>' +
+							'<div class="aircraft-form-row" style="margin-top:1.5rem; gap:2rem;">' +
+							'<div class="form-group" id="countries-group">' +
+							'<label for="country-select">Countries</label>' +
+							'<select id="country-select" class="aircraft-form-control" disabled>' +
+							'<option value="">Select a region first</option>' +
+							'</select>' +
+							'</div>' +
+							'<div class="form-group">' +
+							'<label for="country-manager">Country Manager</label>' +
+							'<input type="text" id="country-manager" class="aircraft-form-control" placeholder="Enter country manager name">' +
+							'</div>' +
+							'<div class="form-group">' +
+							'<label for="country-user">Country User</label>' +
+							'<input type="text" id="country-user" class="aircraft-form-control" placeholder="Enter country user name">' +
+							'</div>' +
+							'<div style="display: flex; align-items: flex-end; margin-left: 3rem;">' +
+							'<button id="add-country-btn" class="primary-button" type="button" style="white-space: nowrap;">Add Country</button>' +
+							'</div>' +
+							'</div>' +
+							'<div class="aircraft-form-row" style="margin-top:1.5rem; gap:2rem;">' +
+							'<div class="form-group" id="airports-group">' +
+							'<label for="airport-select">Airports</label>' +
+							'<select id="airport-select" class="aircraft-form-control" disabled>' +
+							'<option value="">Select a country first</option>' +
+							'</select>' +
+							'</div>' +
+							'<div class="form-group">' +
+							'<label for="branch-manager">Branch Manager</label>' +
+							'<input type="text" id="branch-manager" class="aircraft-form-control" placeholder="Enter branch manager name">' +
+							'</div>' +
+							'<div class="form-group">' +
+							'<label for="branch-user">Branch User</label>' +
+							'<input type="text" id="branch-user" class="aircraft-form-control" placeholder="Enter branch user name">' +
+							'</div>' +
+							'<div style="display: flex; align-items: flex-end; margin-left: 3rem;">' +
+							'<button id="add-branch-btn" class="primary-button" type="button" style="white-space: nowrap;">Add Branch</button>' +
 							'</div>' +
 							'</div></div>';
-					})
-					.catch(function() {
-						tabContent.innerHTML = '<div class="tab-content-inner"><h2>Commercial Structure Management</h2><p>Could not load regions.</p></div>';
-					});
+							setupRegionCountries();
+							setupCountryAirports();
+						})
+						.catch(function() {
+							 tabContent.innerHTML = '<div class="tab-content-inner"><h2>Commercial Structure Management</h2><p>Could not load regions.</p></div>';
+						});
 			} else {
 				tabContent.innerHTML = '<div class="tab-content-inner"><h2>' + tabName + '</h2><p>Content for ' + tabName + '.</p></div>';
 			}

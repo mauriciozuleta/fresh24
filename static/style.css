@@ -128,7 +128,7 @@
     }
     .aircraft-form-row {
         display: flex;
-        gap: 1rem;
+        gap: 2rem;
         margin-bottom: 0.75rem;
         flex-wrap: wrap;
     }
