@@ -200,7 +200,7 @@ function setupManagementUI() {
 		airportSelect.addEventListener('change', function() {
 			var airport = airportSelect.value;
 			if (!airport) {
-				addBranchBtn.textContent = 'Add Branch';
+				addBranchBtn.textContent = 'Region Core Data';
 				branchManager.value = '';
 				branchUser.value = '';
 				return;
@@ -211,7 +211,7 @@ function setupManagementUI() {
 				.then(function(response) { return response.json(); })
 				.then(function(data) {
 					if (data.exists) {
-						addBranchBtn.textContent = 'Edit Branch';
+						addBranchBtn.textContent = 'Branch Information';
 						branchManager.value = data.branch_manager || '';
 						branchUser.value = data.branch_user || '';
 					} else {
@@ -248,9 +248,9 @@ function setupManagementUI() {
 			})
 			.then(function(response) { return response.json(); })
 			.then(function(data) {
-				if (data.success) {
+					if (data.success) {
 					alert('Branch info saved successfully');
-					addBranchBtn.textContent = 'Edit Branch';
+					addBranchBtn.textContent = 'Branch Information';
 					loadManagementTable();
 				} else {
 					alert('Error: ' + (data.error || 'Unknown error'));
@@ -967,7 +967,7 @@ document.addEventListener('DOMContentLoaded', function() {
 							'<input type="text" id="branch-user" class="aircraft-form-control" placeholder="Enter branch user name">' +
 							'</div>' +
 							'<div style="display: flex; align-items: flex-end; margin-left: 3rem;">' +
-							'<button id="add-branch-btn" class="primary-button" type="button" style="white-space: nowrap;">Add Branch</button>' +
+							'<button id="add-branch-btn" class="primary-button" type="button" style="white-space: nowrap;">Region Core Data</button>' +
 							'</div>' +
 							'</div></div>' +
 							'<div id="table-container" style="width:100%; display:flex; justify-content:center; align-items:center; margin:2rem 0;">' +
@@ -982,7 +982,110 @@ document.addEventListener('DOMContentLoaded', function() {
 						.catch(function() {
 							 tabContent.innerHTML = '<div class="tab-content-inner"><h2>Commercial Structure Management</h2><p>Could not load regions.</p></div>';
 						});
-			} else {
+					} else if (tabName === 'Region Core Data') {
+						// Render a focused Region Core Data form (regions dropdown + manager + countries)
+						fetch('/api/regions/')
+							.then(function(response) { return response.json(); })
+							.then(function(data) {
+								var regions = data.regions || [];
+								var options = regions.map(function(r) { return '<option value="' + r + '">' + r + '</option>'; }).join('');
+								tabContent.innerHTML = '<div class="tab-content-inner aircraft-form-page">' +
+									'<div class="aircraft-header"><h1 class="aircraft-title">Region Core Data</h1></div>' +
+									'<div class="aircraft-form-container">' +
+									'<div class="aircraft-form-section">' +
+									'<div class="aircraft-section-title">Region & Country</div>' +
+									'<div class="aircraft-form-row three-col">' +
+									'<div class="form-group">' +
+									'<label for="region-core-select">Region</label>' +
+									'<select id="region-core-select" class="aircraft-form-control"><option value="">-- Select Region --</option>' + options + '</select>' +
+									'</div>' +
+									'<div class="form-group">' +
+									'<label for="region-core-manager">Regional Manager</label>' +
+									'<input type="text" id="region-core-manager" class="aircraft-form-control" readonly>' +
+									'</div>' +
+									'<div class="form-group">' +
+									'<label for="region-core-country">Country</label>' +
+									'<select id="region-core-country" class="aircraft-form-control" disabled><option value="">Select a region first</option></select>' +
+									'</div>' +
+									'</div>' +
+									'</div>' +
+									'<div class="aircraft-form-section">' +
+									'<div class="aircraft-section-title">Country Tax & Profit Information</div>' +
+									'<div class="aircraft-form-row three-col">' +
+									'<div class="form-group">' +
+									'<label for="export-sales-tax">Export Sales Tax</label>' +
+									'<input type="number" id="export-sales-tax" class="aircraft-form-control" placeholder="Enter export sales tax">' +
+									'</div>' +
+									'<div class="form-group">' +
+									'<label for="export-other-tax">Export Other Tax</label>' +
+									'<input type="number" id="export-other-tax" class="aircraft-form-control" placeholder="Enter export other tax">' +
+									'</div>' +
+									'<div class="form-group">' +
+									'<label for="country-profit">Country Profit</label>' +
+									'<input type="number" id="country-profit" class="aircraft-form-control" placeholder="Enter country profit">' +
+									'</div>' +
+									'<div class="form-group">' +
+									'<label for="country-revenue-tax">Country Revenue Tax</label>' +
+									'<input type="number" id="country-revenue-tax" class="aircraft-form-control" placeholder="Enter country revenue tax">' +
+									'</div>' +
+									'<div class="form-group">' +
+									'<label for="import-tax">Import Tax</label>' +
+									'<input type="number" id="import-tax" class="aircraft-form-control" placeholder="Enter import tax">' +
+									'</div>' +
+									'<div class="form-group">' +
+									'<label for="other-tax">Other Tax</label>' +
+									'<input type="number" id="other-tax" class="aircraft-form-control" placeholder="Enter other tax">' +
+									'</div>' +
+									'<div class="form-group">' +
+									'<label for="country-import-profit">Country Import Profit</label>' +
+									'<input type="number" id="country-import-profit" class="aircraft-form-control" placeholder="Enter country import profit">' +
+									'</div>' +
+									'</div>' +
+									'</div>' +
+									'</div></div>';
+								// Wire up change handler
+								setTimeout(function() {
+									var regionSel = document.getElementById('region-core-select');
+									var managerInput = document.getElementById('region-core-manager');
+									var countrySel = document.getElementById('region-core-country');
+									if (!regionSel) return;
+									regionSel.addEventListener('change', function() {
+										var region = regionSel.value;
+										if (!region) {
+											managerInput.value = '';
+											countrySel.innerHTML = '<option value="">Select a region first</option>';
+											countrySel.disabled = true;
+											return;
+										}
+										// fetch manager
+										fetch('/api/check-region-info/?region=' + encodeURIComponent(region))
+											.then(function(r) { return r.json(); })
+											.then(function(d) { managerInput.value = d.regional_manager || ''; })
+											.catch(function() { managerInput.value = ''; });
+										// fetch countries
+										fetch('/api/countries-by-region/?region=' + encodeURIComponent(region))
+											.then(function(r) { return r.json(); })
+											.then(function(d) {
+												var countries = d.countries || [];
+												if (countries.length > 0) {
+													countrySel.innerHTML = countries.map(function(c) { return '<option value="' + c.country_code + '">' + c.name + '</option>'; }).join('');
+													countrySel.disabled = false;
+												} else {
+													countrySel.innerHTML = '<option value="">No countries found</option>';
+													countrySel.disabled = true;
+												}
+											})
+											.catch(function() {
+												countrySel.innerHTML = '<option value="">Error loading</option>';
+												countrySel.disabled = true;
+											});
+									});
+								}, 30);
+							})
+							.catch(function() {
+								tabContent.innerHTML = '<div class="tab-content-inner"><h2>Region Core Data</h2><p>Could not load regions.</p></div>';
+							});
+					} else {
 				tabContent.innerHTML = '<div class="tab-content-inner"><h2>' + tabName + '</h2><p>Content for ' + tabName + '.</p></div>';
 			}
 		}
