@@ -1,4 +1,4 @@
-// Populate airports dropdown based on selected country
+﻿// Populate airports dropdown based on selected country
 function setupCountryAirports() {
 	var countrySelect = document.getElementById('country-select');
 	var airportSelect = document.getElementById('airport-select');
@@ -111,6 +111,7 @@ function setupManagementUI() {
 					editRegionBtn.textContent = 'Edit Region';
 					countrySelect.disabled = false;
 					loadManagementTable();
+
 				} else {
 					alert('Error: ' + (data.error || 'Unknown error'));
 				}
@@ -184,6 +185,7 @@ function setupManagementUI() {
 					addCountryBtn.textContent = 'Edit Country';
 					airportSelect.disabled = false;
 					loadManagementTable();
+
 				} else {
 					alert('Error: ' + (data.error || 'Unknown error'));
 				}
@@ -252,6 +254,7 @@ function setupManagementUI() {
 					alert('Branch info saved successfully');
 					addBranchBtn.textContent = 'Branch Information';
 					loadManagementTable();
+
 				} else {
 					alert('Error: ' + (data.error || 'Unknown error'));
 				}
@@ -969,8 +972,11 @@ document.addEventListener('DOMContentLoaded', function() {
 							'<div style="display: flex; align-items: flex-end; margin-left: 3rem;">' +
 							'<button id="add-branch-btn" class="primary-button" type="button" style="white-space: nowrap;">Region Core Data</button>' +
 							'</div>' +
-							'</div></div>' +
-							'<div id="table-container" style="width:100%; display:flex; justify-content:center; align-items:center; margin:2rem 0;">' +
+											'</div></div>' +
+											'<div id="map-container" style="width:100%; height:400px; margin:2rem 0; border:2px solid #0078d4; border-radius:8px;">' +
+											'<div id="region-map" style="width:100%; height:100%;"></div>' +
+											'</div>' +
+											'<div id="table-container" style="width:100%; display:flex; justify-content:center; align-items:center; margin:2rem 0;">' +
 							'<div id="table-placeholder" style="width:90%; min-height:60px; background:#222; color:#fff; border:2px dashed #0078d4; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:1.2rem; margin:2rem auto; text-align:center;">' +
 							'<span>TABLE PLACEHOLDER — Table will be built here. If you see this, the divider is working. (Bug tracking)</span>' +
 							'</div></div>';
@@ -978,6 +984,7 @@ document.addEventListener('DOMContentLoaded', function() {
 							setupCountryAirports();
 							setupManagementUI();
 							loadManagementTable();
+							initializeRegionMap(regions);
 						})
 						.catch(function() {
 							 tabContent.innerHTML = '<div class="tab-content-inner"><h2>Commercial Structure Management</h2><p>Could not load regions.</p></div>';
@@ -1254,7 +1261,26 @@ document.addEventListener('DOMContentLoaded', function() {
 							.catch(function() {
 								tabContent.innerHTML = '<div class="tab-content-inner"><h2>Region Core Data</h2><p>Could not load regions.</p></div>';
 							});
-					} else {
+				} else if (tabName === 'Branch Information') {
+					// Fetch regions and render Branch Information tab with map
+					fetch('/api/regions/')
+						.then(function(response) { return response.json(); })
+						.then(function(data) {
+							var regions = data.regions || [];
+							tabContent.innerHTML = '<div class="tab-content-inner"><h1>Branch Information Management</h1>' +
+								'<div id="map-container" style="width:100%; height:500px; margin:2rem 0; border:2px solid #0078d4; border-radius:8px;">' +
+								'<div id="region-map" style="width:100%; height:100%;"></div>' +
+								'</div>' +
+								'<div id="branch-info-content" style="margin-top:2rem;">' +
+								'<p>Select a region on the map to view branch information.</p>' +
+								'</div></div>';
+							setTimeout(function() { initializeRegionMap(regions); }, 100);
+						})
+						.catch(function() {
+							tabContent.innerHTML = '<div class="tab-content-inner"><h2>Branch Information</h2><p>Could not load regions.</p></div>';
+						});
+			} else {
+				console.log('Unknown tab:', tabName);
 				tabContent.innerHTML = '<div class="tab-content-inner"><h2>' + tabName + '</h2><p>Content for ' + tabName + '.</p></div>';
 			}
 		}
@@ -1265,11 +1291,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
 	// Global function to close only the current tab
 	window.closeCurrentTab = function() {
-	  if (!currentWorkspace) return;
-	  var ws = workspaces[currentWorkspace];
-	  var tabName = ws.activeTab;
-	  if (tabName && ws.openTabs[tabName]) {
-		var tab = ws.openTabs[tabName];
+		if (!currentWorkspace) return;
+		var ws = workspaces[currentWorkspace];
+		var tabName = ws.activeTab;
+		if (tabName && ws.openTabs[tabName]) {
+			var tab = ws.openTabs[tabName];
 		tabBar.removeChild(tab);
 		delete ws.openTabs[tabName];
 		var tabKeys = Object.keys(ws.openTabs);
@@ -1311,3 +1337,45 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 	}
 });
+
+// Initialize region map with tooltips
+function initializeRegionMap(regions) {
+	setTimeout(function() {
+		var mapEl = document.getElementById('region-map');
+		if (!mapEl || !window.L) return;
+		
+		// Create map
+		var map = L.map('region-map').setView([20, 0], 2);
+		
+		// Add tile layer
+		L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+			attribution: '&copy; OpenStreetMap contributors'
+		}).addTo(map);
+		
+		// Create example GeoJSON for regions (replace with real data)
+		regions.forEach(function(region, idx) {
+			var lat = 20 + (idx * 15);
+			var lng = -80 + (idx * 40);
+			
+			// Create a circle marker for each region
+			var marker = L.circle([lat, lng], {
+				color: '#0078d4',
+				fillColor: '#0078d4',
+				fillOpacity: 0.3,
+				radius: 500000
+			}).addTo(map);
+			
+			// Bind tooltip with region info
+			marker.bindTooltip('<strong>' + region + '</strong><br>Click for details', {
+				permanent: false,
+				direction: 'top'
+			});
+			
+			// Optional: add click handler
+			marker.on('click', function() {
+				alert('Region: ' + region);
+			});
+		});
+	}, 100);
+}
+
