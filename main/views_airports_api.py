@@ -12,17 +12,19 @@ def airports_by_country_api(request):
     except Country.DoesNotExist:
         return JsonResponse({'airports': []})
     
-    # Get all branches for this country (using Country FK)
-    branches = BranchInfo.objects.filter(country=country_obj).select_related('airport')
+    # Get all airports for this country (not just ones with branches)
+    airports = Airport.objects.filter(country=country_obj.name)
     
-    # Build data from branches
+    # Build data from all airports
     data = []
-    for branch_info in branches:
+    for airport in airports:
+        # Try to get branch info if it exists
+        branch_info = BranchInfo.objects.filter(airport=airport, country=country_obj).first()
         data.append({
-            'id': branch_info.airport.pk,
-            'iata_code': branch_info.airport.iata_code,
-            'city': branch_info.airport.city,
-            'manager': branch_info.branch_manager
+            'id': airport.pk,
+            'iata_code': airport.iata_code,
+            'city': airport.city,
+            'manager': branch_info.branch_manager if branch_info else ''
         })
     
     return JsonResponse({'airports': data})

@@ -36,16 +36,19 @@ def airports_by_country(request):
     # Get all branches for this country (using Country FK)
     branches = BranchInfo.objects.filter(country=country_obj).select_related('airport')
     
-    # Build data from branches
+    # Get all airports for this country
+    airports = Airport.objects.filter(country=country_name)
+    print(f"Found {airports.count()} airports for {country_name}")
     data = []
-    for branch_info in branches:
-        data.append({
-            'id': branch_info.airport.pk,
-            'iata_code': branch_info.airport.iata_code,
-            'city': branch_info.airport.city,
-            'manager': branch_info.branch_manager
-        })
-        print(f"Found branch: {branch_info.airport.iata_code} - Manager: {branch_info.branch_manager}")
-    
-    print(f"Returning {len(data)} airports with branches for {country_name}")
+    for airport in airports:
+        branch_info = BranchInfo.objects.filter(airport=airport, country=country_obj).first()
+        airport_data = {
+            'id': airport.pk,
+            'iata_code': airport.iata_code,
+            'city': airport.city,
+            'manager': branch_info.branch_manager if branch_info else '',
+        }
+        print(f"Adding airport: {airport_data}")
+        data.append(airport_data)
+    print(f"Returning {len(data)} airports for {country_name}")
     return JsonResponse({'airports': data})

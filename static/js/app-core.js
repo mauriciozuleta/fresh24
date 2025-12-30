@@ -249,9 +249,6 @@ document.addEventListener('DOMContentLoaded', function() {
 							'<button id="add-branch-btn" class="primary-button" type="button" style="white-space: nowrap;">Region Core Data</button>' +
 							'</div>' +
 											'</div></div>' +
-											'<div id="map-container" style="width:100%; height:400px; margin:2rem 0; border:2px solid #0078d4; border-radius:8px;">' +
-											'<div id="region-map" style="width:100%; height:100%;"></div>' +
-											'</div>' +
 											'<div id="table-container" style="width:100%; display:flex; justify-content:center; align-items:center; margin:2rem 0;">' +
 							'<div id="table-placeholder" style="width:90%; min-height:60px; background:#222; color:#fff; border:2px dashed #0078d4; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:1.2rem; margin:2rem auto; text-align:center;">' +
 							'<span>TABLE PLACEHOLDER — Table will be built here. If you see this, the divider is working. (Bug tracking)</span>' +
@@ -260,7 +257,6 @@ document.addEventListener('DOMContentLoaded', function() {
 							setupCountryAirports();
 							setupManagementUI();
 							loadManagementTable();
-							initializeRegionMap(regions);
 						})
 						.catch(function() {
 							 tabContent.innerHTML = '<div class="tab-content-inner"><h2>Commercial Structure Management</h2><p>Could not load regions.</p></div>';
