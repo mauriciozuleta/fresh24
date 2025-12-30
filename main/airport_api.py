@@ -19,15 +19,33 @@ def airport_lookup(request):
     return JsonResponse({'error': 'Airport not found'}, status=404)
 
 def airports_by_country(request):
+    country_code = request.GET.get('country')
     country_id = request.GET.get('country_id')
-    if not country_id:
+    if not country_code and not country_id:
         return JsonResponse({'airports': []})
-    from main.models import Country, Airport
+    from main.models import Country, Airport, BranchInfo
     try:
-        country_obj = Country.objects.get(pk=country_id)
+        if country_code:
+            country_obj = Country.objects.get(country_code=country_code)
+        else:
+            country_obj = Country.objects.get(pk=country_id)
         country_name = country_obj.name
     except Country.DoesNotExist:
         return JsonResponse({'airports': []})
-    airports = Airport.objects.filter(country=country_name).order_by('iata_code')
-    data = [{'id': a.pk, 'iata_code': a.iata_code} for a in airports]
+    
+    # Get all branches for this country (using Country FK)
+    branches = BranchInfo.objects.filter(country=country_obj).select_related('airport')
+    
+    # Build data from branches
+    data = []
+    for branch_info in branches:
+        data.append({
+            'id': branch_info.airport.pk,
+            'iata_code': branch_info.airport.iata_code,
+            'city': branch_info.airport.city,
+            'manager': branch_info.branch_manager
+        })
+        print(f"Found branch: {branch_info.airport.iata_code} - Manager: {branch_info.branch_manager}")
+    
+    print(f"Returning {len(data)} airports with branches for {country_name}")
     return JsonResponse({'airports': data})

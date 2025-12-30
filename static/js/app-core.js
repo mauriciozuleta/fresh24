@@ -1045,10 +1045,101 @@ document.addEventListener('DOMContentLoaded', function() {
 									'<button id="update-country-info-btn" class="primary-button" type="button" style="white-space:nowrap; padding:0.5rem 1.5rem;">Update Country Information</button>' +
 									'</div>' +
 									'</div>' +
+									'<div class="aircraft-form-section">' +
+									'<div class="aircraft-section-title">Branches Information</div>' +
+									'<div class="aircraft-form-row" style="gap:1rem;">' +
+									'<div class="form-group" style="flex:1; max-width:260px;">' +
+									'<label for="branch-airport-select">Airport</label>' +
+									'<select id="branch-airport-select" class="aircraft-form-control" disabled><option value="">Select a country first</option></select>' +
+									'</div>' +
+									'<div class="form-group" style="flex:1; max-width:260px;">' +
+									'<label for="branch-manager-name">Branch Manager</label>' +
+									'<input type="text" id="branch-manager-name" class="aircraft-form-control" readonly>' +
+									'</div>' +
+									'</div>' +
+									'<div class="aircraft-form-row three-col" style="margin-top:1rem;">' +
+									'<div class="form-group">' +
+									'<label for="marketing-expenses">Marketing Expenses</label>' +
+									'<input type="number" id="marketing-expenses" class="aircraft-form-control" placeholder="Enter marketing expenses">' +
+									'</div>' +
+									'<div class="form-group">' +
+									'<label for="payroll">Payroll</label>' +
+									'<input type="number" id="payroll" class="aircraft-form-control" placeholder="Enter payroll">' +
+									'</div>' +
+									'<div class="form-group">' +
+									'<label for="rent-expenses">Rent Expenses</label>' +
+									'<input type="number" id="rent-expenses" class="aircraft-form-control" placeholder="Enter rent expenses">' +
+									'</div>' +
+									'<div class="form-group">' +
+									'<label for="utilities-expenses">Utilities Expenses</label>' +
+									'<input type="number" id="utilities-expenses" class="aircraft-form-control" placeholder="Enter utilities expenses">' +
+									'</div>' +
+									'<div class="form-group">' +
+									'<label for="office-supplies">Office Supplies</label>' +
+									'<input type="number" id="office-supplies" class="aircraft-form-control" placeholder="Enter office supplies">' +
+									'</div>' +
+									'<div class="form-group">' +
+									'<label for="other-expenses">Other Expenses</label>' +
+									'<input type="number" id="other-expenses" class="aircraft-form-control" placeholder="Enter other expenses">' +
+									'</div>' +
+									'</div>' +
+									'<div style="width:100%; display:flex; justify-content:center; margin-top:1.5rem;">' +
+									'<button id="save-branch-costs-btn" class="primary-button" style="width:100%; max-width:700px; font-size:1.1rem; padding:0.75rem 0;">Save Branch Costs Information</button>' +
+									'</div>' +
 									'</div>' +
 									'</div></div>';
 								// Wire up change handler
 								setTimeout(function() {
+									var branchAirportSelect = document.getElementById('branch-airport-select');
+									var branchManagerInput = document.getElementById('branch-manager-name');
+									var countrySel = document.getElementById('region-core-country');
+									
+									function updateBranchManager() {
+										var selected = branchAirportSelect.options[branchAirportSelect.selectedIndex];
+										if (selected && selected.value) {
+											branchManagerInput.value = selected.getAttribute('data-manager') || '';
+											console.log('Updated manager:', branchManagerInput.value, 'from:', selected.getAttribute('data-manager'));
+										}
+									}
+									
+									function updateBranchAirportsAndManager() {
+										var country = countrySel.value;
+										if (!country) {
+											branchAirportSelect.innerHTML = '<option value="">Select a country first</option>';
+											branchAirportSelect.disabled = true;
+											branchManagerInput.value = '';
+											return;
+										}
+										console.log('Fetching airports for country:', country);
+										fetch('/api/airports-by-country/?country=' + encodeURIComponent(country))
+											.then(function(response) { return response.json(); })
+											.then(function(data) {
+												console.log('Airports received:', data);
+												console.log('First airport detail:', data.airports && data.airports[0]);
+												var airports = data.airports || [];
+												if (airports.length > 0) {
+													branchAirportSelect.innerHTML = airports.map(function(airport) {
+														return '<option value="' + airport.iata_code + '" data-manager="' + (airport.manager || '') + '">' + airport.iata_code + ' - ' + airport.city + '</option>';
+													}).join('');
+													branchAirportSelect.disabled = false;
+													// Set manager for first airport
+													updateBranchManager();
+												} else {
+													branchAirportSelect.innerHTML = '<option value="">No airports found</option>';
+													branchAirportSelect.disabled = true;
+													branchManagerInput.value = '';
+												}
+											})
+											.catch(function(err) {
+												console.error('Error fetching airports:', err);
+											});
+									}
+									
+									if (countrySel && branchAirportSelect) {
+										branchAirportSelect.addEventListener('change', updateBranchManager);
+										countrySel.addEventListener('change', updateBranchAirportsAndManager);
+										updateBranchAirportsAndManager(); // Call once on load
+									}
 									var updateBtn = document.getElementById('update-country-info-btn');
 									if (updateBtn) {
 										updateBtn.addEventListener('click', function() {
@@ -1078,7 +1169,7 @@ document.addEventListener('DOMContentLoaded', function() {
 											.then(function(d) {
 												var countries = d.countries || [];
 												if (countries.length > 0) {
-													countrySel.innerHTML = countries.map(function(c) { return '<option value="' + c.country_code + '">' + c.name + '</option>'; }).join('');
+													 countrySel.innerHTML = countries.map(function(c) { return '<option value="' + (c.code || c.country_code) + '">' + c.name + '</option>'; }).join('');
 													countrySel.disabled = false;
 												} else {
 													countrySel.innerHTML = '<option value="">No countries found</option>';
