@@ -3,6 +3,7 @@ from django.urls import path
 from . import views
 from . import views_countries_api
 from . import views_airports_api
+from . import views_management_api
 from .airport_api import airport_lookup
 
 urlpatterns = [
@@ -19,6 +20,15 @@ urlpatterns = [
     path('api/countries-by-region/', views_countries_api.countries_by_region_api, name='countries_by_region_api'),
     path('api/airports-by-country/', views_airports_api.airports_by_country_api, name='airports_by_country_api'),
     path('mode-tab/', views.mode_tab, name='mode_tab'),
+
+    # Management API endpoints
+    path('api/check-region-info/', views_management_api.check_region_info, name='check_region_info'),
+    path('api/check-country-info/', views_management_api.check_country_info, name='check_country_info'),
+    path('api/check-branch-info/', views_management_api.check_branch_info, name='check_branch_info'),
+    path('api/save-region-info/', views_management_api.save_region_info, name='save_region_info'),
+    path('api/save-country-info/', views_management_api.save_country_info, name='save_country_info'),
+    path('api/save-branch-info/', views_management_api.save_branch_info, name='save_branch_info'),
+    path('api/get-management-table-data/', views_management_api.get_management_table_data, name='get_management_table_data'),
 
     # Delete endpoints
     path('delete-charter-provider/<int:pk>/', views.delete_charter_provider, name='delete_charter_provider'),

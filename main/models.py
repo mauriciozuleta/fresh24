@@ -111,3 +111,41 @@ class Airport(models.Model):
 
 	def __str__(self):
 		return f"{self.iata_code} - {self.name}"
+
+
+class RegionalInfo(models.Model):
+	region = models.CharField(max_length=64, unique=True)
+	regional_manager = models.CharField(max_length=100)
+	region_user = models.CharField(max_length=100)
+	created_at = models.DateTimeField(auto_now_add=True)
+	updated_at = models.DateTimeField(auto_now=True)
+
+	def __str__(self):
+		return f"{self.region} - {self.regional_manager}"
+
+
+class CountryInfo(models.Model):
+	country = models.ForeignKey(Country, on_delete=models.CASCADE)
+	region = models.CharField(max_length=64)
+	country_manager = models.CharField(max_length=100)
+	country_user = models.CharField(max_length=100)
+	created_at = models.DateTimeField(auto_now_add=True)
+	updated_at = models.DateTimeField(auto_now=True)
+
+	class Meta:
+		unique_together = ['country', 'region']
+
+	def __str__(self):
+		return f"{self.country.name} - {self.country_manager}"
+
+
+class BranchInfo(models.Model):
+	airport = models.ForeignKey(Airport, on_delete=models.CASCADE)
+	country = models.ForeignKey(Country, on_delete=models.CASCADE)
+	branch_manager = models.CharField(max_length=100)
+	branch_user = models.CharField(max_length=100)
+	created_at = models.DateTimeField(auto_now_add=True)
+	updated_at = models.DateTimeField(auto_now=True)
+
+	def __str__(self):
+		return f"{self.airport.iata_code} - {self.branch_manager}"

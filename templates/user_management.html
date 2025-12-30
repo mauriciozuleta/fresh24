@@ -8,61 +8,73 @@
 </head>
 <body>
     <h1>Commercial Structure Management</h1>
-    <div class="aircraft-form-row" style="gap: 2rem;">
-        <div class="form-group">
-            <label for="region-select">Select Region:</label>
-            <select id="region-select" class="aircraft-form-control">
-                <option value="">Loading regions...</option>
-            </select>
+    <div id="form-container" style="background:#23272e; padding:2rem; border-radius:10px; margin-bottom:2rem;">
+        <div class="aircraft-form-row" style="gap: 2rem;">
+            <div class="form-group">
+                <label for="region-select">Select Region:</label>
+                <select id="region-select" class="aircraft-form-control">
+                    <option value="">Loading regions...</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="regional-manager">Regional Manager</label>
+                <input type="text" id="regional-manager" class="aircraft-form-control" placeholder="Enter manager name">
+            </div>
+            <div class="form-group">
+                <label for="region-user">Region User</label>
+                <input type="text" id="region-user" class="aircraft-form-control" placeholder="Enter user name">
+            </div>
+            <div style="display: flex; align-items: flex-end; margin-left: 3rem;">
+                <button id="edit-region-btn" class="primary-button" type="button" style="white-space: nowrap;">Edit Region</button>
+            </div>
         </div>
-        <div class="form-group">
-            <label for="regional-manager">Regional Manager</label>
-            <input type="text" id="regional-manager" class="aircraft-form-control" placeholder="Enter manager name">
+        <div class="aircraft-form-row" style="gap: 2rem; margin-top: 1.5rem;">
+            <div class="form-group" id="countries-group">
+                <label for="country-select">Countries:</label>
+                <select id="country-select" class="aircraft-form-control" disabled>
+                    <option value="">Select a region first</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="country-manager">Country Manager</label>
+                <input type="text" id="country-manager" class="aircraft-form-control" placeholder="Enter country manager name">
+            </div>
+            <div class="form-group">
+                <label for="country-user">Country User</label>
+                <input type="text" id="country-user" class="aircraft-form-control" placeholder="Enter country user name">
+            </div>
+            <div style="display: flex; align-items: flex-end; margin-left: 3rem;">
+                <button id="add-country-btn" class="primary-button" type="button" style="white-space: nowrap;">Add Country</button>
+            </div>
         </div>
-        <div class="form-group">
-            <label for="region-user">Region User</label>
-            <input type="text" id="region-user" class="aircraft-form-control" placeholder="Enter user name">
-        </div>
-        <div style="display: flex; align-items: flex-end; margin-left: 3rem;">
-            <button id="edit-region-btn" class="primary-button" type="button" style="white-space: nowrap;">Edit Region</button>
+        <div class="aircraft-form-row" style="gap: 2rem; margin-top: 1.5rem;">
+            <div class="form-group" id="airports-group">
+                <label for="airport-select">Airports:</label>
+                <select id="airport-select" class="aircraft-form-control" disabled>
+                    <option value="">Select a country first</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="branch-manager">Branch Manager</label>
+                <input type="text" id="branch-manager" class="aircraft-form-control" placeholder="Enter branch manager name">
+            </div>
+            <div class="form-group">
+                <label for="branch-user">Branch User</label>
+                <input type="text" id="branch-user" class="aircraft-form-control" placeholder="Enter branch user name">
+            </div>
+            <div style="display: flex; align-items: flex-end; margin-left: 3rem;">
+                <button id="add-branch-btn" class="primary-button" type="button" style="white-space: nowrap;">Add Branch</button>
+            </div>
         </div>
     </div>
-    <div class="aircraft-form-row" style="gap: 2rem; margin-top: 1.5rem;">
-        <div class="form-group" id="countries-group">
-            <label for="country-select">Countries:</label>
-            <select id="country-select" class="aircraft-form-control" disabled>
-                <option value="">Select a region first</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <label for="country-manager">Country Manager</label>
-            <input type="text" id="country-manager" class="aircraft-form-control" placeholder="Enter country manager name">
-        </div>
-        <div class="form-group">
-            <label for="country-user">Country User</label>
-            <input type="text" id="country-user" class="aircraft-form-control" placeholder="Enter country user name">
-        </div>
-        <div style="display: flex; align-items: flex-end; margin-left: 3rem;">
-            <button id="add-country-btn" class="primary-button" type="button" style="white-space: nowrap;">Add Country</button>
+    <div id="table-container" style="width:100%; display:flex; justify-content:center; align-items:center; margin:2rem 0;">
+        <div id="table-placeholder" style="width:90%; min-height:60px; background:#222; color:#fff; border:2px dashed #0078d4; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:1.2rem; margin:2rem auto; text-align:center;">
+            <span>TABLE PLACEHOLDER — Table will be built here. If you see this, the divider is working. (Bug tracking)</span>
         </div>
     </div>
-    <div class="aircraft-form-row" style="gap: 2rem; margin-top: 1.5rem;">
-        <div class="form-group" id="airports-group">
-            <label for="airport-select">Airports:</label>
-            <select id="airport-select" class="aircraft-form-control" disabled>
-                <option value="">Select a country first</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <label for="branch-manager">Branch Manager</label>
-            <input type="text" id="branch-manager" class="aircraft-form-control" placeholder="Enter branch manager name">
-        </div>
-        <div class="form-group">
-            <label for="branch-user">Branch User</label>
-            <input type="text" id="branch-user" class="aircraft-form-control" placeholder="Enter branch user name">
-        </div>
-        <div style="display: flex; align-items: flex-end; margin-left: 3rem;">
-            <button id="add-branch-btn" class="primary-button" type="button" style="white-space: nowrap;">Add Branch</button>
+    <div style="width:100%; display:flex; justify-content:center; align-items:center; margin:2rem 0;">
+        <div id="table-placeholder" style="width:90%; min-height:60px; background:#222; color:#fff; border:2px dashed #0078d4; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:1.2rem; margin:2rem auto; text-align:center;">
+            <span>TABLE PLACEHOLDER — Table will be built here. If you see this, the divider is working. (Bug tracking)</span>
         </div>
     </div>
     <div id="region-list">
