@@ -101,43 +101,70 @@ window.initializeRoutesTab = function() {
         .then(function(response) { return response.json(); })
         .then(function(data) {
             if (data.routes && data.routes.length > 0) {
-                var table = document.createElement('table');
-                table.style.width = '100%';
-                table.style.borderCollapse = 'collapse';
-                table.style.background = '#23272e';
-                table.style.color = '#fff';
-                table.style.marginTop = '1.5rem';
-                var thead = document.createElement('thead');
-                var hideFields = ['route_fuel_gls','fuel_cost','overflight_fee','overflight_cost','airport_fees_cost'];
-                var fields = Object.keys(data.routes[0]).filter(function(f){ return hideFields.indexOf(f) === -1; });
-                var tr = document.createElement('tr');
-                tr.style.background = '#26304a';
-                fields.forEach(function(f) {
-                    var th = document.createElement('th');
-                    th.textContent = f.replace(/_/g, ' ').toUpperCase();
-                    th.style.padding = '0.75rem';
-                    th.style.textAlign = 'left';
-                    th.style.borderBottom = '2px solid #4fc3f7';
-                    tr.appendChild(th);
+                // Filter out routes where distance > max_range_with_max_fuel
+                var filteredRoutes = data.routes.filter(function(route) {
+                    // If max_range_with_max_fuel is not present, allow the route
+                    if (route.max_range_with_max_fuel === undefined || route.max_range_with_max_fuel === null) return true;
+                    // If distance is not present, allow the route
+                    if (route.distance === undefined || route.distance === null) return true;
+                    return Number(route.distance) <= Number(route.max_range_with_max_fuel);
                 });
-                thead.appendChild(tr);
-                table.appendChild(thead);
-                var tbody = document.createElement('tbody');
-                data.routes.forEach(function(route) {
+                if (filteredRoutes.length > 0) {
+                    var table = document.createElement('table');
+                    table.style.width = '100%';
+                    table.style.borderCollapse = 'collapse';
+                    table.style.background = '#23272e';
+                    table.style.color = '#fff';
+                    table.style.marginTop = '1.5rem';
+                    var thead = document.createElement('thead');
+                    var hideFields = ['route_fuel_gls','fuel_cost','overflight_fee','overflight_cost','airport_fees_cost'];
+                    var fields = Object.keys(filteredRoutes[0]).filter(function(f){ return hideFields.indexOf(f) === -1; });
                     var tr = document.createElement('tr');
-                    tr.style.borderBottom = '1px solid #333';
+                    tr.style.background = '#26304a';
                     fields.forEach(function(f) {
-                        var td = document.createElement('td');
-                        td.textContent = route[f] !== null && route[f] !== undefined ? route[f] : '';
-                        td.style.padding = '0.75rem';
-                        tr.appendChild(td);
+                        var th = document.createElement('th');
+                        th.textContent = f.replace(/_/g, ' ').toUpperCase();
+                        th.style.padding = '0.75rem';
+                        th.style.textAlign = 'left';
+                        th.style.borderBottom = '2px solid #4fc3f7';
+                        tr.appendChild(th);
                     });
-                    tbody.appendChild(tr);
-                });
-                table.appendChild(tbody);
-                recordsContainer.innerHTML = '';
-                recordsContainer.appendChild(table);
-                saveState(recordsContainer.innerHTML);
+                    thead.appendChild(tr);
+                    table.appendChild(thead);
+                    var tbody = document.createElement('tbody');
+                    filteredRoutes.forEach(function(route) {
+                        var tr = document.createElement('tr');
+                        tr.style.borderBottom = '1px solid #333';
+                        fields.forEach(function(f) {
+                            var td = document.createElement('td');
+                            var value = route[f];
+                            // If value is a number, format to 2 decimals
+                            if (typeof value === 'number') {
+                                td.textContent = value.toFixed(2);
+                            } else if (!isNaN(value) && value !== null && value !== undefined && value !== '') {
+                                // If value is a string that can be converted to a number
+                                var num = Number(value);
+                                if (!isNaN(num)) {
+                                    td.textContent = num.toFixed(2);
+                                } else {
+                                    td.textContent = value;
+                                }
+                            } else {
+                                td.textContent = value !== null && value !== undefined ? value : '';
+                            }
+                            td.style.padding = '0.75rem';
+                            tr.appendChild(td);
+                        });
+                        tbody.appendChild(tr);
+                    });
+                    table.appendChild(tbody);
+                    recordsContainer.innerHTML = '';
+                    recordsContainer.appendChild(table);
+                    saveState(recordsContainer.innerHTML);
+                } else {
+                    recordsContainer.innerHTML = '<div>No route records found for this pair (all routes exceed aircraft max range with max fuel).</div>';
+                    saveState();
+                }
             } else {
                 recordsContainer.innerHTML = '<div>No route records found for this pair.</div>';
                 saveState();
