@@ -378,6 +378,23 @@ document.addEventListener('DOMContentLoaded', function() {
 										if (selected && selected.value) {
 											branchManagerInput.value = selected.getAttribute('data-manager') || '';
 											console.log('Updated manager:', branchManagerInput.value, 'from:', selected.getAttribute('data-manager'));
+											
+											// Fetch and populate all branch info fields
+											fetch('/api/get-branch-info/?airport_code=' + encodeURIComponent(selected.value))
+												.then(function(response) { return response.json(); })
+												.then(function(result) {
+													if (result.success && result.data) {
+														document.getElementById('marketing-expenses').value = result.data.marketing_expenses || '';
+														document.getElementById('payroll').value = result.data.payroll || '';
+														document.getElementById('rent-expenses').value = result.data.rent_expenses || '';
+														document.getElementById('utilities-expenses').value = result.data.utilities_expenses || '';
+														document.getElementById('office-supplies').value = result.data.office_supplies || '';
+														document.getElementById('other-expenses').value = result.data.other_expenses || '';
+													}
+												})
+												.catch(function(err) {
+													console.error('Error fetching branch info:', err);
+												});
 										}
 									}
 									

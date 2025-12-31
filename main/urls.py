@@ -32,6 +32,7 @@ urlpatterns = [
     path('api/get-management-table-data/', views_management_api.get_management_table_data, name='get_management_table_data'),
     path('api/update-country-information/', views_country_branch_api.update_country_information, name='update_country_information'),
     path('api/save-branch-costs/', views_country_branch_api.save_branch_costs, name='save_branch_costs'),
+    path('api/get-branch-info/', views_country_branch_api.get_branch_info, name='get_branch_info'),
 
     # Delete endpoints
     path('delete-charter-provider/<int:pk>/', views.delete_charter_provider, name='delete_charter_provider'),

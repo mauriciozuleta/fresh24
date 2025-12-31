@@ -5,6 +5,36 @@ import json
 from .models import Country, CountryInfo, BranchInfo, Airport
 
 
+def get_branch_info(request):
+    """Get branch information for a specific airport"""
+    airport_code = request.GET.get('airport_code')
+    
+    if not airport_code:
+        return JsonResponse({'success': False, 'error': 'Airport code is required'}, status=400)
+    
+    try:
+        airport_obj = Airport.objects.get(iata_code=airport_code)
+        branch_info = BranchInfo.objects.get(airport=airport_obj)
+        
+        return JsonResponse({
+            'success': True,
+            'data': {
+                'marketing_expenses': str(branch_info.marketing_expenses) if branch_info.marketing_expenses else '',
+                'payroll': str(branch_info.payroll) if branch_info.payroll else '',
+                'rent_expenses': str(branch_info.rent_expenses) if branch_info.rent_expenses else '',
+                'utilities_expenses': str(branch_info.utilities_expenses) if branch_info.utilities_expenses else '',
+                'office_supplies': str(branch_info.office_supplies) if branch_info.office_supplies else '',
+                'other_expenses': str(branch_info.other_expenses) if branch_info.other_expenses else ''
+            }
+        })
+    except Airport.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Airport not found'}, status=404)
+    except BranchInfo.DoesNotExist:
+        return JsonResponse({'success': True, 'data': {}})  # Return empty data if no branch info exists yet
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
 @csrf_exempt
 @require_http_methods(["POST"])
 def update_country_information(request):
