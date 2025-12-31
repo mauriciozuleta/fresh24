@@ -1,10 +1,35 @@
 from django.http import JsonResponse
-from .models import Country
+from .models import Country, CountryInfo, RegionalInfo
 
 def countries_by_region_api(request):
     region = request.GET.get('region')
     if not region:
         return JsonResponse({'countries': []})
+    
+    # Get regional manager
+    regional_manager = 'Not Assigned'
+    try:
+        regional_info = RegionalInfo.objects.get(region=region)
+        regional_manager = regional_info.regional_manager
+    except RegionalInfo.DoesNotExist:
+        pass
+    
     countries = Country.objects.filter(region=region).order_by('name')
-    data = [{'name': c.name, 'code': c.country_code} for c in countries]
+    data = []
+    for c in countries:
+        country_manager = 'Not Assigned'
+        try:
+            country_info = CountryInfo.objects.get(country=c, region=region)
+            country_manager = country_info.country_manager
+        except CountryInfo.DoesNotExist:
+            pass
+        
+        data.append({
+            'name': c.name,
+            'code': c.country_code,
+            'country_code': c.country_code,
+            'country_manager': country_manager,
+            'region_manager': regional_manager
+        })
+    
     return JsonResponse({'countries': data})

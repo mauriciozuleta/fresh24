@@ -19,6 +19,7 @@ def get_branch_info(request):
         return JsonResponse({
             'success': True,
             'data': {
+                'branch_manager': branch_info.branch_manager,
                 'marketing_expenses': str(branch_info.marketing_expenses) if branch_info.marketing_expenses else '',
                 'payroll': str(branch_info.payroll) if branch_info.payroll else '',
                 'rent_expenses': str(branch_info.rent_expenses) if branch_info.rent_expenses else '',

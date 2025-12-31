@@ -49,7 +49,15 @@ from .models import Airport
 def airport_list_api(request):
 	airports = Airport.objects.all().order_by('iata_code')
 	data = [
-		{'code': a.iata_code, 'name': a.name}
+		{
+			'code': a.iata_code, 
+			'name': a.name,
+			'iata_code': a.iata_code,
+			'city': a.city,
+			'country': a.country,
+			'latitude': a.latitude,
+			'longitude': a.longitude
+		}
 		for a in airports
 	]
 	return JsonResponse({'airports': data})
