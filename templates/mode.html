@@ -106,8 +106,8 @@ function initializeModeTabHandlers() {
     }
     countrySelect._countryChangeHandler = function() {
       var countryId = countrySelect.value;
-      if (!countryId) return;
-      fetch('/api/airports-by-country/?country_id=' + countryId)
+      if (!countryId) return Promise.resolve();
+      return fetch('/api/airports-by-country/?country_id=' + countryId)
         .then(response => response.json())
         .then(data => {
           while (mainBaseSelect.options.length > 0) mainBaseSelect.remove(0);
@@ -134,7 +134,10 @@ function initializeModeTabHandlers() {
           addOpt.textContent = 'Add Base';
           mainBaseSelect.appendChild(addOpt);
         })
-        .catch(err => console.error('Error fetching airports:', err));
+        .catch(err => {
+          console.error('Error fetching airports:', err);
+          throw err;
+        });
     };
     countrySelect.addEventListener('change', countrySelect._countryChangeHandler);
   }
@@ -191,19 +194,28 @@ function initializeModeTabHandlers() {
             if (data.data.block_hour_cost) document.getElementById('id_block_hour_cost').value = data.data.block_hour_cost;
             if (data.data.type) document.getElementById('id_type').value = data.data.type;
             
+            // Set aircraft first (doesn't depend on country)
+            if (data.data.aircraft) document.getElementById('id_aircraft').value = data.data.aircraft;
+            
             // Trigger country change to populate airports, then set main_base
             if (data.data.country) {
               const countrySelect = document.getElementById('id_country');
               const mainBaseSelect = document.getElementById('id_main_base');
               
               if (countrySelect && countrySelect._countryChangeHandler) {
-                countrySelect._countryChangeHandler();
-                
-                // Wait for airports to load, then set values
-                setTimeout(function() {
-                  if (data.data.main_base) mainBaseSelect.value = data.data.main_base;
-                  if (data.data.aircraft) document.getElementById('id_aircraft').value = data.data.aircraft;
-                }, 500);
+                // Call the handler to populate airports for the selected country
+                countrySelect._countryChangeHandler().then(function() {
+                  // After airports are loaded, set the main_base value
+                  if (data.data.main_base) {
+                    mainBaseSelect.value = data.data.main_base;
+                  }
+                }).catch(function(err) {
+                  console.error('Error loading airports:', err);
+                  // Still try to set the value even if there was an error
+                  if (data.data.main_base) {
+                    mainBaseSelect.value = data.data.main_base;
+                  }
+                });
               }
             }
             

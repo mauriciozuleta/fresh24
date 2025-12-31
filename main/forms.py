@@ -28,10 +28,37 @@ class CharterProviderForm(forms.ModelForm):
         from .models import Country, Airport
         super().__init__(*args, **kwargs)
         self.fields['country'].queryset = Country.objects.all().order_by('name')
-        airports = list(Airport.objects.all().order_by('iata_code'))
-        self.fields['main_base'].queryset = Airport.objects.all().order_by('iata_code')
+
+        # Default: all airports
+        airports = Airport.objects.all().order_by('iata_code')
+        country = None
+        # If editing an instance, filter airports by the provider's country
+        if 'instance' in kwargs and kwargs['instance']:
+            country = kwargs['instance'].country
+        # If form is bound and country is in data, use that
+        elif 'data' in kwargs and kwargs['data'].get('country'):
+            try:
+                country_id = kwargs['data'].get('country')
+                country = Country.objects.get(pk=country_id)
+            except Exception:
+                country = None
+        current_main_base = None
+        if 'instance' in kwargs and kwargs['instance'] and kwargs['instance'].main_base:
+            current_main_base = kwargs['instance'].main_base
+
+        if country:
+            # Filter airports where Airport.country matches Country.country_code
+            filtered_airports = airports.filter(country=country.country_code)
+        else:
+            filtered_airports = airports
+
+        # Always include the current main_base airport if set and not in filtered_airports
+        if current_main_base and current_main_base not in filtered_airports:
+            filtered_airports = list(filtered_airports) + [current_main_base]
+
+        self.fields['main_base'].queryset = Airport.objects.filter(pk__in=[a.pk for a in filtered_airports])
         # Add 'Add Base' option at the end
-        choices = [(a.pk, a.iata_code) for a in airports]
+        choices = [(a.pk, a.iata_code) for a in filtered_airports]
         choices.append(('add', 'Add Base'))
         self.fields['main_base'].choices = choices
 

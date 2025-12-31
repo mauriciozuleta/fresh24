@@ -3,17 +3,24 @@ from .models import Airport, Country, BranchInfo
 
 def airports_by_country_api(request):
     country_code = request.GET.get('country')
-    if not country_code:
+    country_id = request.GET.get('country_id')
+    
+    if not country_code and not country_id:
         return JsonResponse({'airports': []})
     
-    # Look up the country object from the country code
+    # Look up the country object from the country code or ID
     try:
-        country_obj = Country.objects.get(country_code=country_code)
+        if country_id:
+            country_obj = Country.objects.get(pk=country_id)
+        else:
+            country_obj = Country.objects.get(country_code=country_code)
     except Country.DoesNotExist:
         return JsonResponse({'airports': []})
     
-    # Get all airports for this country (not just ones with branches)
-    airports = Airport.objects.filter(country=country_obj.name)
+    # Get all airports for this country
+    # Try multiple matching strategies since Airport.country is a CharField
+    airports = Airport.objects.filter(country__iexact=country_obj.country_code) | \
+               Airport.objects.filter(country__iexact=country_obj.name)
     
     # Build data from all airports
     data = []
