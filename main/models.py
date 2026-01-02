@@ -1,5 +1,28 @@
-
 from django.db import models
+
+
+# Product model for user market data
+class Product(models.Model):
+	product_code = models.CharField(max_length=32, unique=True)
+	product_type = models.CharField(max_length=32)
+	name = models.CharField(max_length=128)
+	country = models.ForeignKey('Country', on_delete=models.CASCADE)
+	trade_unit = models.CharField(max_length=8)
+	fca_cost_per_wu = models.DecimalField(max_digits=14, decimal_places=2)
+	packaging = models.CharField(max_length=64)
+	packaging_weight = models.DecimalField(max_digits=10, decimal_places=2)
+	units_per_pack = models.IntegerField()
+	packaging_cost = models.DecimalField(max_digits=14, decimal_places=2)
+	other_info = models.TextField(blank=True, null=True)
+	currency = models.CharField(max_length=8)
+	created_at = models.DateTimeField(auto_now_add=True)
+	updated_at = models.DateTimeField(auto_now=True)
+
+	def __str__(self):
+		return f"{self.product_code} - {self.name}"
+
+
+
 
 class Route(models.Model):
 	leg = models.CharField(max_length=16)  # e.g., 'JFK-LHR'

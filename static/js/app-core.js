@@ -184,6 +184,10 @@ document.addEventListener('DOMContentLoaded', function() {
 				AdminManagement.renderAddAirportTab(tabContent);
 			} else if (tabName === 'Routes') {
 				AdminManagement.renderRoutesTab(tabContent);
+			} else if (tabName === 'Export') {
+				tabContent.innerHTML = '<div class="tab-content-inner"><h2>Export User Market Data</h2><p>Export functionality coming soon.</p></div>';
+			} else if (tabName === 'Import') {
+				tabContent.innerHTML = '<div class="tab-content-inner"><h2>Import User Market Data</h2><p>Import functionality coming soon.</p></div>';
 			} else if (tabName === 'User Management') {
 				// Fetch regions from API
 				fetch('/api/regions/')
