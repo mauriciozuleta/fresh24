@@ -353,6 +353,7 @@ const UserMarketData = {
         if (!sc.length) {
           scHtml += '<div style="color:#f44336;">No supply chain data found for the selected product.</div>';
         } else {
+          var row = sc[0];
           scHtml += '<table class="products-table" style="width:100%; border-collapse:collapse; margin-top:0.5rem; text-align:center;">';
           scHtml += '<thead><tr style="background:#23272e; color:#FF5C00;">';
           scHtml += '<th style="text-align:center; padding:8px 0;">Product</th>';
@@ -360,19 +361,65 @@ const UserMarketData = {
           scHtml += '<th style="text-align:center; padding:8px 0;">Branches</th>';
           scHtml += '<th style="text-align:center; padding:8px 0;">Total Yield</th>';
           scHtml += '</tr></thead><tbody>';
-          sc.forEach(function(row, idx) {
-            var zebra = idx % 2 === 0 ? 'background:#181c22;' : 'background:#23272e;';
-            scHtml += '<tr style="' + zebra + ' color:#fff; border-bottom:1px solid #23272e;">' +
-              '<td style="padding:6px 8px; text-align:left;">' + row.product_name + '</td>' +
-              '<td style="padding:6px 8px; text-align:center;">' + row.num_suppliers + '</td>' +
-              '<td style="padding:6px 8px; text-align:center;">' + row.num_branches + '</td>' +
-              '<td style="padding:6px 8px; text-align:center;">' + row.total_yield + '</td>' +
-            '</tr>';
-          });
+          var zebra = 'background:#181c22;';
+          scHtml += '<tr style="' + zebra + ' color:#fff; border-bottom:1px solid #23272e;">' +
+            '<td style="padding:6px 8px; text-align:left;">' + row.product_name + '</td>' +
+            '<td style="padding:6px 8px; text-align:center;">' + row.num_suppliers + '</td>' +
+            '<td style="padding:6px 8px; text-align:center;">' + row.num_branches + '</td>' +
+            '<td style="padding:6px 8px; text-align:center;">' + row.total_yield + '</td>' +
+          '</tr>';
+          scHtml += '<tr class="supplier-details-row" style="background:#23272e; color:#fff;">' +
+            '<td style="padding:12px 8px; text-align:left;" class="details-suppliers"></td>' +
+            '<td style="padding:12px 8px; text-align:center;" class="details-suppliers-list"></td>' +
+            '<td style="padding:12px 8px; text-align:center;" class="details-branches-list"></td>' +
+            '<td style="padding:12px 8px; text-align:center;" class="details-yields-list"></td>' +
+          '</tr>';
           scHtml += '</tbody></table>';
         }
         scHtml += '</div>';
         scContainer.innerHTML = scHtml;
+
+        var detailsRow = scContainer.querySelector('.supplier-details-row');
+        if (detailsRow && sc.length) {
+          // Always show details for the selected product
+          detailsRow.style.display = '';
+          detailsRow.querySelector('.details-suppliers-list').innerHTML = '<span style="color:#888;">Loading...</span>';
+          detailsRow.querySelector('.details-branches-list').innerHTML = '';
+          detailsRow.querySelector('.details-yields-list').innerHTML = '';
+          fetch('/api/supply-chain-details/?product_name=' + encodeURIComponent(row.product_name))
+            .then(function(resp) { return resp.json(); })
+            .then(function(data) {
+              // Suppliers
+              var suppliersHtml = '';
+              if (data.suppliers && data.suppliers.length) {
+                suppliersHtml = data.suppliers.map(function(s) { return '<div>' + s + '</div>'; }).join('');
+              } else {
+                suppliersHtml = '<span style="color:#888;">None</span>';
+              }
+              detailsRow.querySelector('.details-suppliers-list').innerHTML = suppliersHtml;
+              // Branches
+              var branchesHtml = '';
+              if (data.branches && data.branches.length) {
+                branchesHtml = data.branches.map(function(b) { return '<div>' + b + '</div>'; }).join('');
+              } else {
+                branchesHtml = '<span style="color:#888;">None</span>';
+              }
+              detailsRow.querySelector('.details-branches-list').innerHTML = branchesHtml;
+              // Yields
+              var yieldsHtml = '';
+              if (data.yields && data.yields.length) {
+                yieldsHtml = data.yields.map(function(y) { return '<div>' + (y || 0) + '</div>'; }).join('');
+              } else {
+                yieldsHtml = '<span style="color:#888;">None</span>';
+              }
+              detailsRow.querySelector('.details-yields-list').innerHTML = yieldsHtml;
+            })
+            .catch(function() {
+              detailsRow.querySelector('.details-suppliers-list').innerHTML = '<span style="color:#f44336;">Failed to load</span>';
+              detailsRow.querySelector('.details-branches-list').innerHTML = '';
+              detailsRow.querySelector('.details-yields-list').innerHTML = '';
+            });
+        }
       })
       .catch(function() {
         scContainer.innerHTML = '<div style="margin-top:2rem; color:#f44336;">Failed to load supply chain summary.</div>';
