@@ -112,7 +112,7 @@ const UserMarketData = {
           html += '<thead><tr style="background:#23272e; color:#FF5C00;">';
           html += '<th></th><th>Code</th><th>Name</th><th>Type</th><th>Country</th><th>Trade Unit</th><th>FCA Cost</th><th>Packaging</th><th>Currency</th></tr></thead><tbody>';
           (data.products.slice(0, maxRows)).forEach(function(p, idx) {
-            html += `<tr style="background:#181c22; color:#fff; border-bottom:1px solid #23272e;">
+            html += `<tr style="background:#181c22; color:#fff; border-bottom:1px solid #23272e;" data-country-code="${p.country_code}">
               <td><input type="checkbox" class="product-select-checkbox" data-product-code="${p.product_code}" style="transform:scale(1.2);" ${idx===0 ? '' : ''}></td>
               <td>${p.product_code}</td>
               <td>${p.name}</td>
@@ -141,7 +141,7 @@ const UserMarketData = {
                           var row = selected.closest('tr');
                           if (row) {
                             productName = row.children[2].textContent;
-                            country = row.children[4].textContent;
+                            country = row.getAttribute('data-country-code');
                           }
                         }
                         if (!selected) {

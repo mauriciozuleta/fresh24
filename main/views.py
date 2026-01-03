@@ -288,20 +288,21 @@ from django.http import JsonResponse
 from .models import Product
 
 def products_api(request):
-    products = Product.objects.select_related('country').all().order_by('product_code')
-    data = []
-    for p in products:
-        data.append({
-            'product_code': p.product_code,
-            'product_type': p.product_type,
-            'name': p.name,
-            'country_name': p.country.name if p.country else '',
-            'trade_unit': p.trade_unit,
-            'fca_cost_per_wu': float(p.fca_cost_per_wu),
-            'packaging': p.packaging,
-            'currency': p.currency,
-        })
-    return JsonResponse({'products': data})
+	products = Product.objects.select_related('country').all().order_by('product_code')
+	data = []
+	for p in products:
+		data.append({
+			'product_code': p.product_code,
+			'product_type': p.product_type,
+			'name': p.name,
+			'country_name': p.country.name if p.country else '',
+			'country_code': p.country.country_code if p.country else '',
+			'trade_unit': p.trade_unit,
+			'fca_cost_per_wu': float(p.fca_cost_per_wu),
+			'packaging': p.packaging,
+			'currency': p.currency,
+		})
+	return JsonResponse({'products': data})
 
 def edit_product_form(request, product_code):
     product = get_object_or_404(Product, product_code=product_code)
