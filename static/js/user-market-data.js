@@ -128,6 +128,50 @@ const UserMarketData = {
           html += '<div style="border-top:2px solid #0078d4; margin:1.5rem 0 0.5rem 0;"></div>';
           html += '<div id="supplier-form-container"></div>';
           container.innerHTML = html;
+            html += '<div id="supply-chain-table-container"></div>';
+            container.innerHTML = html;
+            // Render supply chain table
+            renderSupplyChainTable();
+                          // Helper to render supply chain summary table
+                          function renderSupplyChainTable() {
+                            fetch('/api/supply-chain/')
+                              .then(function(response) { return response.json(); })
+                              .then(function(data) {
+                                var sc = data.supply_chain || [];
+                                var scHtml = '<div style="margin-top:2rem;">';
+                                scHtml += '<h3>Supply Chain Summary</h3>';
+                                if (!sc.length) {
+                                  scHtml += '<div style="color:#f44336;">No supply chain data found.</div>';
+                                } else {
+                                  scHtml += '<table class="products-table" style="width:100%; border-collapse:collapse; margin-top:0.5rem; text-align:center;">';
+                                  scHtml += '<thead><tr style="background:#23272e; color:#FF5C00;">' +
+                                    '<th style="text-align:center; padding:8px 0;">Product</th>' +
+                                    '<th style="text-align:center; padding:8px 0;">Suppliers</th>' +
+                                    '<th style="text-align:center; padding:8px 0;">Branches</th>' +
+                                    '<th style="text-align:center; padding:8px 0;">Total Yield</th>' +
+                                    '</tr></thead><tbody>';
+                                  sc.forEach(function(row, idx) {
+                                    var zebra = idx % 2 === 0 ? 'background:#181c22;' : 'background:#23272e;';
+                                    scHtml += `<tr style="${zebra} color:#fff; border-bottom:1px solid #23272e;">` +
+                                      `<td style="text-align:center; padding:6px 0; font-weight:500;">${row.product_name}</td>` +
+                                      `<td style="text-align:center; padding:6px 0;">${row.num_suppliers}</td>` +
+                                      `<td style="text-align:center; padding:6px 0;">${row.num_branches}</td>` +
+                                      `<td style="text-align:center; padding:6px 0;">${row.total_yield}</td>` +
+                                      `</tr>`;
+                                  });
+                                  scHtml += '</tbody></table>';
+                                }
+                                scHtml += '</div>';
+                                // Place below supplier form if open, else below product table
+                                var formContainer = document.getElementById('supplier-form-container');
+                                var scContainer = document.getElementById('supply-chain-table-container');
+                                if (formContainer && formContainer.innerHTML.trim()) {
+                                  formContainer.insertAdjacentHTML('afterend', scHtml);
+                                } else if (scContainer) {
+                                  scContainer.innerHTML = scHtml;
+                                }
+                              });
+                          }
                     // Add Supplier form logic
                     var addSupplierBtn = document.getElementById('add-supplier-btn');
                     if (addSupplierBtn) {
@@ -220,6 +264,12 @@ const UserMarketData = {
                                   if (result.success) {
                                     alert('Supplier added to supply chain');
                                     form.reset();
+                                    var formContainer = document.getElementById('supplier-form-container');
+                                    if (formContainer) formContainer.innerHTML = '';
+                                      // Refresh supply chain table
+                                      var scContainer = document.getElementById('supply-chain-table-container');
+                                      if (scContainer) scContainer.innerHTML = '';
+                                      renderSupplyChainTable();
                                   } else {
                                     alert('Error: ' + (result.error || 'Unknown error'));
                                   }

@@ -47,4 +47,5 @@ urlpatterns = [
     path('edit-product-form/<str:product_code>/', views.edit_product_form, name='edit_product_form'),
     path('edit-product/<int:pk>/', views.edit_product, name='edit_product'),
     path('add-supplier/', views.add_supplier, name='add_supplier'),
+    path('api/supply-chain/', views.supply_chain_api, name='supply_chain_api'),
 ]

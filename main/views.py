@@ -1,3 +1,35 @@
+from django.db.models import Count, Sum
+def supply_chain_api(request):
+	# Returns supply chain summary for each product
+	from .models import Supplier
+	# Get all suppliers grouped by product_name
+	summary = {}
+	for s in Supplier.objects.all():
+		pname = s.product_name
+		if pname not in summary:
+			summary[pname] = {
+				'product_name': pname,
+				'suppliers': set(),
+				'branches': set(),
+				'total_yield': 0.0,
+			}
+		summary[pname]['suppliers'].add(s.supplier_name)
+		summary[pname]['branches'].add(s.assigned_branch)
+		try:
+			y = float(s.crop_yield)
+		except Exception:
+			y = 0.0
+		summary[pname]['total_yield'] += y
+	# Format for JSON
+	result = []
+	for v in summary.values():
+		result.append({
+			'product_name': v['product_name'],
+			'num_suppliers': len(v['suppliers']),
+			'num_branches': len([b for b in v['branches'] if b]),
+			'total_yield': v['total_yield'],
+		})
+	return JsonResponse({'supply_chain': result})
 
 from .models import Supplier
 from django.views.decorators.csrf import csrf_exempt
