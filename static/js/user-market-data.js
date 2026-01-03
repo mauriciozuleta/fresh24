@@ -26,7 +26,8 @@ const UserMarketData = {
               <option value="Other">Other</option>
             </select>
           </div>
-          <button id="add-product-btn" class="primary-button" style="margin-left:2rem; height:2.5rem;">Add Product</button>
+          <button id="add-supplier-btn" class="primary-button" style="margin-left:2rem; height:2.5rem;">Add Supplier</button>
+          <button id="add-product-btn" class="primary-button" style="margin-left:1rem; height:2.5rem;">Add Product</button>
           <button id="edit-product-btn" class="primary-button" style="margin-left:1rem; height:2.5rem;">Edit Product</button>
         </div>
         <div id="export-products-table-container">
@@ -105,10 +106,12 @@ const UserMarketData = {
             container.innerHTML = '<div style="margin:2rem 0; text-align:center; color:#f44336;">No products found.</div>';
             return;
           }
-          var html = '<table class="products-table" style="width:100%; border-collapse:collapse; margin-top:1rem;">';
+          var maxRows = 15;
+          var html = '<div style="max-height:480px; overflow-y:auto; border-bottom:1px solid #444;">';
+          html += '<table class="products-table" style="width:100%; border-collapse:collapse; margin-top:1rem;">';
           html += '<thead><tr style="background:#23272e; color:#FF5C00;">';
           html += '<th></th><th>Code</th><th>Name</th><th>Type</th><th>Country</th><th>Trade Unit</th><th>FCA Cost</th><th>Packaging</th><th>Currency</th></tr></thead><tbody>';
-          data.products.forEach(function(p, idx) {
+          (data.products.slice(0, maxRows)).forEach(function(p, idx) {
             html += `<tr style="background:#181c22; color:#fff; border-bottom:1px solid #23272e;">
               <td><input type="checkbox" class="product-select-checkbox" data-product-code="${p.product_code}" style="transform:scale(1.2);" ${idx===0 ? '' : ''}></td>
               <td>${p.product_code}</td>
@@ -121,8 +124,114 @@ const UserMarketData = {
               <td>${p.currency}</td>
             </tr>`;
           });
-          html += '</tbody></table>';
+          html += '</tbody></table></div>';
+          html += '<div style="border-top:2px solid #0078d4; margin:1.5rem 0 0.5rem 0;"></div>';
+          html += '<div id="supplier-form-container"></div>';
           container.innerHTML = html;
+                    // Add Supplier form logic
+                    var addSupplierBtn = document.getElementById('add-supplier-btn');
+                    if (addSupplierBtn) {
+                      addSupplierBtn.addEventListener('click', function() {
+                        // Find selected product
+                        var checkboxes = document.querySelectorAll('.product-select-checkbox');
+                        var selected = Array.from(checkboxes).find(cb => cb.checked);
+                        var productName = '';
+                        var country = '';
+                        if (selected) {
+                          var row = selected.closest('tr');
+                          if (row) {
+                            productName = row.children[2].textContent;
+                            country = row.children[4].textContent;
+                          }
+                        }
+                        if (!selected) {
+                          alert('Please select a product in the table to add a supplier for.');
+                          return;
+                        }
+                        // Fetch airports for the selected country
+                        fetch(`/api/airports-by-country/?country=${encodeURIComponent(country)}`)
+                          .then(function(response) { return response.json(); })
+                          .then(function(data) {
+                            var airportOptions = '<option value="">Select Branch (Airport)</option>';
+                            if (data.airports && data.airports.length > 0) {
+                              data.airports.forEach(function(airport) {
+                                var label = airport.iata_code ? `${airport.iata_code} - ${airport.city}` : airport.city;
+                                airportOptions += `<option value="${airport.iata_code}">${label}</option>`;
+                              });
+                            } else {
+                              airportOptions += '<option value="">No airports found</option>';
+                            }
+                            var formHtml = `
+                              <form id="supplier-form" class="aircraft-form-section" style="margin-top:1.5rem; background:#23272e; padding:1.5rem; border-radius:8px;">
+                                <div class="aircraft-form-row three-col">
+                                  <div class="form-group">
+                                    <label>Product Name</label>
+                                    <input type="text" name="product_name" class="aircraft-form-control" required value="${productName}">
+                                  </div>
+                                  <div class="form-group">
+                                    <label>Supplier Name</label>
+                                    <input type="text" name="supplier_name" class="aircraft-form-control" required>
+                                  </div>
+                                  <div class="form-group">
+                                    <label>Country</label>
+                                    <input type="text" name="country" class="aircraft-form-control" required value="${country}">
+                                  </div>
+                                </div>
+                                <div class="aircraft-form-row three-col">
+                                  <div class="form-group">
+                                    <label>Location</label>
+                                    <input type="text" name="location" class="aircraft-form-control" required>
+                                  </div>
+                                  <div class="form-group">
+                                    <label>Assigned Branch</label>
+                                    <select name="assigned_branch" class="aircraft-form-control" required>${airportOptions}</select>
+                                  </div>
+                                  <div class="form-group">
+                                    <label>Crop Area</label>
+                                    <input type="text" name="crop_area" class="aircraft-form-control" required>
+                                  </div>
+                                </div>
+                                <div class="aircraft-form-row">
+                                  <div class="form-group" style="flex:1;">
+                                    <label>Crop Yield</label>
+                                    <input type="text" name="crop_yield" class="aircraft-form-control" required>
+                                  </div>
+                                </div>
+                                <div style="margin-top:1.5rem; text-align:right;">
+                                  <button type="submit" class="primary-button">Add to supply chain</button>
+                                </div>
+                              </form>
+                            `;
+                            var formContainer = document.getElementById('supplier-form-container');
+                            if (formContainer) formContainer.innerHTML = formHtml;
+                            // Attach submit handler
+                            var form = document.getElementById('supplier-form');
+                            if (form) {
+                              form.addEventListener('submit', function(e) {
+                                e.preventDefault();
+                                var formData = new FormData(form);
+                                fetch('/add-supplier/', {
+                                  method: 'POST',
+                                  body: formData,
+                                  headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                                })
+                                .then(function(response) { return response.json(); })
+                                .then(function(result) {
+                                  if (result.success) {
+                                    alert('Supplier added to supply chain');
+                                    form.reset();
+                                  } else {
+                                    alert('Error: ' + (result.error || 'Unknown error'));
+                                  }
+                                })
+                                .catch(function() {
+                                  alert('Error saving supplier');
+                                });
+                              });
+                            }
+                          });
+                      });
+                    }
           // Only one checkbox active logic
           var checkboxes = container.querySelectorAll('.product-select-checkbox');
           checkboxes.forEach(function(cb) {

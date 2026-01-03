@@ -1,3 +1,32 @@
+
+from .models import Supplier
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+
+@csrf_exempt
+def add_supplier(request):
+	if request.method == 'POST':
+		try:
+			product_name = request.POST.get('product_name')
+			supplier_name = request.POST.get('supplier_name')
+			country = request.POST.get('country')
+			location = request.POST.get('location')
+			assigned_branch = request.POST.get('assigned_branch')
+			crop_area = request.POST.get('crop_area')
+			crop_yield = request.POST.get('crop_yield')
+			Supplier.objects.create(
+				product_name=product_name,
+				supplier_name=supplier_name,
+				country=country,
+				location=location,
+				assigned_branch=assigned_branch,
+				crop_area=crop_area,
+				crop_yield=crop_yield
+			)
+			return JsonResponse({'success': True, 'message': 'Supplier added to supply chain'})
+		except Exception as e:
+			return JsonResponse({'success': False, 'error': str(e)})
+	return JsonResponse({'success': False, 'error': 'Invalid request method'})
 from .models import Route, Country
 from operational_functions.routes_utils import calculate_route_on_the_fly, generate_routes_list, update_routes_on_change
 from django.views.decorators.csrf import csrf_exempt
