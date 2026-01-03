@@ -48,4 +48,5 @@ urlpatterns = [
     path('edit-product/<int:pk>/', views.edit_product, name='edit_product'),
     path('add-supplier/', views.add_supplier, name='add_supplier'),
     path('api/supply-chain/', views.supply_chain_api, name='supply_chain_api'),
+    path('api/supply-chain-details/', views.supply_chain_details_api, name='supply_chain_details_api'),
 ]

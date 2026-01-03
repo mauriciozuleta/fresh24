@@ -152,12 +152,31 @@ const UserMarketData = {
                                     '</tr></thead><tbody>';
                                   sc.forEach(function(row, idx) {
                                     var zebra = idx % 2 === 0 ? 'background:#181c22;' : 'background:#23272e;';
+                                    var expandId = `sc-expand-${idx}`;
                                     scHtml += `<tr style="${zebra} color:#fff; border-bottom:1px solid #23272e;">` +
-                                      `<td style="text-align:center; padding:6px 0; font-weight:500;">${row.product_name}</td>` +
+                                      `<td style="text-align:center; padding:6px 0; font-weight:500;">
+                                        <span class="sc-expand-btn" data-expand-id="${expandId}" style="cursor:pointer; font-size:1.1em; margin-right:8px; vertical-align:middle;">&#43;</span>${row.product_name}
+                                      </td>` +
                                       `<td style="text-align:center; padding:6px 0;">${row.num_suppliers}</td>` +
                                       `<td style="text-align:center; padding:6px 0;">${row.num_branches}</td>` +
                                       `<td style="text-align:center; padding:6px 0;">${row.total_yield}</td>` +
                                       `</tr>`;
+                                    // Expandable row (hidden by default)
+                                    scHtml += `<tr id="${expandId}" class="sc-expand-row" style="display:none; background:#22242a; color:#fff;">
+                                      <td></td>
+                                      <td style="text-align:center; padding:6px 0; border-top:1px solid #333;">
+                                        <div style="font-size:0.95em; color:#FFB300; font-weight:400;">Names</div>
+                                        <div class="sc-suppliers-list"></div>
+                                      </td>
+                                      <td style="text-align:center; padding:6px 0; border-top:1px solid #333;">
+                                        <div style="font-size:0.95em; color:#FFB300; font-weight:400;">Branches</div>
+                                        <div class="sc-branches-list"></div>
+                                      </td>
+                                      <td style="text-align:center; padding:6px 0; border-top:1px solid #333;">
+                                        <div style="font-size:0.95em; color:#FFB300; font-weight:400;">Yields</div>
+                                        <div class="sc-yields-list"></div>
+                                      </td>
+                                    </tr>`;
                                   });
                                   scHtml += '</tbody></table>';
                                 }
@@ -170,6 +189,39 @@ const UserMarketData = {
                                 } else if (scContainer) {
                                   scContainer.innerHTML = scHtml;
                                 }
+
+                                // Add expand/collapse logic and fetch details for each product
+                                var expandBtns = document.querySelectorAll('.sc-expand-btn');
+                                expandBtns.forEach(function(btn, idx) {
+                                  btn.addEventListener('click', function() {
+                                    var expandId = btn.getAttribute('data-expand-id');
+                                    var row = document.getElementById(expandId);
+                                    if (!row) return;
+                                    var isOpen = row.style.display !== 'none';
+                                    // Collapse all others
+                                    document.querySelectorAll('.sc-expand-row').forEach(function(r) { r.style.display = 'none'; });
+                                    document.querySelectorAll('.sc-expand-btn').forEach(function(b) { b.innerHTML = '&#43;'; });
+                                    if (!isOpen) {
+                                      row.style.display = '';
+                                      btn.innerHTML = '&#8722;'; // minus sign
+                                      // Fetch and render details for this product
+                                      var productName = btn.parentElement.textContent.trim().replace(/^\+|−/,'').trim();
+                                      fetch(`/api/supply-chain-details/?product_name=${encodeURIComponent(productName)}`)
+                                        .then(function(response) { return response.json(); })
+                                        .then(function(details) {
+                                          // details: {suppliers: [..], branches: [..], yields: [..]}
+                                          var suppliers = details.suppliers || [];
+                                          var branches = details.branches || [];
+                                          var yields = details.yields || [];
+                                          row.querySelectorAll('.sc-suppliers-list').forEach(function(el) {
+                                            el.innerHTML = suppliers.length ? suppliers.map(s => `<div>${s}</div>`).join('') : '<div style="color:#aaa;">None</div>';
+                                          });
+                                          row.querySelector('.sc-branches-list').innerHTML = branches.length ? branches.map(b => `<div>${b}</div>`).join('') : '<div style="color:#aaa;">None</div>';
+                                          row.querySelector('.sc-yields-list').innerHTML = yields.length ? yields.map(y => `<div>${y}</div>`).join('') : '<div style="color:#aaa;">None</div>';
+                                        });
+                                    }
+                                  });
+                                });
                               });
                           }
                     // Add Supplier form logic

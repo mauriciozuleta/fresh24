@@ -1,3 +1,22 @@
+from django.views.decorators.http import require_GET
+# Returns details for a given product name: suppliers, branches, yields
+@require_GET
+def supply_chain_details_api(request):
+	from .models import Supplier
+	pname = request.GET.get('product_name')
+	if not pname:
+		return JsonResponse({'suppliers': [], 'branches': [], 'yields': []})
+	qs = Supplier.objects.filter(product_name=pname)
+	suppliers = list(qs.values_list('supplier_name', flat=True))
+	branches = list(qs.values_list('assigned_branch', flat=True).distinct())
+	yields = []
+	for s in qs:
+		try:
+			y = float(s.crop_yield)
+		except Exception:
+			y = 0.0
+		yields.append(y)
+	return JsonResponse({'suppliers': suppliers, 'branches': branches, 'yields': yields})
 from django.db.models import Count, Sum
 def supply_chain_api(request):
 	# Returns supply chain summary for each product
