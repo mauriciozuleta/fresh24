@@ -1,94 +1,57 @@
 {% if form %}
 <div class="tab-content-inner aircraft-form-page">
   <div class="aircraft-header">
-    <h1 class="aircraft-title">{{ "Edit Product" if edit_mode else "Add New Product" }}</h1>
+    <h1 class="aircraft-title">
+      {% if edit_mode %}
+        Edit Product
+      {% else %}
+        Add New Product
+      {% endif %}
+    </h1>
   </div>
   <div class="aircraft-form-container">
-    <style>
-      .fixed-scroll-form {
-        max-width: 1400px;
-        min-width: 900px;
-        max-height: 80vh;
-        overflow-y: auto;
-        margin: 0 auto;
-        background: #181c22;
-        border-radius: 8px;
-        padding: 2rem;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-      }
-      .unified-spacing {
-        gap: 1rem !important;
-        margin-bottom: 1rem !important;
-      }
-      .aircraft-form-section {
-        margin-bottom: 2rem !important;
-      }
-      .aircraft-section-title {
-        margin-bottom: 1rem !important;
-      }
-      .product-radio-group {
-        display: flex;
-        gap: 1.5rem;
-        align-items: center;
-        padding-top: 0.5rem;
-      }
-      .product-radio-item {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-      }
-      .product-radio-item input[type="radio"] {
-        width: 16px;
-        height: 16px;
-        accent-color: #FF5C00;
-      }
-      .product-radio-item label {
-        color: #fff;
-        font-weight: normal;
-        margin: 0;
-        cursor: pointer;
-        font-size: 0.9rem;
-      }
-    </style>
-    <form method="post" action="{% if edit_mode %}/edit-product/{{ product_id }}/{% else %}/add-product/{% endif %}" id="product-form" class="fixed-scroll-form">
+    <form method="post" action="{% if edit_mode %}/edit-product/{{ product_id }}/{% else %}/add-product/{% endif %}" id="product-form">
       {% csrf_token %}
       
       <!-- Basic Information Section -->
       <div class="aircraft-form-section">
         <div class="aircraft-section-title">Basic Information</div>
-        <div class="aircraft-form-row five-col unified-spacing">
+        <div class="aircraft-form-row five-col">
           <div class="aircraft-form-group">
             <label for="id_product_type">Type of Product</label>
             <select class="aircraft-form-control" name="product_type" id="id_product_type" required>
-              <option value="Produce">Produce</option>
-              <option value="Meats">Meats</option>
-              <option value="Other Perishable">Other Perishable</option>
-              <option value="Dry Goods">Dry Goods</option>
-              <option value="Technology">Technology</option>
-              <option value="Other">Other</option>
+              <option value="Produce" {% if edit_mode and product.product_type == "Produce" %}selected{% endif %}>Produce</option>
+              <option value="Meats" {% if edit_mode and product.product_type == "Meats" %}selected{% endif %}>Meats</option>
+              <option value="Other Perishable" {% if edit_mode and product.product_type == "Other Perishable" %}selected{% endif %}>Other Perishable</option>
+              <option value="Dry Goods" {% if edit_mode and product.product_type == "Dry Goods" %}selected{% endif %}>Dry Goods</option>
+              <option value="Technology" {% if edit_mode and product.product_type == "Technology" %}selected{% endif %}>Technology</option>
+              <option value="Other" {% if edit_mode and product.product_type == "Other" %}selected{% endif %}>Other</option>
             </select>
           </div>
           <div class="aircraft-form-group">
             <label for="id_product_code">Product Code</label>
-            <input type="text" class="aircraft-form-control" name="product_code" id="id_product_code" readonly>
+            <input type="text" class="aircraft-form-control" name="product_code" id="id_product_code" readonly value="{% if edit_mode %}{{ product.product_code }}{% endif %}">
           </div>
           <div class="aircraft-form-group">
             <label for="id_name">Product Name</label>
-            <input type="text" class="aircraft-form-control" name="name" id="id_name" required placeholder="Enter product name">
+            <input type="text" class="aircraft-form-control" name="name" id="id_name" required placeholder="Enter product name" value="{% if edit_mode %}{{ product.name }}{% endif %}">
           </div>
           <div class="aircraft-form-group">
             <label for="id_country">Country</label>
             <select class="aircraft-form-control" name="country_id" id="id_country" required>
               <option value="">Select Country</option>
+              {% for country in countries %}
+              <option value="{{ country.id }}" data-currency="{{ country.currency_code }}" {% if edit_mode and product.country.id == country.id %}selected{% endif %}>{{ country.name }}</option>
+              {% endfor %}
             </select>
           </div>
           <div class="aircraft-form-group">
             <label for="id_trade_unit">Trade Unit</label>
             <select class="aircraft-form-control" name="trade_unit" id="id_trade_unit" required>
-              <option value="UN">Unit (Un)</option>
-              <option value="BU">Bunch (BU)</option>
-              <option value="KG">Kilogram (Kg.)</option>
-              <option value="LBS">Pound (Lbs.)</option>
+              <option value="UN" {% if edit_mode and product.trade_unit == "UN" %}selected{% endif %}>Unit (Un)</option>
+              <option value="BU" {% if edit_mode and product.trade_unit == "BU" %}selected{% endif %}>Bunch (BU)</option>
+              <option value="KG" {% if edit_mode and product.trade_unit == "KG" %}selected{% endif %}>Kilogram (Kg.)</option>
+              <option value="LBS" {% if edit_mode and product.trade_unit == "LBS" %}selected{% endif %}>Pound (Lbs.)</option>
             </select>
           </div>
         </div>
@@ -99,21 +62,21 @@
       <!-- Cost Information Section -->
       <div class="aircraft-form-section">
         <div class="aircraft-section-title">Cost Information</div>
-        <div class="aircraft-form-row three-col unified-spacing">
+        <div class="aircraft-form-row three-col">
           <div class="aircraft-form-group">
             <label for="id_fca_cost">FCA Cost per WU</label>
-            <input type="number" step="0.01" class="aircraft-form-control" name="fca_cost_per_wu" id="id_fca_cost" required placeholder="0.00">
+            <input type="number" step="0.01" class="aircraft-form-control" name="fca_cost_per_wu" id="id_fca_cost" required placeholder="0.00" value="{% if edit_mode %}{{ product.fca_cost_per_wu }}{% endif %}">
           </div>
           <div class="aircraft-form-group">
             <label>Currency</label>
-            <div class="product-radio-group">
-              <div class="product-radio-item">
-                <input type="radio" name="currency_option" id="currencyLocal" value="local" checked>
-                <label for="currencyLocal">Local</label>
+            <div style="display: flex; gap: 1.5rem; align-items: center; padding-top: 0.5rem;">
+              <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <input type="radio" name="currency_option" id="currencyLocal" value="local" checked style="width: 16px; height: 16px;">
+                <label for="currencyLocal" style="color: #e0e6ed; font-weight: normal; margin: 0; cursor: pointer; font-size: 0.9rem;">Local</label>
               </div>
-              <div class="product-radio-item">
-                <input type="radio" name="currency_option" id="currencyUSD" value="USD">
-                <label for="currencyUSD">USD</label>
+              <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <input type="radio" name="currency_option" id="currencyUSD" value="USD" style="width: 16px; height: 16px;">
+                <label for="currencyUSD" style="color: #e0e6ed; font-weight: normal; margin: 0; cursor: pointer; font-size: 0.9rem;">USD</label>
               </div>
             </div>
           </div>
@@ -125,22 +88,22 @@
       <!-- Packaging Information Section -->
       <div class="aircraft-form-section">
         <div class="aircraft-section-title">Packaging Information</div>
-        <div class="aircraft-form-row three-col unified-spacing">
+        <div class="aircraft-form-row three-col">
           <div class="aircraft-form-group">
             <label for="id_packaging">Packaging Type</label>
-            <input type="text" class="aircraft-form-control" name="packaging" id="id_packaging" required placeholder="e.g., Box, Bag, Container">
+            <input type="text" class="aircraft-form-control" name="packaging" id="id_packaging" required placeholder="e.g., Box, Bag, Container" value="{% if edit_mode %}{{ product.packaging }}{% endif %}">
           </div>
           <div class="aircraft-form-group">
             <label for="id_packaging_weight">Packaging Weight (kg)</label>
-            <input type="number" step="0.01" class="aircraft-form-control" name="packaging_weight" id="id_packaging_weight" required placeholder="0.00">
+            <input type="number" step="0.01" class="aircraft-form-control" name="packaging_weight" id="id_packaging_weight" required placeholder="0.00" value="{% if edit_mode %}{{ product.packaging_weight }}{% endif %}">
           </div>
           <div class="aircraft-form-group">
             <label for="id_packaging_cost">Packaging Cost</label>
-            <input type="number" step="0.01" class="aircraft-form-control" name="packaging_cost" id="id_packaging_cost" required placeholder="0.00">
+            <input type="number" step="0.01" class="aircraft-form-control" name="packaging_cost" id="id_packaging_cost" required placeholder="0.00" value="{% if edit_mode %}{{ product.packaging_cost }}{% endif %}">
           </div>
           <div class="aircraft-form-group">
             <label for="id_units_per_pack">Units per Pack</label>
-            <input type="number" class="aircraft-form-control" name="units_per_pack" id="id_units_per_pack" required placeholder="1">
+            <input type="number" class="aircraft-form-control" name="units_per_pack" id="id_units_per_pack" required placeholder="1" value="{% if edit_mode %}{{ product.units_per_pack }}{% endif %}">
           </div>
         </div>
       </div>
@@ -152,7 +115,7 @@
         <div class="aircraft-section-title">Additional Information</div>
         <div class="aircraft-form-group">
           <label for="id_other_info">Other Information</label>
-          <textarea class="aircraft-form-control" name="other_info" id="id_other_info" rows="4" placeholder="Additional notes or specifications"></textarea>
+          <textarea class="aircraft-form-control" name="other_info" id="id_other_info" rows="4" placeholder="Additional notes or specifications">{% if edit_mode %}{{ product.other_info }}{% endif %}</textarea>
         </div>
       </div>
       
@@ -167,8 +130,16 @@
 <script>
 console.log('=== Product form script loaded ===');
 
-(function() {
+// Wait for form to be in DOM
+setTimeout(function() {
   const form = document.getElementById('product-form');
+  if (!form) {
+    console.error('Form not found!');
+    return;
+  }
+  
+  console.log('Form found, attaching handlers');
+  
   const countrySelect = document.getElementById('id_country');
   const localRadio = document.getElementById('currencyLocal');
   const usdRadio = document.getElementById('currencyUSD');
@@ -259,8 +230,11 @@ console.log('=== Product form script loaded ===');
     }
   });
   
-  // Form validation
+  // Form validation and submission
   form.addEventListener('submit', function(e) {
+    e.preventDefault(); // Prevent default form submission
+    console.log('Form submit prevented');
+    
     const requiredFields = form.querySelectorAll('[required]');
     let isValid = true;
     
@@ -269,16 +243,46 @@ console.log('=== Product form script loaded ===');
         isValid = false;
         field.style.borderColor = '#f44336';
       } else {
-        field.style.borderColor = '#2196f3';
+        field.style.borderColor = '#193366';
       }
     });
     
     if (!isValid) {
-      e.preventDefault();
       alert('Please fill in all required fields before submitting.');
+      return;
     }
+    
+    // Submit via AJAX
+    const formData = new FormData(form);
+    const submitUrl = form.action;
+    console.log('Submitting to:', submitUrl);
+    
+    fetch(submitUrl, {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest'
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      console.log('Response:', data);
+      if (data.success) {
+        alert(data.message || 'Product saved successfully!');
+        // Optionally reload the Export tab or close this tab
+        if (window.setActiveTab) {
+          window.setActiveTab('Export');
+        }
+      } else {
+        alert('Error: ' + (data.error || 'Failed to save product'));
+      }
+    })
+    .catch(error => {
+      console.error('Error saving product:', error);
+      alert('An error occurred while saving the product.');
+    });
   });
   
   loadCountries();
-})();
+}, 100);
 </script>

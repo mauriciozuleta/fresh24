@@ -38,4 +38,9 @@ urlpatterns = [
     path('delete-charter-provider/<int:pk>/', views.delete_charter_provider, name='delete_charter_provider'),
     path('delete-airport/<int:pk>/', views.delete_airport, name='delete_airport'),
     path('delete-aircraft/<int:pk>/', views.delete_aircraft, name='delete_aircraft'),
+    path('api/products/', views.products_api, name='products_api'),
+    path('add-product-form/', views.add_product_form, name='add_product_form'),
+    path('add-product/', views.add_product, name='add_product'),
+    path('edit-product-form/<str:product_code>/', views.edit_product_form, name='edit_product_form'),
+    path('edit-product/<int:pk>/', views.edit_product, name='edit_product'),
 ]

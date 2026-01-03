@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	var currentWorkspace = null;
 
 	// Expose globally for button handlers
+	window.workspaces = workspaces;
 	window.currentWorkspace = currentWorkspace;
 	window.getWorkspace = function() { return currentWorkspace; };
 
@@ -176,7 +177,8 @@ document.addEventListener('DOMContentLoaded', function() {
 				AdminManagement.renderAddAircraftTab(tabContent);
 			} else if (tabName === 'Edit Aircraft') {
 				AdminManagement.renderEditAircraftTab(tabContent);
-			} else if (tabName.startsWith('Edit ') && tabName !== 'Edit Aircraft') {
+			} else if (window._editAirportTabName && tabName === window._editAirportTabName) {
+				// Edit Airport tabs use a dynamic label stored in window._editAirportTabName
 				AdminManagement.renderEditAirportTab(tabContent);
 			} else if (tabName === 'Airports') {
 				AdminManagement.renderAirportsTab(tabContent, createTab, setActiveTab, currentWorkspace);
@@ -184,10 +186,18 @@ document.addEventListener('DOMContentLoaded', function() {
 				AdminManagement.renderAddAirportTab(tabContent);
 			} else if (tabName === 'Routes') {
 				AdminManagement.renderRoutesTab(tabContent);
-			} else if (tabName === 'Export') {
-				tabContent.innerHTML = '<div class="tab-content-inner"><h2>Export User Market Data</h2><p>Export functionality coming soon.</p></div>';
+						} else if (tabName === 'Export') {
+								if (window.UserMarketData && typeof UserMarketData.renderExportTab === 'function') {
+										UserMarketData.renderExportTab(tabContent);
+								} else {
+										tabContent.innerHTML = '<div class="tab-content-inner"><h2>Export User Market Data</h2><p>Export functionality coming soon.</p></div>';
+								}
 			} else if (tabName === 'Import') {
-				tabContent.innerHTML = '<div class="tab-content-inner"><h2>Import User Market Data</h2><p>Import functionality coming soon.</p></div>';
+				if (window.UserMarketData && typeof UserMarketData.renderImportTab === 'function') {
+					UserMarketData.renderImportTab(tabContent);
+				} else {
+					tabContent.innerHTML = '<div class="tab-content-inner"><h2>Import User Market Data</h2><p>Import functionality coming soon.</p></div>';
+				}
 			} else if (tabName === 'User Management') {
 				// Fetch regions from API
 				fetch('/api/regions/')
@@ -612,11 +622,98 @@ document.addEventListener('DOMContentLoaded', function() {
 						})
 						.catch(function() {
 							tabContent.innerHTML = '<div class="tab-content-inner"><h2>Branch Information</h2><p>Could not load regions.</p></div>';
-						});			} else if (tabName === 'Add Products') {
-				renderAddProductTab(tabContent);			} else {
-				console.log('Unknown tab:', tabName);
-				tabContent.innerHTML = '<div class="tab-content-inner"><h2>' + tabName + '</h2><p>Content for ' + tabName + '.</p></div>';
+					});
+		} else if (tabName === 'Add Products') {
+			// Load Add Product form from backend and execute its scripts
+			fetch('/add-product-form/')
+				.then(function(response) { return response.text(); })
+				.then(function(html) {
+					var parser = new DOMParser();
+					var doc = parser.parseFromString(html, 'text/html');
+					var content = doc.querySelector('.tab-content-inner');
+					if (content) {
+						var tabContentInner = document.getElementById('tab-content-inner');
+						if (tabContentInner) {
+							tabContentInner.className = content.className;
+							tabContentInner.innerHTML = content.innerHTML;
+						} else {
+							tabContent.innerHTML = content.outerHTML;
+						}
+						// Execute inline scripts manually
+						var scripts = doc.querySelectorAll('script');
+						scripts.forEach(function(oldScript) {
+							if (oldScript.src || (oldScript.textContent && oldScript.textContent.trim().length > 0)) {
+								var newScript = document.createElement('script');
+								if (oldScript.src) {
+									newScript.src = oldScript.src;
+								} else {
+									newScript.textContent = oldScript.textContent;
+								}
+								document.body.appendChild(newScript);
+							}
+						});
+					} else {
+						// Fallback: inject full HTML
+						tabContent.innerHTML = html;
+					}
+				})
+				.catch(function(err) {
+					console.error('Error loading Add Product form:', err);
+					tabContent.innerHTML = '<div class="tab-content-inner"><h2>Add Products</h2><p>Error loading form.</p></div>';
+				});
+		} else if (tabName.startsWith('Edit ')) {
+			// Generic handler for Edit tabs that belong to products.
+			// We distinguish product tabs by the presence of dataset.productCode on the tab element.
+			var ws = workspaces[currentWorkspace];
+			var tab = ws.openTabs[tabName];
+			console.log('Edit tab detected:', tabName, 'Tab element:', tab, 'Dataset:', tab ? tab.dataset : null);
+			if (tab && tab.dataset && tab.dataset.productCode) {
+				var productCode = tab.dataset.productCode;
+				console.log('Loading edit form for product code:', productCode);
+				fetch('/edit-product-form/' + encodeURIComponent(productCode) + '/')
+					.then(function(response) { return response.text(); })
+					.then(function(html) {
+						var parser = new DOMParser();
+						var doc = parser.parseFromString(html, 'text/html');
+						var content = doc.querySelector('.tab-content-inner');
+						if (content) {
+							var tabContentInner = document.getElementById('tab-content-inner');
+							if (tabContentInner) {
+								tabContentInner.className = content.className;
+								tabContentInner.innerHTML = content.innerHTML;
+							} else {
+								tabContent.innerHTML = content.outerHTML;
+							}
+							// Execute inline scripts manually
+							var scripts = doc.querySelectorAll('script');
+							scripts.forEach(function(oldScript) {
+								if (oldScript.src || (oldScript.textContent && oldScript.textContent.trim().length > 0)) {
+									var newScript = document.createElement('script');
+									if (oldScript.src) {
+										newScript.src = oldScript.src;
+									} else {
+										newScript.textContent = oldScript.textContent;
+									}
+									document.body.appendChild(newScript);
+								}
+							});
+						} else {
+							// Fallback: inject full HTML
+							tabContent.innerHTML = html;
+						}
+					})
+					.catch(function(err) {
+						console.error('Error loading Edit Product form:', err);
+						tabContent.innerHTML = '<div class="tab-content-inner"><h2>' + tabName + '</h2><p>Could not load product form.</p></div>';
+					});
+			} else {
+				// Edit tab without productCode belongs to another feature (e.g. airports); let its own handler manage it.
+				console.log('Edit tab without productCode; skipping product handler');
 			}
+		} else {
+			console.log('Unknown tab:', tabName);
+			tabContent.innerHTML = '<div class="tab-content-inner"><h2>' + tabName + '</h2><p>Content for ' + tabName + '.</p></div>';
+		}
 		}
 	}
 
@@ -675,343 +772,5 @@ document.addEventListener('DOMContentLoaded', function() {
 // Map initialization is now handled by map-visualization.js
 
 // Render Add Product form
-function renderAddProductTab(tabContent) {
-	// Inject CSS styles
-	var styleId = 'product-form-styles';
-	if (!document.getElementById(styleId)) {
-		var style = document.createElement('style');
-		style.id = styleId;
-		style.textContent = `
-			.product-header {
-				display: flex;
-				align-items: center;
-				justify-content: space-between;
-				margin-bottom: 2rem;
-				flex-wrap: wrap;
-				gap: 1rem;
-			}
-			.product-title {
-				color: #FF5C00;
-				font-weight: bold;
-				letter-spacing: 1px;
-				margin: 0;
-			}
-			.product-form-container {
-				background-color: #181c22;
-				border-radius: 8px;
-				padding: 2rem;
-				box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-				max-width: 1200px;
-				margin: 0 auto;
-			}
-			.product-form-section {
-				margin-bottom: 2rem;
-			}
-			.product-form-section:last-child {
-				margin-bottom: 0;
-			}
-			.product-section-title {
-				color: #FF5C00;
-				font-size: 1.1rem;
-				font-weight: bold;
-				margin-bottom: 1rem;
-				padding-bottom: 0.5rem;
-				border-bottom: 1px solid #2196f3;
-			}
-			.product-form-row {
-				display: flex;
-				flex-wrap: wrap;
-				gap: 1.5rem;
-				margin-bottom: 1rem;
-			}
-			.product-form-row.five-col {
-				display: flex;
-				flex-wrap: nowrap;
-				gap: 1.5rem;
-			}
-			.product-form-row .form-group {
-				flex: 1 1 140px;
-				min-width: 140px;
-				max-width: 200px;
-				margin-right: 18px;
-				margin-bottom: 0;
-				display: flex;
-				flex-direction: column;
-				align-items: stretch;
-			}
-			.product-form-row .form-group:last-child {
-				margin-right: 0;
-			}
-			.product-form-row .product-form-group {
-				margin-bottom: 0;
-			}
-			.product-form-group {
-				margin-bottom: 1rem;
-			}
-			.product-form-group label {
-				display: block;
-				color: #fff;
-				font-weight: bold;
-				margin-bottom: 0.5rem;
-				font-size: 0.9rem;
-			}
-			.product-form-control {
-				width: 100%;
-				padding: 0.75rem;
-				background-color: #23272e;
-				border: 1px solid #2196f3;
-				border-radius: 4px;
-				color: #fff;
-				font-size: 0.9rem;
-				transition: all 0.3s ease;
-			}
-			.product-form-control:focus {
-				outline: none;
-				border-color: #FF5C00;
-				box-shadow: 0 0 0 2px rgba(255, 92, 0, 0.2);
-			}
-			.product-radio-group {
-				display: flex;
-				gap: 1.5rem;
-				align-items: center;
-				margin-top: 0.5rem;
-			}
-			.product-radio-item {
-				display: flex;
-				align-items: center;
-				gap: 0.5rem;
-			}
-			.product-radio-item input[type="radio"] {
-				width: 16px;
-				height: 16px;
-				accent-color: #FF5C00;
-			}
-			.product-radio-item label {
-				color: #fff;
-				font-weight: normal;
-				margin: 0;
-				cursor: pointer;
-				font-size: 0.9rem;
-			}
-			.product-textarea {
-				min-height: 100px;
-				resize: vertical;
-			}
-			.product-btn {
-				background-color: #2196f3;
-				color: #fff;
-				border: none;
-				padding: 0.75rem 2rem;
-				border-radius: 4px;
-				font-weight: bold;
-				cursor: pointer;
-				transition: all 0.3s ease;
-				font-size: 0.9rem;
-				width: 100%;
-				margin-top: 1rem;
-			}
-			.product-btn:hover {
-				background-color: #1976d2;
-				transform: translateY(-1px);
-			}
-			.product-btn:active {
-				transform: translateY(0);
-			}
-		`;
-		document.head.appendChild(style);
-	}
-
-	// Render form HTML
-	tabContent.innerHTML = `
-		<div class="tab-content-inner">
-			<div class="product-header">
-				<h1 class="product-title">Add New Product</h1>
-			</div>
-			<div class="product-form-container">
-				<form id="productForm">
-					<div class="product-form-section">
-						<div class="product-section-title">Basic Information</div>
-						<div class="product-form-row five-col">
-							<div class="form-group">
-								<div class="product-form-group">
-									<label for="productType">Type of Product</label>
-									<select class="product-form-control" id="productType" required>
-										<option value="Produce">Produce</option>
-										<option value="Meats">Meats</option>
-										<option value="Other Perishable">Other Perishable</option>
-										<option value="Dry Goods">Dry Goods</option>
-										<option value="Technology">Technology</option>
-										<option value="Other">Other</option>
-									</select>
-								</div>
-							</div>
-							<div class="form-group">
-								<div class="product-form-group">
-									<label for="productCode">Product Code</label>
-									<input type="text" class="product-form-control" id="productCode" readonly placeholder="Auto-generated">
-								</div>
-							</div>
-							<div class="form-group">
-								<div class="product-form-group">
-									<label for="productName">Product Name</label>
-									<input type="text" class="product-form-control" id="productName" required placeholder="Enter product name">
-								</div>
-							</div>
-							<div class="form-group">
-								<div class="product-form-group">
-									<label for="productCountry">Country</label>
-									<select class="product-form-control" id="productCountry" required>
-										<option value="">Select Country</option>
-									</select>
-								</div>
-							</div>
-							<div class="form-group">
-								<div class="product-form-group">
-									<label for="tradeUnit">Trade Unit</label>
-									<select class="product-form-control" id="tradeUnit" required>
-										<option value="UN">Unit (Un)</option>
-										<option value="BU">Bunch (BU)</option>
-										<option value="KG">Kilogram (Kg.)</option>
-										<option value="LBS">Pound (Lbs.)</option>
-									</select>
-								</div>
-							</div>
-						</div>
-					</div>
-					<div class="product-form-section">
-						<div class="product-section-title">Cost Information</div>
-						<div class="product-form-row">
-							<div class="form-group">
-								<div class="product-form-group">
-									<label for="fcaCost">FCA Cost per WU</label>
-									<input type="number" step="0.01" class="product-form-control" id="fcaCost" required placeholder="0.00">
-								</div>
-							</div>
-							<div class="form-group">
-								<div class="product-form-group">
-									<label>Currency</label>
-									<div class="product-radio-group">
-										<div class="product-radio-item">
-											<input type="radio" name="currency_option" id="currencyLocal" value="local" checked>
-											<label for="currencyLocal">Local</label>
-										</div>
-										<div class="product-radio-item">
-											<input type="radio" name="currency_option" id="currencyUSD" value="USD">
-											<label for="currencyUSD">USD</label>
-										</div>
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
-					<div class="product-form-section">
-						<div class="product-section-title">Packaging Information</div>
-						<div class="product-form-row">
-							<div class="form-group">
-								<div class="product-form-group">
-									<label for="productPackaging">Packaging Type</label>
-									<input type="text" class="product-form-control" id="productPackaging" required placeholder="e.g., Box, Bag, Container">
-								</div>
-							</div>
-							<div class="form-group">
-								<div class="product-form-group">
-									<label for="packagingWeight">Packaging Weight (kg)</label>
-									<input type="number" step="0.01" class="product-form-control" id="packagingWeight" required placeholder="0.00">
-								</div>
-							</div>
-							<div class="form-group">
-								<div class="product-form-group">
-									<label for="packagingCost">Packaging Cost</label>
-									<input type="number" step="0.01" class="product-form-control" id="packagingCost" required placeholder="0.00">
-								</div>
-							</div>
-							<div class="form-group">
-								<div class="product-form-group">
-									<label for="unitsPerPack">Units per Pack</label>
-									<input type="number" class="product-form-control" id="unitsPerPack" required placeholder="1">
-								</div>
-							</div>
-						</div>
-					</div>
-					<div class="product-form-section">
-						<div class="product-section-title">Additional Information</div>
-						<div class="product-form-group">
-							<label for="otherInfo">Other Information</label>
-							<textarea class="product-form-control product-textarea" id="otherInfo" placeholder="Additional notes or specifications"></textarea>
-						</div>
-					</div>
-					<button type="submit" class="product-btn">Add Product</button>
-				</form>
-			</div>
-		</div>
-	`;
-
-	// Setup form logic
-	setTimeout(function() {
-		var form = document.getElementById('productForm');
-		var productCountry = document.getElementById('productCountry');
-		var currencyLocal = document.getElementById('currencyLocal');
-		var currencyUSD = document.getElementById('currencyUSD');
-
-		// Load countries from API
-		fetch('/api/regions/')
-			.then(function(response) { return response.json(); })
-			.then(function(data) {
-				var regions = data.regions || [];
-				var countryPromises = regions.map(function(region) {
-					return fetch('/api/countries-by-region/?region=' + encodeURIComponent(region))
-						.then(function(r) { return r.json(); })
-						.then(function(d) { return d.countries || []; });
-				});
-				return Promise.all(countryPromises);
-			})
-			.then(function(countryArrays) {
-				var allCountries = [];
-				countryArrays.forEach(function(countries) {
-					allCountries = allCountries.concat(countries);
-				});
-				// Remove duplicates
-				var uniqueCountries = [];
-				var seen = {};
-				allCountries.forEach(function(country) {
-					if (!seen[country.code || country.country_code]) {
-						seen[country.code || country.country_code] = true;
-						uniqueCountries.push(country);
-					}
-				});
-				productCountry.innerHTML = '<option value="">Select Country</option>' + 
-					uniqueCountries.map(function(c) {
-						return '<option value="' + (c.code || c.country_code) + '" data-currency="' + (c.currency_code || '') + '">' + c.name + '</option>';
-					}).join('');
-			})
-			.catch(function(err) {
-				console.error('Error loading countries:', err);
-			});
-
-		// Form submission
-		if (form) {
-			form.addEventListener('submit', function(e) {
-				e.preventDefault();
-				
-				var formData = {
-					product_type: document.getElementById('productType').value,
-					name: document.getElementById('productName').value,
-					country_id: document.getElementById('productCountry').value,
-					trade_unit: document.getElementById('tradeUnit').value,
-					fca_cost_per_wu: document.getElementById('fcaCost').value,
-					currency: currencyUSD.checked ? 'USD' : (productCountry.selectedOptions[0]?.getAttribute('data-currency') || ''),
-					packaging: document.getElementById('productPackaging').value,
-					packaging_weight: document.getElementById('packagingWeight').value,
-					packaging_cost: document.getElementById('packagingCost').value,
-					units_per_pack: document.getElementById('unitsPerPack').value,
-					other_info: document.getElementById('otherInfo').value
-				};
-
-				console.log('Product form data:', formData);
-				alert('Product form submitted! (Backend API integration pending)');
-				// TODO: Send to backend API
-			});
-		}
-	}, 100);
-}
+// renderAddProductTab function removed - now using backend template from /add-product-form/
 

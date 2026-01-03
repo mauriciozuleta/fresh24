@@ -1,4 +1,4 @@
-from .models import Route
+from .models import Route, Country
 from operational_functions.routes_utils import calculate_route_on_the_fly, generate_routes_list, update_routes_on_change
 from django.views.decorators.csrf import csrf_exempt
 @csrf_exempt
@@ -63,9 +63,9 @@ def airport_list_api(request):
 	return JsonResponse({'airports': data})
 from django.http import JsonResponse, HttpResponseNotAllowed
 from django.views.decorators.csrf import csrf_exempt
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from .forms import AircraftForm, AirportForm, CharterProviderForm
-from .models import Aircraft, Airport, CharterProvider
+from .models import Aircraft, Airport, CharterProvider, Product
 
 # --- DELETE ENDPOINTS ---
 @csrf_exempt
@@ -236,3 +236,102 @@ def add_airport(request):
 	else:
 		form = AirportForm()
 	return render(request, 'add_airport.html', {'form': form, 'airports': airports})
+from django.http import JsonResponse
+from .models import Product
+
+def products_api(request):
+    products = Product.objects.select_related('country').all().order_by('product_code')
+    data = []
+    for p in products:
+        data.append({
+            'product_code': p.product_code,
+            'product_type': p.product_type,
+            'name': p.name,
+            'country_name': p.country.name if p.country else '',
+            'trade_unit': p.trade_unit,
+            'fca_cost_per_wu': float(p.fca_cost_per_wu),
+            'packaging': p.packaging,
+            'currency': p.currency,
+        })
+    return JsonResponse({'products': data})
+
+def edit_product_form(request, product_code):
+    product = get_object_or_404(Product, product_code=product_code)
+    countries = Country.objects.all().order_by('name')
+    context = {
+        'form': True,
+        'edit_mode': True,
+        'product_id': product.id,
+        'product': product,
+        'countries': countries,
+    }
+    return render(request, 'add_product.html', context)
+
+def add_product_form(request):
+    countries = Country.objects.all().order_by('name')
+    context = {
+        'form': True,
+        'edit_mode': False,
+        'countries': countries,
+    }
+    return render(request, 'add_product.html', context)
+
+def add_product(request):
+    if request.method == 'POST':
+        try:
+            product_code = request.POST.get('product_code')
+            product_type = request.POST.get('product_type')
+            name = request.POST.get('name')
+            country_id = request.POST.get('country_id')
+            trade_unit = request.POST.get('trade_unit')
+            fca_cost_per_wu = request.POST.get('fca_cost_per_wu')
+            currency = request.POST.get('currency')
+            packaging = request.POST.get('packaging')
+            packaging_weight = request.POST.get('packaging_weight')
+            packaging_cost = request.POST.get('packaging_cost')
+            units_per_pack = request.POST.get('units_per_pack')
+            other_info = request.POST.get('other_info', '')
+
+            country = Country.objects.get(id=country_id)
+
+            Product.objects.create(
+                product_code=product_code,
+                product_type=product_type,
+                name=name,
+                country=country,
+                trade_unit=trade_unit,
+                fca_cost_per_wu=fca_cost_per_wu,
+                currency=currency,
+                packaging=packaging,
+                packaging_weight=packaging_weight,
+                packaging_cost=packaging_cost,
+                units_per_pack=units_per_pack,
+                other_info=other_info
+            )
+            return JsonResponse({'success': True, 'message': 'Product added successfully'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    return JsonResponse({'success': False, 'error': 'Invalid request method'})
+
+def edit_product(request, pk):
+    if request.method == 'POST':
+        try:
+            product = get_object_or_404(Product, id=pk)
+            
+            product.product_type = request.POST.get('product_type')
+            product.name = request.POST.get('name')
+            product.country_id = request.POST.get('country_id')
+            product.trade_unit = request.POST.get('trade_unit')
+            product.fca_cost_per_wu = request.POST.get('fca_cost_per_wu')
+            product.currency = request.POST.get('currency')
+            product.packaging = request.POST.get('packaging')
+            product.packaging_weight = request.POST.get('packaging_weight')
+            product.packaging_cost = request.POST.get('packaging_cost')
+            product.units_per_pack = request.POST.get('units_per_pack')
+            product.other_info = request.POST.get('other_info', '')
+            
+            product.save()
+            return JsonResponse({'success': True, 'message': 'Product updated successfully'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    return JsonResponse({'success': False, 'error': 'Invalid request method'})
