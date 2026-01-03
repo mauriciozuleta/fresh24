@@ -222,6 +222,15 @@ def regions_api(request):
 	regions = Country.objects.values_list('region', flat=True).distinct().order_by('region')
 	return JsonResponse({'regions': list(regions)})
 
+
+def region_core_data_tab(request):
+	"""Render the Region Core Data tab content as a template.
+
+	This is loaded dynamically by the front-end via fetch + DOMParser,
+	so it only needs to return the inner tab markup and scripts.
+	"""
+	return render(request, 'region_core_data.html')
+
 def add_airport(request):
 	airports = Airport.objects.all().order_by('country', 'city', 'name')
 	if request.method == 'POST':

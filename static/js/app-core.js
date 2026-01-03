@@ -276,336 +276,44 @@ document.addEventListener('DOMContentLoaded', function() {
 							 tabContent.innerHTML = '<div class="tab-content-inner"><h2>Commercial Structure Management</h2><p>Could not load regions.</p></div>';
 						});
 					} else if (tabName === 'Region Core Data') {
-						// Render a focused Region Core Data form (regions dropdown + manager + countries)
-						fetch('/api/regions/')
-							.then(function(response) { return response.json(); })
-							.then(function(data) {
-								var regions = data.regions || [];
-								var options = regions.map(function(r) { return '<option value="' + r + '">' + r + '</option>'; }).join('');
-								tabContent.innerHTML = '<div class="tab-content-inner aircraft-form-page">' +
-									'<div class="aircraft-header"><h1 class="aircraft-title">Region Core Data</h1></div>' +
-									'<div class="aircraft-form-container">' +
-									'<div class="aircraft-form-section">' +
-									'<div class="aircraft-section-title">Region & Country</div>' +
-									'<div class="aircraft-form-row three-col">' +
-									'<div class="form-group">' +
-									'<label for="region-core-select">Region</label>' +
-									'<select id="region-core-select" class="aircraft-form-control"><option value="">-- Select Region --</option>' + options + '</select>' +
-									'</div>' +
-									'<div class="form-group">' +
-									'<label for="region-core-manager">Regional Manager</label>' +
-									'<input type="text" id="region-core-manager" class="aircraft-form-control" readonly>' +
-									'</div>' +
-									'<div class="form-group">' +
-									'<label for="region-core-country">Country</label>' +
-									'<select id="region-core-country" class="aircraft-form-control" disabled><option value="">Select a region first</option></select>' +
-									'</div>' +
-									'</div>' +
-									'</div>' +
-									'<div class="aircraft-form-section">' +
-									'<div class="aircraft-section-title">Country Tax & Profit Information</div>' +
-									'<div class="aircraft-form-row three-col">' +
-									'<div class="form-group">' +
-									'<label for="export-sales-tax">Export Sales Tax</label>' +
-									'<input type="number" id="export-sales-tax" class="aircraft-form-control" placeholder="Enter export sales tax">' +
-									'</div>' +
-									'<div class="form-group">' +
-									'<label for="export-other-tax">Export Other Tax</label>' +
-									'<input type="number" id="export-other-tax" class="aircraft-form-control" placeholder="Enter export other tax">' +
-									'</div>' +
-									'<div class="form-group">' +
-									'<label for="country-profit">Country Profit</label>' +
-									'<input type="number" id="country-profit" class="aircraft-form-control" placeholder="Enter country profit">' +
-									'</div>' +
-									'<div class="form-group">' +
-									'<label for="country-revenue-tax">Country Revenue Tax</label>' +
-									'<input type="number" id="country-revenue-tax" class="aircraft-form-control" placeholder="Enter country revenue tax">' +
-									'</div>' +
-									'<div class="form-group">' +
-									'<label for="import-tax">Import Tax</label>' +
-									'<input type="number" id="import-tax" class="aircraft-form-control" placeholder="Enter import tax">' +
-									'</div>' +
-									'<div class="aircraft-form-row" style="margin-top:1rem; gap:1rem;">' +
-									'<div class="form-group" style="flex:1; max-width:180px;">' +
-									'<label for="other-tax">Other Tax</label>' +
-									'<input type="number" id="other-tax" class="aircraft-form-control" placeholder="Enter other tax">' +
-									'</div>' +
-									'<div class="form-group" style="flex:1; max-width:180px;">' +
-									'<label for="country-import-profit">Country Import Profit</label>' +
-									'<input type="number" id="country-import-profit" class="aircraft-form-control" placeholder="Enter country import profit" style="max-width:180px;">' +
-									'</div>' +
-									'<div style="display:flex; align-items:flex-end;">' +
-									'<button id="update-country-info-btn" class="primary-button" type="button" style="white-space:nowrap; padding:0.5rem 1.5rem;">Update Country Information</button>' +
-									'</div>' +
-									'</div>' +
-									'<div class="aircraft-form-section">' +
-									'<div class="aircraft-section-title">Branches Information</div>' +
-									'<div class="aircraft-form-row" style="gap:1rem;">' +
-									'<div class="form-group" style="flex:1; max-width:260px;">' +
-									'<label for="branch-airport-select">Airport</label>' +
-									'<select id="branch-airport-select" class="aircraft-form-control" disabled><option value="">Select a country first</option></select>' +
-									'</div>' +
-									'<div class="form-group" style="flex:1; max-width:260px;">' +
-									'<label for="branch-manager-name">Branch Manager</label>' +
-									'<input type="text" id="branch-manager-name" class="aircraft-form-control" readonly>' +
-									'</div>' +
-									'</div>' +
-									'<div class="aircraft-form-row three-col" style="margin-top:1rem;">' +
-									'<div class="form-group">' +
-									'<label for="marketing-expenses">Marketing Expenses</label>' +
-									'<input type="number" id="marketing-expenses" class="aircraft-form-control" placeholder="Enter marketing expenses">' +
-									'</div>' +
-									'<div class="form-group">' +
-									'<label for="payroll">Payroll</label>' +
-									'<input type="number" id="payroll" class="aircraft-form-control" placeholder="Enter payroll">' +
-									'</div>' +
-									'<div class="form-group">' +
-									'<label for="rent-expenses">Rent Expenses</label>' +
-									'<input type="number" id="rent-expenses" class="aircraft-form-control" placeholder="Enter rent expenses">' +
-									'</div>' +
-									'<div class="form-group">' +
-									'<label for="utilities-expenses">Utilities Expenses</label>' +
-									'<input type="number" id="utilities-expenses" class="aircraft-form-control" placeholder="Enter utilities expenses">' +
-									'</div>' +
-									'<div class="form-group">' +
-									'<label for="office-supplies">Office Supplies</label>' +
-									'<input type="number" id="office-supplies" class="aircraft-form-control" placeholder="Enter office supplies">' +
-									'</div>' +
-									'<div class="form-group">' +
-									'<label for="other-expenses">Other Expenses</label>' +
-									'<input type="number" id="other-expenses" class="aircraft-form-control" placeholder="Enter other expenses">' +
-									'</div>' +
-									'</div>' +
-									'<div style="width:100%; display:flex; justify-content:center; margin-top:1.5rem;">' +
-									'<button id="save-branch-costs-btn" class="primary-button" style="width:100%; max-width:700px; font-size:1.1rem; padding:0.75rem 0;">Save Branch Costs Information</button>' +
-									'</div>' +
-									'</div>' +
-									'</div></div>';
-								// Wire up change handler
-								setTimeout(function() {
-									var branchAirportSelect = document.getElementById('branch-airport-select');
-									var branchManagerInput = document.getElementById('branch-manager-name');
-									var countrySel = document.getElementById('region-core-country');
-									
-									function updateBranchManager() {
-										var selected = branchAirportSelect.options[branchAirportSelect.selectedIndex];
-										if (selected && selected.value) {
-											branchManagerInput.value = selected.getAttribute('data-manager') || '';
-											console.log('Updated manager:', branchManagerInput.value, 'from:', selected.getAttribute('data-manager'));
-											
-											// Fetch and populate all branch info fields
-											fetch('/api/get-branch-info/?airport_code=' + encodeURIComponent(selected.value))
-												.then(function(response) { return response.json(); })
-												.then(function(result) {
-													if (result.success && result.data) {
-														document.getElementById('marketing-expenses').value = result.data.marketing_expenses || '';
-														document.getElementById('payroll').value = result.data.payroll || '';
-														document.getElementById('rent-expenses').value = result.data.rent_expenses || '';
-														document.getElementById('utilities-expenses').value = result.data.utilities_expenses || '';
-														document.getElementById('office-supplies').value = result.data.office_supplies || '';
-														document.getElementById('other-expenses').value = result.data.other_expenses || '';
-													}
-												})
-												.catch(function(err) {
-													console.error('Error fetching branch info:', err);
-												});
-										}
+						// Load Region Core Data tab from backend template and execute its scripts
+						fetch('/region-core-data-tab/')
+							.then(function(response) { return response.text(); })
+							.then(function(html) {
+								var parser = new DOMParser();
+								var doc = parser.parseFromString(html, 'text/html');
+								var content = doc.querySelector('.tab-content-inner');
+								if (content) {
+									var tabContentInner = document.getElementById('tab-content-inner');
+									if (tabContentInner) {
+										tabContentInner.className = content.className;
+										tabContentInner.innerHTML = content.innerHTML;
+									} else {
+										tabContent.innerHTML = content.outerHTML;
 									}
-									
-									function updateBranchAirportsAndManager() {
-										var country = countrySel.value;
-										if (!country) {
-											branchAirportSelect.innerHTML = '<option value="">Select a country first</option>';
-											branchAirportSelect.disabled = true;
-											branchManagerInput.value = '';
-											return;
-										}
-										console.log('Fetching airports for country:', country);
-										fetch('/api/airports-by-country/?country=' + encodeURIComponent(country))
-											.then(function(response) { return response.json(); })
-											.then(function(data) {
-												console.log('Airports received:', data);
-												console.log('First airport detail:', data.airports && data.airports[0]);
-												var airports = data.airports || [];
-												if (airports.length > 0) {
-													branchAirportSelect.innerHTML = airports.map(function(airport) {
-														return '<option value="' + airport.iata_code + '" data-manager="' + (airport.manager || '') + '">' + airport.iata_code + ' - ' + airport.city + '</option>';
-													}).join('');
-													branchAirportSelect.disabled = false;
-													// Set manager for first airport
-													updateBranchManager();
-												} else {
-													branchAirportSelect.innerHTML = '<option value="">No airports found</option>';
-													branchAirportSelect.disabled = true;
-													branchManagerInput.value = '';
-												}
-											})
-											.catch(function(err) {
-												console.error('Error fetching airports:', err);
-											});
-									}
-									
-									if (countrySel && branchAirportSelect) {
-										branchAirportSelect.addEventListener('change', updateBranchManager);
-										countrySel.addEventListener('change', updateBranchAirportsAndManager);
-										updateBranchAirportsAndManager(); // Call once on load
-									}
-									var updateBtn = document.getElementById('update-country-info-btn');
-									if (updateBtn) {
-										updateBtn.addEventListener('click', function() {
-											var regionValue = document.getElementById('region-core-select').value;
-											var countryValue = document.getElementById('region-core-country').value;
-											if (!regionValue || !countryValue) {
-												alert('Please select a region and country first');
-												return;
+									// Execute inline/external scripts from the template
+									var scripts = doc.querySelectorAll('script');
+									scripts.forEach(function(oldScript) {
+										if (oldScript.src || (oldScript.textContent && oldScript.textContent.trim().length > 0)) {
+											var newScript = document.createElement('script');
+											if (oldScript.src) {
+												newScript.src = oldScript.src;
+											} else {
+												newScript.textContent = oldScript.textContent;
 											}
-											var data = {
-												country_code: countryValue,
-												region: regionValue,
-												export_sales_tax: document.getElementById('export-sales-tax').value,
-												export_other_tax: document.getElementById('export-other-tax').value,
-												country_profit: document.getElementById('country-profit').value,
-												country_revenue_tax: document.getElementById('country-revenue-tax').value,
-												import_tax: document.getElementById('import-tax').value,
-												other_tax: document.getElementById('other-tax').value,
-												country_import_profit: document.getElementById('country-import-profit').value
-											};
-											fetch('/api/update-country-information/', {
-												method: 'POST',
-												headers: {'Content-Type': 'application/json'},
-												body: JSON.stringify(data)
-											})
-												.then(function(r) { return r.json(); })
-												.then(function(result) {
-													if (result.success) {
-														alert('Country information updated successfully!');
-													} else {
-														alert('Error: ' + result.error);
-													}
-												})
-												.catch(function(err) {
-													alert('Error updating country information: ' + err);
-												});
-										});
-									}
-									
-									var saveBranchBtn = document.getElementById('save-branch-costs-btn');
-									if (saveBranchBtn) {
-										saveBranchBtn.addEventListener('click', function() {
-											var airportValue = document.getElementById('branch-airport-select').value;
-											if (!airportValue) {
-												alert('Please select an airport first');
-												return;
-											}
-											var data = {
-												airport_code: airportValue,
-												marketing_expenses: document.getElementById('marketing-expenses').value,
-												payroll: document.getElementById('payroll').value,
-												rent_expenses: document.getElementById('rent-expenses').value,
-												utilities_expenses: document.getElementById('utilities-expenses').value,
-												office_supplies: document.getElementById('office-supplies').value,
-												other_expenses: document.getElementById('other-expenses').value
-											};
-											fetch('/api/save-branch-costs/', {
-												method: 'POST',
-												headers: {'Content-Type': 'application/json'},
-												body: JSON.stringify(data)
-											})
-												.then(function(r) { return r.json(); })
-												.then(function(result) {
-													if (result.success) {
-														alert('Branch costs saved successfully!');
-													} else {
-														alert('Error: ' + result.error);
-													}
-												})
-												.catch(function(err) {
-													alert('Error saving branch costs: ' + err);
-												});
-										});
-									}
-									var regionSel = document.getElementById('region-core-select');
-									var managerInput = document.getElementById('region-core-manager');
-									var countrySel = document.getElementById('region-core-country');
-									if (!regionSel) return;
-									regionSel.addEventListener('change', function() {
-										var region = regionSel.value;
-										if (!region) {
-											managerInput.value = '';
-											countrySel.innerHTML = '<option value="">Select a region first</option>';
-											countrySel.disabled = true;
-											return;
+											document.body.appendChild(newScript);
 										}
-										// fetch manager
-										fetch('/api/check-region-info/?region=' + encodeURIComponent(region))
-											.then(function(r) { return r.json(); })
-											.then(function(d) { managerInput.value = d.regional_manager || ''; })
-											.catch(function() { managerInput.value = ''; });
-										// fetch countries
-										fetch('/api/countries-by-region/?region=' + encodeURIComponent(region))
-											.then(function(r) { return r.json(); })
-											.then(function(d) {
-												var countries = d.countries || [];
-												if (countries.length > 0) {
-													 countrySel.innerHTML = countries.map(function(c) { return '<option value="' + (c.code || c.country_code) + '">' + c.name + '</option>'; }).join('');
-													countrySel.disabled = false;
-												} else {
-													countrySel.innerHTML = '<option value="">No countries found</option>';
-													countrySel.disabled = true;
-												}
-											})
-											.catch(function() {
-												countrySel.innerHTML = '<option value="">Error loading</option>';
-												countrySel.disabled = true;
-											});
 									});
-									
-									// Country selection handler - load existing CountryInfo data
-									countrySel.addEventListener('change', function() {
-										var region = regionSel.value;
-										var country = countrySel.value;
-										if (!region || !country) {
-											// Clear all tax/profit fields
-											document.getElementById('export-sales-tax').value = '';
-											document.getElementById('export-other-tax').value = '';
-											document.getElementById('country-profit').value = '';
-											document.getElementById('country-revenue-tax').value = '';
-											document.getElementById('import-tax').value = '';
-											document.getElementById('other-tax').value = '';
-											document.getElementById('country-import-profit').value = '';
-											branchAirportSelect.innerHTML = '<option value="">Select a country first</option>';
-											branchAirportSelect.disabled = true;
-											return;
-										}
-										
-										// Load existing CountryInfo data
-										fetch('/api/check-country-info/?country=' + encodeURIComponent(country))
-											.then(function(r) { return r.json(); })
-											.then(function(d) {
-												if (d.exists) {
-													// Populate tax/profit fields if they exist in the response
-													document.getElementById('export-sales-tax').value = d.export_sales_tax || '';
-													document.getElementById('export-other-tax').value = d.export_other_tax || '';
-													document.getElementById('country-profit').value = d.country_profit || '';
-													document.getElementById('country-revenue-tax').value = d.country_revenue_tax || '';
-													document.getElementById('import-tax').value = d.import_tax || '';
-													document.getElementById('other-tax').value = d.other_tax || '';
-													document.getElementById('country-import-profit').value = d.country_import_profit || '';
-												}
-											})
-											.catch(function(err) {
-												console.error('Error loading country info:', err);
-											});
-										
-										// Load airports for this country
-										updateBranchAirportsAndManager();
-									});
-								}, 30);
+								} else {
+									// Fallback: inject full HTML
+									tabContent.innerHTML = html;
+								}
 							})
-							.catch(function() {
-								tabContent.innerHTML = '<div class="tab-content-inner"><h2>Region Core Data</h2><p>Could not load regions.</p></div>';
+							.catch(function(err) {
+								console.error('Error loading Region Core Data tab:', err);
+								tabContent.innerHTML = '<div class="tab-content-inner"><h2>Region Core Data</h2><p>Could not load content.</p></div>';
 							});
-				} else if (tabName === 'Branch Information') {
+					} else if (tabName === 'Branch Information') {
 					// Fetch regions and render Branch Information tab with map
 					fetch('/api/regions/')
 						.then(function(response) { return response.json(); })
