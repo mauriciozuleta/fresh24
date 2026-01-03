@@ -26,6 +26,10 @@ const UserMarketData = {
               <option value="Other">Other</option>
             </select>
           </div>
+          <div>
+            <label for="export-product-search" style="display:block; margin-bottom:0.5rem;">Search Product by name</label>
+            <input id="export-product-search" type="text" class="aircraft-form-control" style="min-width:220px;" placeholder="Start typing...">
+          </div>
           <button id="add-supplier-btn" class="primary-button" style="margin-left:2rem; height:2.5rem;">Add Supplier</button>
           <button id="add-product-btn" class="primary-button" style="margin-left:1rem; height:2.5rem;">Add Product</button>
           <button id="edit-product-btn" class="primary-button" style="margin-left:1rem; height:2.5rem;">Edit Product</button>
@@ -136,10 +140,7 @@ const UserMarketData = {
           html += '<div id="supplier-form-container"></div>';
           html += '<div id="supply-chain-table-container"></div>';
           container.innerHTML = html;
-          // Render supply chain summary below the product table
-          if (window.UserMarketData && typeof window.UserMarketData.renderSupplyChainTable === 'function') {
-            window.UserMarketData.renderSupplyChainTable();
-          }
+
                     // Add Supplier form logic
                     var addSupplierBtn = document.getElementById('add-supplier-btn');
                     if (addSupplierBtn) {
@@ -267,9 +268,9 @@ const UserMarketData = {
                                     form.reset();
                                     var formContainer = document.getElementById('supplier-form-container');
                                     if (formContainer) formContainer.innerHTML = '';
-                                    // Refresh supply chain summary table
+                                    // Refresh supply chain summary table for this product
                                     if (window.UserMarketData && typeof window.UserMarketData.renderSupplyChainTable === 'function') {
-                                      window.UserMarketData.renderSupplyChainTable();
+                                      window.UserMarketData.renderSupplyChainTable(productName);
                                     }
                                   } else {
                                     alert('Error: ' + (result.error || 'Unknown error'));
@@ -283,17 +284,52 @@ const UserMarketData = {
                           });
                       });
                     }
-          // Only one checkbox active logic
+          // Only one checkbox active logic and drive supply chain summary display
           var checkboxes = container.querySelectorAll('.product-select-checkbox');
+          var scContainer = document.getElementById('supply-chain-table-container');
           checkboxes.forEach(function(cb) {
             cb.addEventListener('change', function() {
               if (this.checked) {
+                // ensure only one selected
                 checkboxes.forEach(function(other) {
                   if (other !== cb) other.checked = false;
                 });
+                // show supply chain only for selected product
+                if (window.UserMarketData && typeof window.UserMarketData.renderSupplyChainTable === 'function') {
+                  var row = this.closest('tr');
+                  var nameCell = row ? row.children[2] : null;
+                  var selectedProductName = nameCell ? nameCell.textContent.trim() : '';
+                  window.UserMarketData.renderSupplyChainTable(selectedProductName);
+                }
+              } else {
+                // if no checkbox remains selected, hide supply chain summary
+                var anyChecked = Array.from(checkboxes).some(function(other) { return other.checked; });
+                if (!anyChecked && scContainer) {
+                  scContainer.innerHTML = '';
+                }
               }
             });
           });
+
+          // Search Product by name - live filter
+          var searchInput = document.getElementById('export-product-search');
+          if (searchInput) {
+            searchInput.addEventListener('input', function() {
+              var term = this.value.toLowerCase();
+              var productsTable = container.querySelector('.products-table-wrapper table');
+              if (!productsTable) return;
+              var rows = productsTable.querySelectorAll('tbody tr');
+              rows.forEach(function(row) {
+                var nameCell = row.children[2]; // Name column
+                var nameText = nameCell ? nameCell.textContent.toLowerCase() : '';
+                if (!term || nameText.indexOf(term) !== -1) {
+                  row.style.display = '';
+                } else {
+                  row.style.display = 'none';
+                }
+              });
+            });
+          }
         })
         .catch(function() {
           var container = document.getElementById('export-products-table-container');
@@ -302,17 +338,20 @@ const UserMarketData = {
     }, 50);
   },
 
-  renderSupplyChainTable: function() {
+  renderSupplyChainTable: function(productName) {
     var scContainer = document.getElementById('supply-chain-table-container');
     if (!scContainer) return;
     fetch('/api/supply-chain/')
       .then(function(response) { return response.json(); })
       .then(function(data) {
         var sc = data.supply_chain || [];
+        if (productName) {
+          sc = sc.filter(function(row) { return row.product_name === productName; });
+        }
         var scHtml = '<div style="margin-top:2rem;">';
         scHtml += '<h3>Supply Chain Summary</h3>';
         if (!sc.length) {
-          scHtml += '<div style="color:#f44336;">No supply chain data found.</div>';
+          scHtml += '<div style="color:#f44336;">No supply chain data found for the selected product.</div>';
         } else {
           scHtml += '<table class="products-table" style="width:100%; border-collapse:collapse; margin-top:0.5rem; text-align:center;">';
           scHtml += '<thead><tr style="background:#23272e; color:#FF5C00;">';
