@@ -10,6 +10,14 @@ class Supplier(models.Model):
 	assigned_branch = models.CharField(max_length=128)
 	crop_area = models.CharField(max_length=64)
 	crop_yield = models.CharField(max_length=64)
+	delivery = models.CharField(max_length=32, choices=[
+		("Year-round", "Year-round"),
+		("Seasonal", "Seasonal"),
+		("On Order", "On Order"),
+		("On Shelf", "On Shelf")
+	], default="Year-round")
+	delivery_time = models.CharField(max_length=64, blank=True, null=True)
+	ready_for_shelf_days = models.CharField(max_length=16, blank=True, null=True)
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now=True)
 

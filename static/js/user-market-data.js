@@ -272,8 +272,6 @@ const UserMarketData = {
                                     <label>Country</label>
                                     <input type="text" name="country" class="aircraft-form-control" required value="${country}">
                                   </div>
-                                </div>
-                                <div class="aircraft-form-row three-col">
                                   <div class="form-group">
                                     <label>Location</label>
                                     <input type="text" name="location" class="aircraft-form-control" required>
@@ -282,15 +280,32 @@ const UserMarketData = {
                                     <label>Assigned Branch</label>
                                     <select name="assigned_branch" class="aircraft-form-control" required>${airportOptions}</select>
                                   </div>
+                                </div>
+                                <div class="aircraft-form-row three-col">
                                   <div class="form-group">
                                     <label>Crop Area</label>
                                     <input type="text" name="crop_area" class="aircraft-form-control" required>
                                   </div>
-                                </div>
-                                <div class="aircraft-form-row">
-                                  <div class="form-group" style="flex:1;">
+                                  <div class="form-group">
                                     <label>Crop Yield</label>
                                     <input type="text" name="crop_yield" class="aircraft-form-control" required>
+                                  </div>
+                                  <div class="form-group">
+                                    <label>Delivery</label>
+                                    <select name="delivery" id="delivery-type" class="aircraft-form-control" required>
+                                      <option value="Year-round">Year-round</option>
+                                      <option value="Seasonal">Seasonal</option>
+                                      <option value="On Order">On Order</option>
+                                      <option value="On Shelf">On Shelf</option>
+                                    </select>
+                                  </div>
+                                  <div class="form-group">
+                                    <label>Delivery time</label>
+                                    <input type="text" name="delivery_time" class="aircraft-form-control" placeholder="e.g. 2 days">
+                                  </div>
+                                  <div class="form-group" id="ready-for-shelf-group" style="display:none;">
+                                    <label>Ready for shelf (Days)</label>
+                                    <input type="text" name="ready_for_shelf_days" class="aircraft-form-control" placeholder="e.g. 1">
                                   </div>
                                 </div>
                                 <div style="margin-top:1.5rem; text-align:right;">
@@ -303,6 +318,24 @@ const UserMarketData = {
                             // Attach submit handler
                             var form = document.getElementById('supplier-form');
                             if (form) {
+                              // Show/hide Ready for shelf field based on product type
+                              var readyForShelfGroup = document.getElementById('ready-for-shelf-group');
+                              var productType = '';
+                              // Try to get product type from the selected product row
+                              var selectedRow = document.querySelector('.product-select-checkbox:checked');
+                              if (selectedRow) {
+                                var tr = selectedRow.closest('tr');
+                                if (tr) productType = tr.children[3].textContent.trim().toLowerCase();
+                              }
+                              function updateReadyForShelfVisibility() {
+                                if (["produce","meats","other perishable"].includes(productType)) {
+                                  readyForShelfGroup.style.display = '';
+                                } else {
+                                  readyForShelfGroup.style.display = 'none';
+                                }
+                              }
+                              updateReadyForShelfVisibility();
+
                               form.addEventListener('submit', function(e) {
                                 e.preventDefault();
                                 var formData = new FormData(form);
@@ -318,10 +351,10 @@ const UserMarketData = {
                                     form.reset();
                                     var formContainer = document.getElementById('supplier-form-container');
                                     if (formContainer) formContainer.innerHTML = '';
-                                      // Refresh supply chain table
-                                      var scContainer = document.getElementById('supply-chain-table-container');
-                                      if (scContainer) scContainer.innerHTML = '';
-                                      renderSupplyChainTable();
+                                    // Refresh supply chain table
+                                    var scContainer = document.getElementById('supply-chain-table-container');
+                                    if (scContainer) scContainer.innerHTML = '';
+                                    renderSupplyChainTable();
                                   } else {
                                     alert('Error: ' + (result.error || 'Unknown error'));
                                   }
