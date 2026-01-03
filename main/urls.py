@@ -22,6 +22,8 @@ urlpatterns = [
     path('api/airports-by-country/', views_airports_api.airports_by_country_api, name='airports_by_country_api'),
     path('mode-tab/', views.mode_tab, name='mode_tab'),
     path('region-core-data-tab/', views.region_core_data_tab, name='region_core_data_tab'),
+    path('user-management-tab/', views.user_management_tab, name='user_management_tab'),
+    path('branch-information-tab/', views.branch_information_tab, name='branch_information_tab'),
 
     # Management API endpoints
     path('api/check-region-info/', views_management_api.check_region_info, name='check_region_info'),

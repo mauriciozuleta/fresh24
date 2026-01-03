@@ -1,0 +1,29 @@
+<div class="tab-content-inner">
+  <h1>Branch Information Management</h1>
+  <div id="map-container" style="width:100%; height:500px; margin:2rem 0; border:2px solid #0078d4; border-radius:8px;">
+    <div id="region-map" style="width:100%; height:100%;"></div>
+  </div>
+  <div id="branch-info-content" style="margin-top:2rem;">
+    <p>Select a region on the map to view branch information.</p>
+  </div>
+</div>
+
+<script>
+(function() {
+  // Fetch regions and initialize the region map visualization
+  fetch('/api/regions/')
+    .then(function(response) { return response.json(); })
+    .then(function(data) {
+      var regions = data.regions || [];
+      if (typeof initializeRegionMap === 'function') {
+        setTimeout(function() { initializeRegionMap(regions); }, 100);
+      }
+    })
+    .catch(function() {
+      var info = document.getElementById('branch-info-content');
+      if (info) {
+        info.innerHTML = '<p>Could not load regions for the map.</p>';
+      }
+    });
+})();
+</script>

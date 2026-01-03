@@ -231,6 +231,16 @@ def region_core_data_tab(request):
 	"""
 	return render(request, 'region_core_data.html')
 
+
+def user_management_tab(request):
+	"""Render the User Management (Commercial Structure Management) tab content."""
+	return render(request, 'user_management.html')
+
+
+def branch_information_tab(request):
+	"""Render the Branch Information tab content."""
+	return render(request, 'branch_information.html')
+
 def add_airport(request):
 	airports = Airport.objects.all().order_by('country', 'city', 'name')
 	if request.method == 'POST':

@@ -199,82 +199,43 @@ document.addEventListener('DOMContentLoaded', function() {
 					tabContent.innerHTML = '<div class="tab-content-inner"><h2>Import User Market Data</h2><p>Import functionality coming soon.</p></div>';
 				}
 			} else if (tabName === 'User Management') {
-				// Fetch regions from API
-				fetch('/api/regions/')
-					.then(function(response) { return response.json(); })
-					.then(function(data) {
-						var regions = data.regions || [];
-						var options = regions.map(function(region) {
-							return '<option value="' + region + '">' + region + '</option>';
-						}).join('');
-						tabContent.innerHTML = '<div class="tab-content-inner"><h1>Commercial Structure Management</h1>' +
-							'<div class="aircraft-form-row" style="margin-top:1.5rem; gap:2rem;">' +
-							'<div class="form-group">' +
-							'<label for="region-select">Select Region</label>' +
-							'<select id="region-select" class="aircraft-form-control"><option value="">-- Select --</option>' + options + '</select>' +
-							'</div>' +
-							'<div class="form-group">' +
-							'<label for="regional-manager">Regional Manager</label>' +
-							'<input type="text" id="regional-manager" class="aircraft-form-control" placeholder="Enter manager name">' +
-							'</div>' +
-							'<div class="form-group">' +
-							'<label for="region-user">Region User</label>' +
-							'<input type="text" id="region-user" class="aircraft-form-control" placeholder="Enter user name">' +
-							'</div>' +
-							'<div style="display: flex; align-items: flex-end; margin-left: 3rem;">' +
-							'<button id="edit-region-btn" class="primary-button" type="button" style="white-space: nowrap;">Edit Region</button>' +
-							'</div>' +
-							'</div>' +
-							'<div class="aircraft-form-row" style="margin-top:1.5rem; gap:2rem;">' +
-							'<div class="form-group" id="countries-group">' +
-							'<label for="country-select">Countries</label>' +
-							'<select id="country-select" class="aircraft-form-control" disabled>' +
-							'<option value="">Select a region first</option>' +
-							'</select>' +
-							'</div>' +
-							'<div class="form-group">' +
-							'<label for="country-manager">Country Manager</label>' +
-							'<input type="text" id="country-manager" class="aircraft-form-control" placeholder="Enter country manager name">' +
-							'</div>' +
-							'<div class="form-group">' +
-							'<label for="country-user">Country User</label>' +
-							'<input type="text" id="country-user" class="aircraft-form-control" placeholder="Enter country user name">' +
-							'</div>' +
-							'<div style="display: flex; align-items: flex-end; margin-left: 3rem;">' +
-							'<button id="add-country-btn" class="primary-button" type="button" style="white-space: nowrap;">Add Country</button>' +
-							'</div>' +
-							'</div>' +
-							'<div class="aircraft-form-row" style="margin-top:1.5rem; gap:2rem;">' +
-							'<div class="form-group" id="airports-group">' +
-							'<label for="airport-select">Airports</label>' +
-							'<select id="airport-select" class="aircraft-form-control" disabled>' +
-							'<option value="">Select a country first</option>' +
-							'</select>' +
-							'</div>' +
-							'<div class="form-group">' +
-							'<label for="branch-manager">Branch Manager</label>' +
-							'<input type="text" id="branch-manager" class="aircraft-form-control" placeholder="Enter branch manager name">' +
-							'</div>' +
-							'<div class="form-group">' +
-							'<label for="branch-user">Branch User</label>' +
-							'<input type="text" id="branch-user" class="aircraft-form-control" placeholder="Enter branch user name">' +
-							'</div>' +
-							'<div style="display: flex; align-items: flex-end; margin-left: 3rem;">' +
-							'<button id="add-branch-btn" class="primary-button" type="button" style="white-space: nowrap;">Region Core Data</button>' +
-							'</div>' +
-											'</div></div>' +
-											'<div id="table-container" style="width:100%; display:flex; justify-content:center; align-items:center; margin:2rem 0;">' +
-							'<div id="table-placeholder" style="width:90%; min-height:60px; background:#222; color:#fff; border:2px dashed #0078d4; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:1.2rem; margin:2rem auto; text-align:center;">' +
-							'<span>TABLE PLACEHOLDER — Table will be built here. If you see this, the divider is working. (Bug tracking)</span>' +
-							'</div></div>';
-							setupRegionCountries();
-							setupCountryAirports();
-							setupManagementUI();
-							loadManagementTable();
-						})
-						.catch(function() {
-							 tabContent.innerHTML = '<div class="tab-content-inner"><h2>Commercial Structure Management</h2><p>Could not load regions.</p></div>';
-						});
+				// Load User Management tab content from backend template and execute its scripts
+				fetch('/user-management-tab/')
+					.then(function(response) { return response.text(); })
+					.then(function(html) {
+						var parser = new DOMParser();
+						var doc = parser.parseFromString(html, 'text/html');
+						var content = doc.querySelector('.tab-content-inner');
+						if (content) {
+							var tabContentInner = document.getElementById('tab-content-inner');
+							if (tabContentInner) {
+								tabContentInner.className = content.className;
+								tabContentInner.innerHTML = content.innerHTML;
+							} else {
+								tabContent.innerHTML = content.outerHTML;
+							}
+							// Execute inline/external scripts from the template
+							var scripts = doc.querySelectorAll('script');
+							scripts.forEach(function(oldScript) {
+								if (oldScript.src || (oldScript.textContent && oldScript.textContent.trim().length > 0)) {
+									var newScript = document.createElement('script');
+									if (oldScript.src) {
+										newScript.src = oldScript.src;
+									} else {
+										newScript.textContent = oldScript.textContent;
+									}
+									document.body.appendChild(newScript);
+								}
+							});
+						} else {
+							// Fallback: inject full HTML
+							tabContent.innerHTML = html;
+						}
+					})
+					.catch(function(err) {
+						console.error('Error loading User Management tab:', err);
+						tabContent.innerHTML = '<div class="tab-content-inner"><h2>Commercial Structure Management</h2><p>Could not load content.</p></div>';
+					});
 					} else if (tabName === 'Region Core Data') {
 						// Load Region Core Data tab from backend template and execute its scripts
 						fetch('/region-core-data-tab/')
@@ -314,23 +275,43 @@ document.addEventListener('DOMContentLoaded', function() {
 								tabContent.innerHTML = '<div class="tab-content-inner"><h2>Region Core Data</h2><p>Could not load content.</p></div>';
 							});
 					} else if (tabName === 'Branch Information') {
-					// Fetch regions and render Branch Information tab with map
-					fetch('/api/regions/')
-						.then(function(response) { return response.json(); })
-						.then(function(data) {
-							var regions = data.regions || [];
-							tabContent.innerHTML = '<div class="tab-content-inner"><h1>Branch Information Management</h1>' +
-								'<div id="map-container" style="width:100%; height:500px; margin:2rem 0; border:2px solid #0078d4; border-radius:8px;">' +
-								'<div id="region-map" style="width:100%; height:100%;"></div>' +
-								'</div>' +
-								'<div id="branch-info-content" style="margin-top:2rem;">' +
-								'<p>Select a region on the map to view branch information.</p>' +
-								'</div></div>';
-							setTimeout(function() { initializeRegionMap(regions); }, 100);
-						})
-						.catch(function() {
-							tabContent.innerHTML = '<div class="tab-content-inner"><h2>Branch Information</h2><p>Could not load regions.</p></div>';
-					});
+						// Load Branch Information tab content from backend template and execute its scripts
+						fetch('/branch-information-tab/')
+							.then(function(response) { return response.text(); })
+							.then(function(html) {
+								var parser = new DOMParser();
+								var doc = parser.parseFromString(html, 'text/html');
+								var content = doc.querySelector('.tab-content-inner');
+								if (content) {
+									var tabContentInner = document.getElementById('tab-content-inner');
+									if (tabContentInner) {
+										tabContentInner.className = content.className;
+										tabContentInner.innerHTML = content.innerHTML;
+									} else {
+										tabContent.innerHTML = content.outerHTML;
+									}
+									// Execute inline/external scripts from the template
+									var scripts = doc.querySelectorAll('script');
+									scripts.forEach(function(oldScript) {
+										if (oldScript.src || (oldScript.textContent && oldScript.textContent.trim().length > 0)) {
+											var newScript = document.createElement('script');
+											if (oldScript.src) {
+												newScript.src = oldScript.src;
+											} else {
+												newScript.textContent = oldScript.textContent;
+											}
+											document.body.appendChild(newScript);
+										}
+									});
+								} else {
+									// Fallback: inject full HTML
+									tabContent.innerHTML = html;
+								}
+							})
+							.catch(function(err) {
+								console.error('Error loading Branch Information tab:', err);
+								tabContent.innerHTML = '<div class="tab-content-inner"><h2>Branch Information</h2><p>Could not load content.</p></div>';
+							});
 		} else if (tabName === 'Add Products') {
 			// Load Add Product form from backend and execute its scripts
 			fetch('/add-product-form/')
