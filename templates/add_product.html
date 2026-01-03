@@ -270,7 +270,16 @@ setTimeout(function() {
       if (data.success) {
         alert(data.message || 'Product saved successfully!');
         // Optionally reload the Export tab or close this tab
-        if (window.setActiveTab) {
+        if (window.setActiveTab && window.UserMarketData && window.UserMarketData.renderExportTab) {
+          window.setActiveTab('Export');
+          // Find the export tab content container and re-render
+          setTimeout(function() {
+            var tabContent = document.getElementById('tab-content');
+            if (tabContent) {
+              window.UserMarketData.renderExportTab(tabContent);
+            }
+          }, 100);
+        } else if (window.setActiveTab) {
           window.setActiveTab('Export');
         }
       } else {

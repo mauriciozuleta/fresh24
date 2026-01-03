@@ -106,124 +106,40 @@ const UserMarketData = {
             container.innerHTML = '<div style="margin:2rem 0; text-align:center; color:#f44336;">No products found.</div>';
             return;
           }
-          var maxRows = 15;
-          var html = '<div style="max-height:480px; overflow-y:auto; border-bottom:1px solid #444;">';
+          var products = data.products || [];
+          var html = '<div class="products-table-wrapper">';
           html += '<table class="products-table" style="width:100%; border-collapse:collapse; margin-top:1rem;">';
           html += '<thead><tr style="background:#23272e; color:#FF5C00;">';
-          html += '<th></th><th>Code</th><th>Name</th><th>Type</th><th>Country</th><th>Trade Unit</th><th>FCA Cost</th><th>Packaging</th><th>Currency</th></tr></thead><tbody>';
-          (data.products.slice(0, maxRows)).forEach(function(p, idx) {
-            html += `<tr style="background:#181c22; color:#fff; border-bottom:1px solid #23272e;" data-country-code="${p.country_code}">
-              <td><input type="checkbox" class="product-select-checkbox" data-product-code="${p.product_code}" style="transform:scale(1.2);" ${idx===0 ? '' : ''}></td>
-              <td>${p.product_code}</td>
-              <td>${p.name}</td>
-              <td>${p.product_type}</td>
-              <td>${p.country_name}</td>
-              <td>${p.trade_unit}</td>
-              <td>${p.fca_cost_per_wu}</td>
-              <td>${p.packaging}</td>
-              <td>${p.currency}</td>
-            </tr>`;
+          html += '<th class="col-checkbox"></th>';
+          html += '<th class="col-code">Code</th>';
+          html += '<th>Name</th>';
+          html += '<th>Type</th>';
+          html += '<th>Country</th>';
+          html += '<th class="col-trade-unit">Trade Unit</th>';
+          html += '<th class="col-packaging">Packaging</th>';
+          html += '<th class="col-currency">Currency</th>';
+          html += '</tr></thead><tbody>';
+          products.forEach(function(p, idx) {
+            html += '<tr style="background:#181c22; color:#fff; border-bottom:1px solid #23272e;" data-country-code="' + (p.country_code || '') + '">';
+            html += '<td class="col-checkbox" style="text-align:center;"><input type="checkbox" class="product-select-checkbox" data-product-code="' + p.product_code + '" style="transform:scale(1.2);" ' + (idx === 0 ? '' : '') + '></td>';
+            html += '<td class="col-code" style="text-align:center;">' + p.product_code + '</td>';
+            html += '<td>' + p.name + '</td>';
+            html += '<td>' + p.product_type + '</td>';
+            html += '<td>' + (p.country_name || '') + '</td>';
+            html += '<td class="col-trade-unit" style="text-align:center;">' + p.trade_unit + '</td>';
+            html += '<td class="col-packaging" style="text-align:center;">' + p.packaging + '</td>';
+            html += '<td class="col-currency" style="text-align:center;">' + p.currency + '</td>';
+            html += '</tr>';
           });
           html += '</tbody></table></div>';
           html += '<div style="border-top:2px solid #0078d4; margin:1.5rem 0 0.5rem 0;"></div>';
           html += '<div id="supplier-form-container"></div>';
+          html += '<div id="supply-chain-table-container"></div>';
           container.innerHTML = html;
-            html += '<div id="supply-chain-table-container"></div>';
-            container.innerHTML = html;
-            // Render supply chain table
-            renderSupplyChainTable();
-                          // Helper to render supply chain summary table
-                          function renderSupplyChainTable() {
-                            fetch('/api/supply-chain/')
-                              .then(function(response) { return response.json(); })
-                              .then(function(data) {
-                                var sc = data.supply_chain || [];
-                                var scHtml = '<div style="margin-top:2rem;">';
-                                scHtml += '<h3>Supply Chain Summary</h3>';
-                                if (!sc.length) {
-                                  scHtml += '<div style="color:#f44336;">No supply chain data found.</div>';
-                                } else {
-                                  scHtml += '<table class="products-table" style="width:100%; border-collapse:collapse; margin-top:0.5rem; text-align:center;">';
-                                  scHtml += '<thead><tr style="background:#23272e; color:#FF5C00;">' +
-                                    '<th style="text-align:center; padding:8px 0;">Product</th>' +
-                                    '<th style="text-align:center; padding:8px 0;">Suppliers</th>' +
-                                    '<th style="text-align:center; padding:8px 0;">Branches</th>' +
-                                    '<th style="text-align:center; padding:8px 0;">Total Yield</th>' +
-                                    '</tr></thead><tbody>';
-                                  sc.forEach(function(row, idx) {
-                                    var zebra = idx % 2 === 0 ? 'background:#181c22;' : 'background:#23272e;';
-                                    var expandId = `sc-expand-${idx}`;
-                                    scHtml += `<tr style="${zebra} color:#fff; border-bottom:1px solid #23272e;">` +
-                                      `<td style="text-align:center; padding:6px 0; font-weight:500;">
-                                        <span class="sc-expand-btn" data-expand-id="${expandId}" style="cursor:pointer; font-size:1.1em; margin-right:8px; vertical-align:middle;">&#43;</span>${row.product_name}
-                                      </td>` +
-                                      `<td style="text-align:center; padding:6px 0;">${row.num_suppliers}</td>` +
-                                      `<td style="text-align:center; padding:6px 0;">${row.num_branches}</td>` +
-                                      `<td style="text-align:center; padding:6px 0;">${row.total_yield}</td>` +
-                                      `</tr>`;
-                                    // Expandable row (hidden by default)
-                                    scHtml += `<tr id="${expandId}" class="sc-expand-row" style="display:none; background:#22242a; color:#fff;">
-                                      <td></td>
-                                      <td style="text-align:center; padding:6px 0; border-top:1px solid #333;">
-                                        <div style="font-size:0.95em; color:#FFB300; font-weight:400;">Names</div>
-                                        <div class="sc-suppliers-list"></div>
-                                      </td>
-                                      <td style="text-align:center; padding:6px 0; border-top:1px solid #333;">
-                                        <div style="font-size:0.95em; color:#FFB300; font-weight:400;">Branches</div>
-                                        <div class="sc-branches-list"></div>
-                                      </td>
-                                      <td style="text-align:center; padding:6px 0; border-top:1px solid #333;">
-                                        <div style="font-size:0.95em; color:#FFB300; font-weight:400;">Yields</div>
-                                        <div class="sc-yields-list"></div>
-                                      </td>
-                                    </tr>`;
-                                  });
-                                  scHtml += '</tbody></table>';
-                                }
-                                scHtml += '</div>';
-                                // Place below supplier form if open, else below product table
-                                var formContainer = document.getElementById('supplier-form-container');
-                                var scContainer = document.getElementById('supply-chain-table-container');
-                                if (formContainer && formContainer.innerHTML.trim()) {
-                                  formContainer.insertAdjacentHTML('afterend', scHtml);
-                                } else if (scContainer) {
-                                  scContainer.innerHTML = scHtml;
-                                }
-
-                                // Add expand/collapse logic and fetch details for each product
-                                var expandBtns = document.querySelectorAll('.sc-expand-btn');
-                                expandBtns.forEach(function(btn, idx) {
-                                  btn.addEventListener('click', function() {
-                                    var expandId = btn.getAttribute('data-expand-id');
-                                    var row = document.getElementById(expandId);
-                                    if (!row) return;
-                                    var isOpen = row.style.display !== 'none';
-                                    // Collapse all others
-                                    document.querySelectorAll('.sc-expand-row').forEach(function(r) { r.style.display = 'none'; });
-                                    document.querySelectorAll('.sc-expand-btn').forEach(function(b) { b.innerHTML = '&#43;'; });
-                                    if (!isOpen) {
-                                      row.style.display = '';
-                                      btn.innerHTML = '&#8722;'; // minus sign
-                                      // Fetch and render details for this product
-                                      var productName = btn.parentElement.textContent.trim().replace(/^\+|−/,'').trim();
-                                      fetch(`/api/supply-chain-details/?product_name=${encodeURIComponent(productName)}`)
-                                        .then(function(response) { return response.json(); })
-                                        .then(function(details) {
-                                          // details: {suppliers: [..], branches: [..], yields: [..]}
-                                          var suppliers = details.suppliers || [];
-                                          var branches = details.branches || [];
-                                          var yields = details.yields || [];
-                                          row.querySelectorAll('.sc-suppliers-list').forEach(function(el) {
-                                            el.innerHTML = suppliers.length ? suppliers.map(s => `<div>${s}</div>`).join('') : '<div style="color:#aaa;">None</div>';
-                                          });
-                                          row.querySelector('.sc-branches-list').innerHTML = branches.length ? branches.map(b => `<div>${b}</div>`).join('') : '<div style="color:#aaa;">None</div>';
-                                          row.querySelector('.sc-yields-list').innerHTML = yields.length ? yields.map(y => `<div>${y}</div>`).join('') : '<div style="color:#aaa;">None</div>';
-                                        });
-                                    }
-                                  });
-                                });
-                              });
-                          }
+          // Render supply chain summary below the product table
+          if (window.UserMarketData && typeof window.UserMarketData.renderSupplyChainTable === 'function') {
+            window.UserMarketData.renderSupplyChainTable();
+          }
                     // Add Supplier form logic
                     var addSupplierBtn = document.getElementById('add-supplier-btn');
                     if (addSupplierBtn) {
@@ -351,10 +267,10 @@ const UserMarketData = {
                                     form.reset();
                                     var formContainer = document.getElementById('supplier-form-container');
                                     if (formContainer) formContainer.innerHTML = '';
-                                    // Refresh supply chain table
-                                    var scContainer = document.getElementById('supply-chain-table-container');
-                                    if (scContainer) scContainer.innerHTML = '';
-                                    renderSupplyChainTable();
+                                    // Refresh supply chain summary table
+                                    if (window.UserMarketData && typeof window.UserMarketData.renderSupplyChainTable === 'function') {
+                                      window.UserMarketData.renderSupplyChainTable();
+                                    }
                                   } else {
                                     alert('Error: ' + (result.error || 'Unknown error'));
                                   }
@@ -384,6 +300,44 @@ const UserMarketData = {
           if (container) container.innerHTML = '<div style="margin:2rem 0; text-align:center; color:#f44336;">Failed to load products.</div>';
         });
     }, 50);
+  },
+
+  renderSupplyChainTable: function() {
+    var scContainer = document.getElementById('supply-chain-table-container');
+    if (!scContainer) return;
+    fetch('/api/supply-chain/')
+      .then(function(response) { return response.json(); })
+      .then(function(data) {
+        var sc = data.supply_chain || [];
+        var scHtml = '<div style="margin-top:2rem;">';
+        scHtml += '<h3>Supply Chain Summary</h3>';
+        if (!sc.length) {
+          scHtml += '<div style="color:#f44336;">No supply chain data found.</div>';
+        } else {
+          scHtml += '<table class="products-table" style="width:100%; border-collapse:collapse; margin-top:0.5rem; text-align:center;">';
+          scHtml += '<thead><tr style="background:#23272e; color:#FF5C00;">';
+          scHtml += '<th style="text-align:center; padding:8px 0;">Product</th>';
+          scHtml += '<th style="text-align:center; padding:8px 0;">Suppliers</th>';
+          scHtml += '<th style="text-align:center; padding:8px 0;">Branches</th>';
+          scHtml += '<th style="text-align:center; padding:8px 0;">Total Yield</th>';
+          scHtml += '</tr></thead><tbody>';
+          sc.forEach(function(row, idx) {
+            var zebra = idx % 2 === 0 ? 'background:#181c22;' : 'background:#23272e;';
+            scHtml += '<tr style="' + zebra + ' color:#fff; border-bottom:1px solid #23272e;">' +
+              '<td style="padding:6px 8px; text-align:left;">' + row.product_name + '</td>' +
+              '<td style="padding:6px 8px; text-align:center;">' + row.num_suppliers + '</td>' +
+              '<td style="padding:6px 8px; text-align:center;">' + row.num_branches + '</td>' +
+              '<td style="padding:6px 8px; text-align:center;">' + row.total_yield + '</td>' +
+            '</tr>';
+          });
+          scHtml += '</tbody></table>';
+        }
+        scHtml += '</div>';
+        scContainer.innerHTML = scHtml;
+      })
+      .catch(function() {
+        scContainer.innerHTML = '<div style="margin-top:2rem; color:#f44336;">Failed to load supply chain summary.</div>';
+      });
   },
 
   renderImportTab: function(tabContent) {

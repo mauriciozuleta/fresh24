@@ -1,3 +1,44 @@
+    /* Product list: scrollable wrapper (~15 rows visible) */
+    .products-table-wrapper {
+        max-height: 480px;
+        overflow-y: auto;
+        border-bottom: 1px solid #444;
+    }
+    .products-table th,
+    .products-table td {
+        padding: 4px 6px;
+        font-size: 0.85rem;
+    }
+    .col-checkbox {
+        width: 36px;
+        min-width: 36px;
+        max-width: 36px;
+        text-align: center !important;
+    }
+    .col-code {
+        width: 80px;
+        min-width: 60px;
+        max-width: 90px;
+        text-align: center !important;
+    }
+    .col-trade-unit {
+        width: 70px;
+        min-width: 60px;
+        max-width: 80px;
+        text-align: center !important;
+    }
+    .col-packaging {
+        width: 90px;
+        min-width: 70px;
+        max-width: 110px;
+        text-align: center !important;
+    }
+    .col-currency {
+        width: 70px;
+        min-width: 60px;
+        max-width: 80px;
+        text-align: center !important;
+    }
     /* Three-column layout for aircraft form sections */
     .aircraft-form-row.three-col {
         display: flex !important;

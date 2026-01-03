@@ -377,41 +377,64 @@ def add_product_form(request):
     return render(request, 'add_product.html', context)
 
 def add_product(request):
-    if request.method == 'POST':
-        try:
-            product_code = request.POST.get('product_code')
-            product_type = request.POST.get('product_type')
-            name = request.POST.get('name')
-            country_id = request.POST.get('country_id')
-            trade_unit = request.POST.get('trade_unit')
-            fca_cost_per_wu = request.POST.get('fca_cost_per_wu')
-            currency = request.POST.get('currency')
-            packaging = request.POST.get('packaging')
-            packaging_weight = request.POST.get('packaging_weight')
-            packaging_cost = request.POST.get('packaging_cost')
-            units_per_pack = request.POST.get('units_per_pack')
-            other_info = request.POST.get('other_info', '')
+	if request.method == 'POST':
+		try:
+			# Ignore product_code from POST, generate it here
+			product_type = request.POST.get('product_type')
+			name = request.POST.get('name')
+			country_id = request.POST.get('country_id')
+			trade_unit = request.POST.get('trade_unit')
+			fca_cost_per_wu = request.POST.get('fca_cost_per_wu')
+			currency = request.POST.get('currency')
+			packaging = request.POST.get('packaging')
+			packaging_weight = request.POST.get('packaging_weight')
+			packaging_cost = request.POST.get('packaging_cost')
+			units_per_pack = request.POST.get('units_per_pack')
+			other_info = request.POST.get('other_info', '')
 
-            country = Country.objects.get(id=country_id)
+			country = Country.objects.get(id=country_id)
 
-            Product.objects.create(
-                product_code=product_code,
-                product_type=product_type,
-                name=name,
-                country=country,
-                trade_unit=trade_unit,
-                fca_cost_per_wu=fca_cost_per_wu,
-                currency=currency,
-                packaging=packaging,
-                packaging_weight=packaging_weight,
-                packaging_cost=packaging_cost,
-                units_per_pack=units_per_pack,
-                other_info=other_info
-            )
-            return JsonResponse({'success': True, 'message': 'Product added successfully'})
-        except Exception as e:
-            return JsonResponse({'success': False, 'error': str(e)})
-    return JsonResponse({'success': False, 'error': 'Invalid request method'})
+			# Map product_type to initials
+			type_initials = {
+				'Produce': 'PR',
+				'Meats': 'ME',
+				'Other Perishable': 'OP',
+				'Dry Goods': 'DG',
+				'Technology': 'TE',
+				'Other': 'OT',
+			}
+			prefix = type_initials.get(product_type, 'XX')
+			# Find the highest sequence for this prefix
+			from django.db.models import Max
+			max_code = Product.objects.filter(product_code__startswith=prefix).aggregate(Max('product_code'))['product_code__max']
+			if max_code:
+				# Extract the numeric part
+				try:
+					seq = int(max_code[len(prefix):]) + 1
+				except Exception:
+					seq = 1
+			else:
+				seq = 1
+			product_code = f"{prefix}{seq:03d}"
+
+			Product.objects.create(
+				product_code=product_code,
+				product_type=product_type,
+				name=name,
+				country=country,
+				trade_unit=trade_unit,
+				fca_cost_per_wu=fca_cost_per_wu,
+				currency=currency,
+				packaging=packaging,
+				packaging_weight=packaging_weight,
+				packaging_cost=packaging_cost,
+				units_per_pack=units_per_pack,
+				other_info=other_info
+			)
+			return JsonResponse({'success': True, 'message': 'Product added successfully', 'product_code': product_code})
+		except Exception as e:
+			return JsonResponse({'success': False, 'error': str(e)})
+	return JsonResponse({'success': False, 'error': 'Invalid request method'})
 
 def edit_product(request, pk):
     if request.method == 'POST':
