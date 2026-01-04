@@ -49,4 +49,6 @@ urlpatterns = [
     path('add-supplier/', views.add_supplier, name='add_supplier'),
     path('api/supply-chain/', views.supply_chain_api, name='supply_chain_api'),
     path('api/supply-chain-details/', views.supply_chain_details_api, name='supply_chain_details_api'),
+    path('edit-supplier/', __import__('main.views_edit_supplier_api').views_edit_supplier_api.edit_supplier, name='edit_supplier'),
+    path('api/supplier-details/', views.supplier_details_api, name='supplier_details_api'),
 ]

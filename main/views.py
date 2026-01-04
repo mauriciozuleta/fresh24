@@ -1,4 +1,46 @@
 from django.views.decorators.http import require_GET
+@require_GET
+def supplier_details_api(request):
+	from .models import Supplier
+	pname = request.GET.get('product_name')
+	sname = request.GET.get('supplier_name')
+	if not pname or not sname:
+		return JsonResponse({'error': 'Missing product_name or supplier_name'}, status=400)
+	try:
+		supplier = Supplier.objects.get(product_name=pname, supplier_name=sname)
+	except Supplier.DoesNotExist:
+		return JsonResponse({'error': 'Supplier not found'}, status=404)
+	# Optionally, fetch airports for the country (for edit form dropdown)
+	# Fetch airports using the airports_by_country API endpoint
+	import requests
+	from django.conf import settings
+	airports = []
+	try:
+		# Build the full URL to the airports_by_country endpoint
+		host = getattr(settings, 'HOST', 'http://localhost:8000')
+		url = f"{host}/api/airports-by-country/?country={supplier.country}"
+		resp = requests.get(url, timeout=5)
+		if resp.ok:
+			airports = resp.json().get('airports', [])
+	except Exception:
+		pass
+	return JsonResponse({
+		'id': supplier.id,
+		'product_name': supplier.product_name,
+		'supplier_name': supplier.supplier_name,
+		'country': supplier.country,
+		'location': supplier.location,
+		'assigned_branch': supplier.assigned_branch,
+		'crop_area': supplier.crop_area,
+		'crop_yield': supplier.crop_yield,
+		'delivery': supplier.delivery,
+		'delivery_time': supplier.delivery_time,
+		'ready_for_shelf_days': supplier.ready_for_shelf_days,
+		'airports': airports,
+		'product_type': getattr(supplier, 'product_type', ''),
+	})
+# from django.views.decorators.http import require_GET
+from django.views.decorators.http import require_GET
 # Returns details for a given product name: suppliers, branches, yields
 @require_GET
 def supply_chain_details_api(request):

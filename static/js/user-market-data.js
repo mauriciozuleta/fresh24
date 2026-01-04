@@ -392,11 +392,131 @@ const UserMarketData = {
               // Suppliers
               var suppliersHtml = '';
               if (data.suppliers && data.suppliers.length) {
-                suppliersHtml = data.suppliers.map(function(s) { return '<div>' + s + '</div>'; }).join('');
+                suppliersHtml = data.suppliers.map(function(s, idx) {
+                  // Add a pencil icon for each supplier
+                  return '<div style="display:flex;align-items:center;justify-content:center;gap:6px;">' +
+                    '<span>' + s + '</span>' +
+                    '<span class="edit-supplier-btn" data-supplier-name="' + encodeURIComponent(s) + '" title="Edit Supplier" style="cursor:pointer;display:inline-block;vertical-align:middle;">' +
+                      '<svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M14.85 2.85a1.2 1.2 0 0 1 1.7 1.7l-1.1 1.1-1.7-1.7 1.1-1.1Zm-2.1 2.1 1.7 1.7-8.1 8.1c-.13.13-.22.29-.26.47l-.38 1.9a.5.5 0 0 0 .59.59l1.9-.38c.18-.04.34-.13.47-.26l8.1-8.1-1.7-1.7-8.1 8.1c-.13.13-.22.29-.26.47l-.38 1.9a.5.5 0 0 0 .59.59l1.9-.38c.18-.04.34-.13.47-.26l8.1-8.1Z" fill="#FF5C00"/></svg>' +
+                    '</span>' +
+                  '</div>';
+                }).join('');
               } else {
                 suppliersHtml = '<span style="color:#888;">None</span>';
               }
               detailsRow.querySelector('.details-suppliers-list').innerHTML = suppliersHtml;
+
+              // Add click listeners for edit icons
+              var editBtns = detailsRow.querySelectorAll('.edit-supplier-btn');
+              editBtns.forEach(function(btn) {
+                btn.addEventListener('click', function(e) {
+                  var supplierName = decodeURIComponent(this.getAttribute('data-supplier-name'));
+                  // Fetch supplier data for this supplier and open the form prefilled
+                  fetch('/api/supplier-details/?product_name=' + encodeURIComponent(row.product_name) + '&supplier_name=' + encodeURIComponent(supplierName))
+                    .then(function(resp) { return resp.json(); })
+                    .then(function(supplier) {
+                      // Open the add supplier form with prefilled data
+                      var formContainer = document.getElementById('supplier-form-container');
+                      if (!formContainer) return;
+                      // Build the form HTML (reuse logic from add supplier, but prefill values)
+                      var airportOptions = '<option value="">Select Branch (Airport)</option>';
+                      if (supplier.airports && supplier.airports.length > 0) {
+                        supplier.airports.forEach(function(airport) {
+                          var label = airport.iata_code ? `${airport.iata_code} - ${airport.city}` : airport.city;
+                          airportOptions += `<option value="${airport.iata_code}"${airport.iata_code === supplier.assigned_branch ? ' selected' : ''}>${label}</option>`;
+                        });
+                      } else {
+                        airportOptions += '<option value="">No airports found</option>';
+                      }
+                      var formHtml = `
+                        <form id="supplier-form" class="aircraft-form-section" style="margin-top:1.5rem; background:#23272e; padding:1.5rem; border-radius:8px;">
+                          <input type="hidden" name="supplier_id" value="${supplier.id || ''}">
+                          <div class="aircraft-form-row three-col">
+                            <div class="form-group">
+                              <label>Product Name</label>
+                              <input type="text" name="product_name" class="aircraft-form-control" required value="${supplier.product_name || ''}">
+                            </div>
+                            <div class="form-group">
+                              <label>Supplier Name</label>
+                              <input type="text" name="supplier_name" class="aircraft-form-control" required value="${supplier.supplier_name || ''}">
+                            </div>
+                            <div class="form-group">
+                              <label>Country</label>
+                              <input type="text" name="country" class="aircraft-form-control" required value="${supplier.country || ''}">
+                            </div>
+                            <div class="form-group">
+                              <label>Location</label>
+                              <input type="text" name="location" class="aircraft-form-control" required value="${supplier.location || ''}">
+                            </div>
+                            <div class="form-group">
+                              <label>Assigned Branch</label>
+                              <select name="assigned_branch" class="aircraft-form-control" required>${airportOptions}</select>
+                            </div>
+                          </div>
+                          <div class="aircraft-form-row three-col">
+                            <div class="form-group">
+                              <label>Crop Area</label>
+                              <input type="text" name="crop_area" class="aircraft-form-control" required value="${supplier.crop_area || ''}">
+                            </div>
+                            <div class="form-group">
+                              <label>Crop Yield</label>
+                              <input type="text" name="crop_yield" class="aircraft-form-control" required value="${supplier.crop_yield || ''}">
+                            </div>
+                            <div class="form-group">
+                              <label>Delivery</label>
+                              <select name="delivery" id="delivery-type" class="aircraft-form-control" required>
+                                <option value="Year-round"${supplier.delivery === 'Year-round' ? ' selected' : ''}>Year-round</option>
+                                <option value="Seasonal"${supplier.delivery === 'Seasonal' ? ' selected' : ''}>Seasonal</option>
+                                <option value="On Order"${supplier.delivery === 'On Order' ? ' selected' : ''}>On Order</option>
+                                <option value="On Shelf"${supplier.delivery === 'On Shelf' ? ' selected' : ''}>On Shelf</option>
+                              </select>
+                            </div>
+                            <div class="form-group">
+                              <label>Delivery time</label>
+                              <input type="text" name="delivery_time" class="aircraft-form-control" placeholder="e.g. 2 days" value="${supplier.delivery_time || ''}">
+                            </div>
+                            <div class="form-group" id="ready-for-shelf-group" style="display:${["produce","meats","other perishable"].includes((supplier.product_type||'').toLowerCase()) ? '' : 'none'};">
+                              <label>Ready for shelf (Days)</label>
+                              <input type="text" name="ready_for_shelf_days" class="aircraft-form-control" placeholder="e.g. 1" value="${supplier.ready_for_shelf_days || ''}">
+                            </div>
+                          </div>
+                          <div style="margin-top:1.5rem; text-align:right;">
+                            <button type="submit" class="primary-button">Update Supplier</button>
+                          </div>
+                        </form>
+                      `;
+                      formContainer.innerHTML = formHtml;
+                      var form = document.getElementById('supplier-form');
+                      if (form) {
+                        form.addEventListener('submit', function(e) {
+                          e.preventDefault();
+                          var formData = new FormData(form);
+                          fetch('/edit-supplier/', {
+                            method: 'POST',
+                            body: formData,
+                            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                          })
+                          .then(function(response) { return response.json(); })
+                          .then(function(result) {
+                            if (result.success) {
+                              alert('Supplier updated successfully');
+                              form.reset();
+                              formContainer.innerHTML = '';
+                              if (window.UserMarketData && typeof window.UserMarketData.renderSupplyChainTable === 'function') {
+                                window.UserMarketData.renderSupplyChainTable(supplier.product_name);
+                              }
+                            } else {
+                              alert('Error: ' + (result.error || 'Unknown error'));
+                            }
+                          })
+                          .catch(function() {
+                            alert('Error updating supplier');
+                          });
+                        });
+                      }
+                    });
+                });
+              });
               // Branches
               var branchesHtml = '';
               if (data.branches && data.branches.length) {
