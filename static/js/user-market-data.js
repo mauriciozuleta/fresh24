@@ -550,9 +550,112 @@ const UserMarketData = {
     tabContent.innerHTML = `
       <div class="tab-content-inner">
         <h2>Import User Market Data</h2>
-        <p>Import functionality coming soon.</p>
+        <div style="margin-bottom:1.5rem; display:flex; gap:1rem; align-items:flex-end;">
+          <div>
+            <label for="import-country-select" style="display:block; margin-bottom:0.5rem;">Country</label>
+            <select id="import-country-select" class="aircraft-form-control" style="width:120px;"></select>
+          </div>
+          <div>
+            <label for="import-product-search" style="display:block; margin-bottom:0.5rem;">Search by Product Name</label>
+            <input id="import-product-search" type="text" class="aircraft-form-control" style="min-width:220px;" placeholder="Start typing...">
+          </div>
+        </div>
+        <div id="import-products-table-container"></div>
       </div>
     `;
+
+    // State for filtering
+    var filterState = {
+      country: '',
+      search: ''
+    };
+
+    // Fetch countries for dropdown
+    fetch('/api/countries/')
+      .then(function(response) { return response.json(); })
+      .then(function(data) {
+        var select = document.getElementById('import-country-select');
+        if (!select) return;
+        select.innerHTML = '<option value="">Select Country</option>';
+        if (data.countries && data.countries.length > 0) {
+          data.countries.forEach(function(c) {
+            var opt = document.createElement('option');
+            opt.value = c.code || c.country_code;
+            opt.textContent = c.name || c.country_name;
+            select.appendChild(opt);
+          });
+        }
+        select.addEventListener('change', function() {
+          filterState.country = this.value;
+          UserMarketData.renderImportProductsTable(filterState.country, filterState.search);
+        });
+      });
+
+    // Product search input
+    var searchInput = document.getElementById('import-product-search');
+    if (searchInput) {
+      searchInput.addEventListener('input', function() {
+        filterState.search = this.value;
+        var select = document.getElementById('import-country-select');
+        filterState.country = select ? select.value : '';
+        UserMarketData.renderImportProductsTable(filterState.country, filterState.search);
+      });
+    }
+
+    // Initial table render (empty)
+    UserMarketData.renderImportProductsTable('', '');
+  },
+
+  renderImportProductsTable: function(countryCode, searchTerm) {
+    var container = document.getElementById('import-products-table-container');
+    if (!container) return;
+    container.innerHTML = '<div style="margin:2rem 0; text-align:center; color:#2196f3;">Loading products...</div>';
+    var url = '/api/products/';
+    if (countryCode) {
+      url += '?country=' + encodeURIComponent(countryCode);
+    }
+    fetch(url)
+      .then(function(response) { return response.json(); })
+      .then(function(data) {
+        if (!data.products || data.products.length === 0) {
+          container.innerHTML = '<div style="margin:2rem 0; text-align:center; color:#f44336;">No products found.</div>';
+          return;
+        }
+        var products = data.products || [];
+        if (searchTerm && searchTerm.trim().length > 0) {
+          var term = searchTerm.trim().toLowerCase();
+          products = products.filter(function(p) {
+            return p.name && p.name.toLowerCase().includes(term);
+          });
+        }
+        var html = '<div class="products-table-wrapper">';
+        html += '<table class="products-table" style="width:100%; border-collapse:collapse; margin-top:1rem;">';
+        html += '<thead><tr style="background:#23272e; color:#FF5C00;">';
+        html += '<th class="col-checkbox"></th>';
+        html += '<th class="col-code">Code</th>';
+        html += '<th>Name</th>';
+        html += '<th>Type</th>';
+        html += '<th>Country</th>';
+        html += '<th class="col-trade-unit">Trade Unit</th>';
+        html += '<th class="col-packaging">Packaging</th>';
+        html += '<th class="col-currency">Currency</th>';
+        html += '</tr></thead><tbody>';
+        products.forEach(function(p, idx) {
+          html += '<tr style="background:#181c22; color:#fff; border-bottom:1px solid #23272e;" data-country-code="' + (p.country_code || '') + '">';
+          html += '<td class="col-checkbox" style="text-align:center;"><input type="checkbox" class="product-select-checkbox" data-product-code="' + p.product_code + '" style="transform:scale(1.2);" ' + (idx === 0 ? '' : '') + '></td>';
+          html += '<td class="col-code" style="text-align:center;">' + p.product_code + '</td>';
+          html += '<td>' + p.name + '</td>';
+          html += '<td>' + p.product_type + '</td>';
+          html += '<td>' + (p.country_name || '') + '</td>';
+          html += '<td class="col-trade-unit" style="text-align:center;">' + p.trade_unit + '</td>';
+          html += '<td class="col-packaging" style="text-align:center;">' + p.packaging + '</td>';
+          html += '<td class="col-currency" style="text-align:center;">' + p.currency + '</td>';
+          html += '</tr>';
+        });
+        html += '</tbody></table></div>';
+        container.innerHTML = html;
+      });
+
   }
 };
 

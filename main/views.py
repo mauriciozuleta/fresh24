@@ -1,4 +1,21 @@
 from django.views.decorators.http import require_GET
+from .models import Country
+
+@require_GET
+def countries_api(request):
+	countries = Country.objects.all().order_by('name')
+	data = []
+	for c in countries:
+		data.append({
+			'name': c.name,
+			'code': c.country_code,
+			'country_code': c.country_code,
+			'currency': c.currency,
+			'currency_code': c.currency_code,
+			'region': c.region
+		})
+	return JsonResponse({'countries': data})
+from django.views.decorators.http import require_GET
 @require_GET
 def supplier_details_api(request):
 	from .models import Supplier

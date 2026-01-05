@@ -1,5 +1,5 @@
-from django.urls import path
 
+from django.urls import path
 from . import views
 from . import views_countries_api
 from . import views_airports_api
@@ -8,6 +8,7 @@ from . import views_country_branch_api
 from .airport_api import airport_lookup
 
 urlpatterns = [
+    path('api/countries/', views.countries_api, name='countries_api'),
     path('', views.home, name='home'),
     path('add-aircraft/', views.add_aircraft, name='add_aircraft'),
     path('add-airport/', views.add_airport, name='add_airport'),
