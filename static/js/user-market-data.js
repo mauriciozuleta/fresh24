@@ -654,6 +654,17 @@ const UserMarketData = {
         });
         html += '</tbody></table></div>';
         container.innerHTML = html;
+        // Only allow one checkbox to be selected at a time
+        var checkboxes = container.querySelectorAll('.product-select-checkbox');
+        checkboxes.forEach(function(checkbox) {
+          checkbox.addEventListener('click', function() {
+            if (this.checked) {
+              checkboxes.forEach(function(cb) {
+                if (cb !== checkbox) cb.checked = false;
+              });
+            }
+          });
+        });
       });
 
   }
