@@ -663,8 +663,78 @@ const UserMarketData = {
                 if (cb !== checkbox) cb.checked = false;
               });
             }
+            updateSearchButton();
           });
         });
+
+        // Add dynamic search button and iframe container
+        var searchBtnDiv = document.createElement('div');
+        searchBtnDiv.style.margin = '2rem 0 1rem 0';
+        searchBtnDiv.style.textAlign = 'center';
+        searchBtnDiv.innerHTML = '<button id="import-search-btn" class="primary-button" style="font-size:1rem; padding:0.7rem 2.5rem;" disabled>Search</button>';
+        container.appendChild(searchBtnDiv);
+        var iframeDiv = document.createElement('div');
+        iframeDiv.id = 'import-search-iframe-container';
+        iframeDiv.style.margin = '1.5rem 0 0 0';
+        container.appendChild(iframeDiv);
+
+        function updateSearchButton() {
+          var checked = container.querySelector('.product-select-checkbox:checked');
+          var btn = document.getElementById('import-search-btn');
+          var country = '';
+          var countrySelect = document.getElementById('import-country-select');
+          if (countrySelect) {
+            var selectedOption = countrySelect.options[countrySelect.selectedIndex];
+            country = selectedOption && selectedOption.value ? selectedOption.textContent : '';
+          }
+          var productName = '';
+          if (checked) {
+            var row = checked.closest('tr');
+            if (row) productName = row.children[2].textContent;
+          }
+          if (btn) {
+            if (checked && country) {
+              btn.disabled = false;
+              btn.textContent = 'Search for ' + productName + ' in ' + country;
+            } else {
+              btn.disabled = true;
+              btn.textContent = 'Search';
+            }
+          }
+        }
+
+        // Update button label on country change
+        var countrySelect = document.getElementById('import-country-select');
+        if (countrySelect) {
+          countrySelect.addEventListener('change', updateSearchButton);
+        }
+
+        // Button click: show iframe with Bing search
+        var btn = document.getElementById('import-search-btn');
+        if (btn) {
+          btn.addEventListener('click', function() {
+            var checked = container.querySelector('.product-select-checkbox:checked');
+            var country = '';
+            var countrySelect = document.getElementById('import-country-select');
+            if (countrySelect) {
+              var selectedOption = countrySelect.options[countrySelect.selectedIndex];
+              country = selectedOption && selectedOption.value ? selectedOption.textContent : '';
+            }
+            var productName = '';
+            if (checked) {
+              var row = checked.closest('tr');
+              if (row) productName = row.children[2].textContent;
+            }
+            if (productName && country) {
+              var prompt = encodeURIComponent(productName + ' price in ' + country + ' supermarket USD');
+              var url = 'https://www.bing.com/search?q=' + prompt;
+              iframeDiv.innerHTML = '<iframe src="' + url + '" style="width:100%; height:400px; border:1px solid #2196f3; border-radius:8px; background:#fff;"></iframe>';
+            }
+          });
+        }
+
+        // Initial state
+        updateSearchButton();
       });
 
   }
