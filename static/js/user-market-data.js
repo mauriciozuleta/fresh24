@@ -639,6 +639,11 @@ const UserMarketData = {
             return p.name && p.name.toLowerCase().includes(term);
           });
         }
+        // Restore entered values from localStorage
+        var enteredPrices = {};
+        try {
+          enteredPrices = JSON.parse(localStorage.getItem('importTabEnteredPrices') || '{}');
+        } catch (e) { enteredPrices = {}; }
         var html = '<div class="products-table-wrapper">';
         html += '<table class="products-table" style="width:100%; border-collapse:collapse; margin-top:1rem;">';
         html += '<thead><tr style="background:#23272e; color:#FF5C00;">';
@@ -649,7 +654,7 @@ const UserMarketData = {
         html += '<th>Country</th>';
         html += '<th class="col-trade-unit">Trade Unit</th>';
         html += '<th class="col-packaging">Packaging</th>';
-        html += '<th class="col-currency">Currency</th>';
+        html += '<th class="col-currency" style="text-align:center;">Currency</th>';
         html += '<th>Last Updated Price</th>';
         html += '<th>Last Updated Date</th>';
         html += '<th>Enter New Price</th>';
@@ -666,11 +671,74 @@ const UserMarketData = {
           html += '<td class="col-currency" style="text-align:center;">' + p.currency + '</td>';
           html += '<td style="text-align:center;">-</td>';
           html += '<td style="text-align:center;">-</td>';
-          html += '<td style="text-align:center;"><input type="number" class="form-control form-control-sm" style="width:90px;" placeholder="$ value" /></td>';
+          var priceVal = enteredPrices[p.product_code] !== undefined ? enteredPrices[p.product_code] : '';
+          html += '<td style="text-align:center;"><input type="number" class="form-control form-control-sm import-new-price" data-product-code="' + p.product_code + '" style="width:90px;" placeholder="$ value" value="' + priceVal + '" /></td>';
           html += '</tr>';
         });
         html += '</tbody></table></div>';
+        // Add Save updated Prices and Search button container (flex for side-by-side buttons)
+        html += '<div id="import-action-btns-container" style="display:flex; justify-content:center; gap:1.5rem; margin:1.5rem 0 0.5rem 0;"></div>';
         container.innerHTML = html;
+
+        // Helper to check if any price input has a value
+        function anyPriceEntered() {
+          return Array.from(container.querySelectorAll('.import-new-price')).some(function(input) {
+            return input.value && input.value.trim() !== '';
+          });
+        }
+
+        // Show/hide Save button
+        function updateSaveButton() {
+          var btnsContainer = document.getElementById('import-action-btns-container');
+          if (!btnsContainer) return;
+          // Remove only the Save button if it exists
+          var existingSaveBtn = document.getElementById('save-updated-prices-btn');
+          if (existingSaveBtn) btnsContainer.removeChild(existingSaveBtn);
+          if (anyPriceEntered()) {
+            var saveBtn = document.createElement('button');
+            saveBtn.id = 'save-updated-prices-btn';
+            saveBtn.className = 'primary-button';
+            saveBtn.style.fontSize = '1rem';
+            saveBtn.style.padding = '0.7rem 2.5rem';
+            saveBtn.textContent = 'Save updated Prices';
+            saveBtn.addEventListener('click', function() {
+              localStorage.removeItem('importTabEnteredPrices');
+              UserMarketData.renderImportProductsTable(countryCode, searchTerm);
+            });
+            // Insert as first child so Search stays to the right
+            btnsContainer.insertBefore(saveBtn, btnsContainer.firstChild);
+          }
+        }
+    // Clear entered prices if user closes the tab or refreshes the browser
+    if (!window._importTabPersistenceHandlerAdded) {
+      window._importTabPersistenceHandlerAdded = true;
+      window.addEventListener('beforeunload', function() {
+        localStorage.removeItem('importTabEnteredPrices');
+      });
+    }
+// Utility to clear entered prices when Import tab is closed (tab UI integration)
+if (typeof window !== 'undefined') {
+  if (!window._importTabCloseHandlerAdded) {
+    window._importTabCloseHandlerAdded = true;
+    // Listen for custom event 'importTabClosed' to clear prices
+    window.addEventListener('importTabClosed', function() {
+      localStorage.removeItem('importTabEnteredPrices');
+    });
+  }
+}
+
+        // Save entered values on input (attach listeners after HTML is injected)
+        var priceInputs = container.querySelectorAll('.import-new-price');
+        priceInputs.forEach(function(input) {
+          input.addEventListener('input', function() {
+            var code = this.getAttribute('data-product-code');
+            enteredPrices[code] = this.value;
+            localStorage.setItem('importTabEnteredPrices', JSON.stringify(enteredPrices));
+            updateSaveButton();
+          });
+        });
+        // Initial button state
+        updateSaveButton();
         // Only allow one checkbox to be selected at a time
         var checkboxes = container.querySelectorAll('.product-select-checkbox');
         checkboxes.forEach(function(checkbox) {
@@ -685,11 +753,15 @@ const UserMarketData = {
         });
 
         // Add dynamic search button and iframe container
-        var searchBtnDiv = document.createElement('div');
-        searchBtnDiv.style.margin = '2rem 0 1rem 0';
-        searchBtnDiv.style.textAlign = 'center';
-        searchBtnDiv.innerHTML = '<button id="import-search-btn" class="primary-button" style="font-size:1rem; padding:0.7rem 2.5rem;" disabled>Search</button>';
-        container.appendChild(searchBtnDiv);
+        var btnsContainer = document.getElementById('import-action-btns-container');
+        var searchBtn = document.createElement('button');
+        searchBtn.id = 'import-search-btn';
+        searchBtn.className = 'primary-button';
+        searchBtn.style.fontSize = '1rem';
+        searchBtn.style.padding = '0.7rem 2.5rem';
+        searchBtn.disabled = true;
+        searchBtn.textContent = 'Search';
+        btnsContainer.appendChild(searchBtn);
         var iframeDiv = document.createElement('div');
         iframeDiv.id = 'import-search-iframe-container';
         iframeDiv.style.margin = '1.5rem 0 0 0';
@@ -727,28 +799,25 @@ const UserMarketData = {
         }
 
         // Button click: show iframe with Bing search
-        var btn = document.getElementById('import-search-btn');
-        if (btn) {
-          btn.addEventListener('click', function() {
-            var checked = container.querySelector('.product-select-checkbox:checked');
-            var country = '';
-            var countrySelect = document.getElementById('import-country-select');
-            if (countrySelect) {
-              var selectedOption = countrySelect.options[countrySelect.selectedIndex];
-              country = selectedOption && selectedOption.value ? selectedOption.textContent : '';
-            }
-            var productName = '';
-            if (checked) {
-              var row = checked.closest('tr');
-              if (row) productName = row.children[2].textContent;
-            }
-            if (productName && country) {
-              var prompt = encodeURIComponent(productName + ' price in ' + country + ' supermarket USD');
-              var url = 'https://www.bing.com/search?q=' + prompt;
-              iframeDiv.innerHTML = '<iframe src="' + url + '" style="width:100%; height:400px; border:1px solid #2196f3; border-radius:8px; background:#fff;"></iframe>';
-            }
-          });
-        }
+        searchBtn.addEventListener('click', function() {
+          var checked = container.querySelector('.product-select-checkbox:checked');
+          var country = '';
+          var countrySelect = document.getElementById('import-country-select');
+          if (countrySelect) {
+            var selectedOption = countrySelect.options[countrySelect.selectedIndex];
+            country = selectedOption && selectedOption.value ? selectedOption.textContent : '';
+          }
+          var productName = '';
+          if (checked) {
+            var row = checked.closest('tr');
+            if (row) productName = row.children[2].textContent;
+          }
+          if (productName && country) {
+            var prompt = encodeURIComponent(productName + ' price in ' + country + ' supermarket USD');
+            var url = 'https://www.bing.com/search?q=' + prompt;
+            iframeDiv.innerHTML = '<iframe src="' + url + '" style="width:100%; height:400px; border:1px solid #2196f3; border-radius:8px; background:#fff;"></iframe>';
+          }
+        });
 
         // Initial state
         updateSearchButton();
