@@ -1,13 +1,17 @@
 
+
 from django.urls import path
 from . import views
 from . import views_countries_api
+from .views import save_price_comparison_api
 from . import views_airports_api
 from . import views_management_api
 from . import views_country_branch_api
 from .airport_api import airport_lookup
 
 urlpatterns = [
+    path('api/save-price-comparison/', save_price_comparison_api, name='save_price_comparison_api'),
+    path('api/get-saved-price-comparison/', views.get_saved_price_comparison_api, name='get_saved_price_comparison_api'),
     path('api/countries/', views.countries_api, name='countries_api'),
     path('', views.home, name='home'),
     path('add-aircraft/', views.add_aircraft, name='add_aircraft'),
