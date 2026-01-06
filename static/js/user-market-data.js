@@ -639,6 +639,10 @@ const UserMarketData = {
         html += '<th class="col-trade-unit">Trade Unit</th>';
         html += '<th class="col-packaging">Packaging</th>';
         html += '<th class="col-currency">Currency</th>';
+        html += '<th>Last Updated Price</th>';
+        html += '<th>Last Updated Date</th>';
+        html += '<th>Enter New Price</th>';
+        html += '<th></th>';
         html += '</tr></thead><tbody>';
         products.forEach(function(p, idx) {
           html += '<tr style="background:#181c22; color:#fff; border-bottom:1px solid #23272e;" data-country-code="' + (p.country_code || '') + '">';
@@ -650,6 +654,10 @@ const UserMarketData = {
           html += '<td class="col-trade-unit" style="text-align:center;">' + p.trade_unit + '</td>';
           html += '<td class="col-packaging" style="text-align:center;">' + p.packaging + '</td>';
           html += '<td class="col-currency" style="text-align:center;">' + p.currency + '</td>';
+          html += '<td style="text-align:center;">-</td>';
+          html += '<td style="text-align:center;">-</td>';
+          html += '<td style="text-align:center;"><input type="number" class="form-control form-control-sm" style="width:90px;" placeholder="$ value" /></td>';
+          html += '<td style="text-align:center;"><button class="btn btn-sm btn-primary" style="font-size:0.8rem; padding:2px 10px;">Update</button></td>';
           html += '</tr>';
         });
         html += '</tbody></table></div>';
