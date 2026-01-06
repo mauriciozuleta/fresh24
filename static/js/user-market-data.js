@@ -547,6 +547,11 @@ const UserMarketData = {
   },
 
   renderImportTab: function(tabContent) {
+    // Restore state if available
+    var importTabState = {};
+    try {
+      importTabState = JSON.parse(localStorage.getItem('importTabState') || '{}');
+    } catch (e) { importTabState = {}; }
     tabContent.innerHTML = `
       <div class="tab-content-inner">
         <h2>Import User Market Data</h2>
@@ -566,8 +571,8 @@ const UserMarketData = {
 
     // State for filtering
     var filterState = {
-      country: '',
-      search: ''
+      country: importTabState.country || '',
+      search: importTabState.search || ''
     };
 
     // Fetch countries for dropdown
@@ -585,8 +590,11 @@ const UserMarketData = {
             select.appendChild(opt);
           });
         }
+        // Restore country selection
+        if (filterState.country) select.value = filterState.country;
         select.addEventListener('change', function() {
           filterState.country = this.value;
+          localStorage.setItem('importTabState', JSON.stringify(filterState));
           UserMarketData.renderImportProductsTable(filterState.country, filterState.search);
         });
       });
@@ -594,16 +602,19 @@ const UserMarketData = {
     // Product search input
     var searchInput = document.getElementById('import-product-search');
     if (searchInput) {
+      // Restore search value
+      if (filterState.search) searchInput.value = filterState.search;
       searchInput.addEventListener('input', function() {
         filterState.search = this.value;
         var select = document.getElementById('import-country-select');
         filterState.country = select ? select.value : '';
+        localStorage.setItem('importTabState', JSON.stringify(filterState));
         UserMarketData.renderImportProductsTable(filterState.country, filterState.search);
       });
     }
 
     // Initial table render (empty)
-    UserMarketData.renderImportProductsTable('', '');
+    UserMarketData.renderImportProductsTable(filterState.country, filterState.search);
   },
 
   renderImportProductsTable: function(countryCode, searchTerm) {
@@ -642,7 +653,6 @@ const UserMarketData = {
         html += '<th>Last Updated Price</th>';
         html += '<th>Last Updated Date</th>';
         html += '<th>Enter New Price</th>';
-        html += '<th></th>';
         html += '</tr></thead><tbody>';
         products.forEach(function(p, idx) {
           html += '<tr style="background:#181c22; color:#fff; border-bottom:1px solid #23272e;" data-country-code="' + (p.country_code || '') + '">';
@@ -657,7 +667,6 @@ const UserMarketData = {
           html += '<td style="text-align:center;">-</td>';
           html += '<td style="text-align:center;">-</td>';
           html += '<td style="text-align:center;"><input type="number" class="form-control form-control-sm" style="width:90px;" placeholder="$ value" /></td>';
-          html += '<td style="text-align:center;"><button class="btn btn-sm btn-primary" style="font-size:0.8rem; padding:2px 10px;">Update</button></td>';
           html += '</tr>';
         });
         html += '</tbody></table></div>';
