@@ -592,10 +592,56 @@ const UserMarketData = {
         }
         // Restore country selection
         if (filterState.country) select.value = filterState.country;
-        select.addEventListener('change', function() {
-          filterState.country = this.value;
-          localStorage.setItem('importTabState', JSON.stringify(filterState));
-          UserMarketData.renderImportProductsTable(filterState.country, filterState.search);
+        // Enhanced country change handler with unsaved data warning
+        select.addEventListener('change', function(e) {
+          var prevCountry = filterState.country;
+          var newCountry = this.value;
+          // Check if there are unsaved values
+          var enteredPrices = {};
+          try {
+            enteredPrices = JSON.parse(localStorage.getItem('importTabEnteredPrices') || '{}');
+          } catch (e) { enteredPrices = {}; }
+          var hasUnsaved = Object.values(enteredPrices).some(function(val) { return val && val.trim() !== ''; });
+          if (hasUnsaved) {
+            // Show custom modal
+            var modal = document.createElement('div');
+            modal.id = 'country-change-modal';
+            modal.style.position = 'fixed';
+            modal.style.top = '0';
+            modal.style.left = '0';
+            modal.style.width = '100vw';
+            modal.style.height = '100vh';
+            modal.style.background = 'rgba(0,0,0,0.45)';
+            modal.style.display = 'flex';
+            modal.style.alignItems = 'center';
+            modal.style.justifyContent = 'center';
+            modal.style.zIndex = '9999';
+            modal.innerHTML = '<div style="background:#23272e; color:#fff; padding:2rem 2.5rem; border-radius:10px; box-shadow:0 4px 32px #0008; max-width:400px; text-align:center;">' +
+              '<div style="font-size:1.1rem; margin-bottom:1.5rem;">Updated Prices are still not saved, if you change country for market comparision, data will be erased</div>' +
+              '<div style="display:flex; gap:1.5rem; justify-content:center; margin-top:1.5rem;">' +
+                '<button id="cancel-country-change" class="primary-button" style="background:#888; color:#fff;">Cancel</button>' +
+                '<button id="confirm-country-change" class="primary-button" style="background:#FF5C00; color:#fff;">Change Country</button>' +
+              '</div>' +
+            '</div>';
+            document.body.appendChild(modal);
+            // Cancel: revert select to previous value
+            document.getElementById('cancel-country-change').onclick = function() {
+              select.value = prevCountry;
+              document.body.removeChild(modal);
+            };
+            // Confirm: clear values, update country, rerender
+            document.getElementById('confirm-country-change').onclick = function() {
+              localStorage.removeItem('importTabEnteredPrices');
+              filterState.country = newCountry;
+              localStorage.setItem('importTabState', JSON.stringify(filterState));
+              document.body.removeChild(modal);
+              UserMarketData.renderImportProductsTable(filterState.country, filterState.search);
+            };
+          } else {
+            filterState.country = newCountry;
+            localStorage.setItem('importTabState', JSON.stringify(filterState));
+            UserMarketData.renderImportProductsTable(filterState.country, filterState.search);
+          }
         });
       });
 
