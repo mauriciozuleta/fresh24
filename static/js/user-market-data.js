@@ -111,7 +111,12 @@ const UserMarketData = {
         });
       }
       // Fetch products from API and render list
-      fetch('/api/products/')
+      var selectedCountry = (document.getElementById('import-country-select') && document.getElementById('import-country-select').value) || '';
+      var productsUrl = '/api/products/';
+      if (selectedCountry) {
+        productsUrl += '?country_code=' + encodeURIComponent(selectedCountry);
+      }
+      fetch(productsUrl)
         .then(function(response) { return response.json(); })
         .then(function(data) {
           var container = document.getElementById('export-products-table-container');
@@ -585,24 +590,26 @@ const UserMarketData = {
       search: importTabState.search || ''
     };
 
-    // Fetch countries for dropdown
-    fetch('/api/countries/')
+    // Fetch countries for dropdown from management table data (only those in Commercial Structure Overview)
+    fetch('/api/get-management-table-data/')
       .then(function(response) { return response.json(); })
       .then(function(data) {
         var select = document.getElementById('import-country-select');
         if (!select) return;
         select.innerHTML = '<option value="" disabled selected>Select Country to Analize</option>';
-        if (data.countries && data.countries.length > 0) {
-          data.countries.forEach(function(c) {
-            var opt = document.createElement('option');
-            opt.value = c.code || c.country_code;
-            opt.textContent = c.name || c.country_name;
-            if (c.currency_code) {
-              opt.setAttribute('data-currency', c.currency_code);
-            } else if (c.currency) {
-              opt.setAttribute('data-currency', c.currency);
-            }
-            select.appendChild(opt);
+        if (data.data && data.data.length > 0) {
+          var countrySet = new Set();
+          data.data.forEach(function(region) {
+            (region.countries || []).forEach(function(country) {
+              if (!countrySet.has(country.country_code)) {
+                var opt = document.createElement('option');
+                opt.value = country.country_code;
+                opt.textContent = country.country_name;
+                // No currency info in this API, but keep structure for future
+                select.appendChild(opt);
+                countrySet.add(country.country_code);
+              }
+            });
           });
         }
         // Restore country selection

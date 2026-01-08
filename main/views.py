@@ -468,8 +468,13 @@ def add_airport(request):
 from django.http import JsonResponse
 from .models import Product
 
+
 def products_api(request):
-	products = Product.objects.select_related('country').all().order_by('product_code')
+	country_code = request.GET.get('country_code') or request.GET.get('country')
+	qs = Product.objects.select_related('country').all()
+	if country_code:
+		qs = qs.exclude(country__country_code=country_code)
+	products = qs.order_by('product_code')
 	data = []
 	for p in products:
 		data.append({
