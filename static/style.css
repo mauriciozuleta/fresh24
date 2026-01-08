@@ -1,3 +1,9 @@
+    /* Restrict Commercial Structure Overview table to fit tab area */
+    #import-management-table-container {
+        max-width: 100%;
+        overflow-x: auto;
+        box-sizing: border-box;
+    }
     /* Product list: scrollable wrapper (~15 rows visible) */
     .products-table-wrapper {
         max-height: 480px;

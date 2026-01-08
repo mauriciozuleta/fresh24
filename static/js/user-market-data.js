@@ -767,6 +767,98 @@ const UserMarketData = {
             btnsContainer.style.margin = '1.5rem 0 0.5rem 0';
             container.appendChild(btnsContainer);
 
+            // --- Render Commercial Structure Overview table below buttons ---
+            var managementDiv = document.createElement('div');
+            managementDiv.id = 'import-management-table-container';
+            managementDiv.style.margin = '2.5rem 0 0 0';
+            managementDiv.innerHTML = '<div style="width:100%; background:#1e2227; border:2px solid #0078d4; border-radius:8px; padding:1.5rem; text-align:center;"><span style="color:#888;">Loading Commercial Structure Overview...</span></div>';
+            container.appendChild(managementDiv);
+            Promise.all([
+              fetch('/api/get-management-table-data/').then(r => r.json()),
+              fetch('/api/products/').then(r => r.json())
+            ]).then(function([managementResponse, productsResponse]) {
+                var data = managementResponse.data || [];
+                var products = (productsResponse.products || []);
+                // Get unique product names
+                var uniqueNames = new Set(products.map(p => p.name && p.name.trim()).filter(Boolean));
+                var totalProducts = uniqueNames.size;
+                if (!data.length) {
+                  managementDiv.innerHTML = '<span style="color:#f44336;">No management data yet. Start by selecting a region and saving info.</span>';
+                  return;
+                }
+                var html = '<div style="width:100%; max-width:1000px; margin:0 auto; background:#1e2227; border:2px solid #0078d4; border-radius:8px; padding:1.5rem;">';
+                html += '<div style="display:flex;align-items:center;gap:2rem;">';
+                html += '<h3 style="margin-top:0; margin-bottom:1.5rem; color:#0078d4;">Commercial Structure Overview</h3>';
+                html += '<span style="font-size:1rem;color:#FF5C00;">Total products in Portfolio: <b>' + totalProducts + '</b></span>';
+                html += '</div>';
+                html += '<table style="width:100%; max-width:1000px; table-layout:fixed; border-collapse:collapse; font-size:0.95rem;">';
+                html += '<thead><tr style="background:#363d48;">';
+                html += '<th style="padding:10px; min-width:70px; max-width:100px; width:7vw; text-align:center; border:1px solid #444;">Region</th>';
+                html += '<th style="padding:10px; text-align:left; border:1px solid #444;">Regional Manager</th>';
+                html += '<th style="padding:10px; text-align:left; border:1px solid #444;">Region User</th>';
+                html += '<th style="padding:10px; min-width:70px; max-width:100px; width:7vw; text-align:center; border:1px solid #444;">Country</th>';
+                html += '<th style="padding:10px; text-align:left; border:1px solid #444;">Country Manager</th>';
+                html += '<th style="padding:10px; min-width:70px; max-width:100px; width:7vw; text-align:center; border:1px solid #444;">Country User</th>';
+                html += '<th style="padding:10px; min-width:60px; max-width:80px; width:6vw; text-align:center; border:1px solid #444;">Analysis %</th>';
+                html += '</tr></thead><tbody>';
+                data.forEach(function(region) {
+                  var regionRowspan = 0;
+                  region.countries.forEach(function(country) {
+                    regionRowspan += Math.max(1, country.branches.length);
+                  });
+                  if (regionRowspan === 0) regionRowspan = 1;
+                  var firstRegionRow = true;
+                  if (region.countries.length === 0) {
+                    html += '<tr>';
+                    html += '<td style="padding:10px; border:1px solid #444; background:#26304a; font-weight:bold; color:#0078d4;" rowspan="1">' + region.region + '</td>';
+                    html += '<td style="padding:10px; border:1px solid #444; background:#26304a;" rowspan="1">' + region.regional_manager + '</td>';
+                    html += '<td style="padding:10px; border:1px solid #444; background:#26304a;" rowspan="1">' + region.region_user + '</td>';
+                    html += '<td style="padding:10px; border:1px solid #444; color:#888; font-style:italic;" colspan="6">No countries added yet</td>';
+                    html += '</tr>';
+                  } else {
+                    region.countries.forEach(function(country) {
+                      var countryRowspan = Math.max(1, country.branches.length);
+                      var firstCountryRow = true;
+                      if (country.branches.length === 0) {
+                        html += '<tr>';
+                        if (firstRegionRow) {
+                          html += '<td style="padding:10px; min-width:70px; max-width:100px; width:7vw; text-align:center; border:1px solid #444; background:#26304a; font-weight:bold; color:#0078d4;" rowspan="' + regionRowspan + '">' + region.region + '</td>';
+                          html += '<td style="padding:10px; border:1px solid #444; background:#26304a;" rowspan="' + regionRowspan + '">' + region.regional_manager + '</td>';
+                          html += '<td style="padding:10px; border:1px solid #444; background:#26304a;" rowspan="' + regionRowspan + '">' + region.region_user + '</td>';
+                          firstRegionRow = false;
+                        }
+                        html += '<td style="padding:10px; border:1px solid #444; background:#23272e; color:#4a9eff;" rowspan="1">' + country.country_name + '</td>';
+                        html += '<td style="padding:10px; border:1px solid #444; background:#23272e;" rowspan="1">' + country.country_manager + '</td>';
+                        html += '<td style="padding:10px; border:1px solid #444; background:#23272e;" rowspan="1">' + country.country_user + '</td>';
+                        html += '<td style="padding:10px; border:1px solid #444; color:#888; font-style:italic;" colspan="1">No branches added yet</td>';
+                        html += '</tr>';
+                      } else {
+                        country.branches.forEach(function(branch) {
+                          html += '<tr>';
+                          if (firstRegionRow) {
+                            html += '<td style="padding:10px; border:1px solid #444; background:#26304a; font-weight:bold; color:#0078d4;" rowspan="' + regionRowspan + '">' + region.region + '</td>';
+                            html += '<td style="padding:10px; border:1px solid #444; background:#26304a;" rowspan="' + regionRowspan + '">' + region.regional_manager + '</td>';
+                            html += '<td style="padding:10px; border:1px solid #444; background:#26304a;" rowspan="' + regionRowspan + '">' + region.region_user + '</td>';
+                            firstRegionRow = false;
+                          }
+                          if (firstCountryRow) {
+                            html += '<td style="padding:10px; min-width:70px; max-width:100px; width:7vw; text-align:center; border:1px solid #444; background:#23272e; color:#4a9eff;" rowspan="' + countryRowspan + '">' + country.country_name + '</td>';
+                            html += '<td style="padding:10px; border:1px solid #444; background:#23272e;" rowspan="' + countryRowspan + '">' + country.country_manager + '</td>';
+                            html += '<td style="padding:10px; min-width:70px; max-width:100px; width:7vw; text-align:center; border:1px solid #444; background:#23272e;" rowspan="' + countryRowspan + '">' + country.country_user + '</td>';
+                            firstCountryRow = false;
+                          }
+                          // Analysis % column (empty for now)
+                          html += '<td style="padding:10px; min-width:60px; max-width:80px; width:6vw; text-align:center; border:1px solid #444; background:#2d3139;"></td>';
+                          html += '</tr>';
+                        });
+                      }
+                    });
+                  }
+                });
+                html += '</tbody></table></div>';
+                managementDiv.innerHTML = html;
+              });
+
             // Helper to check if any price input has a value
             function anyPriceEntered() {
               return Array.from(container.querySelectorAll('.import-new-price')).some(function(input) {
@@ -807,6 +899,46 @@ const UserMarketData = {
                       });
                     }
                   });
+                    // --- Add summary table below buttons ---
+                    var summaryDiv = document.createElement('div');
+                    summaryDiv.id = 'import-summary-table-container';
+                    summaryDiv.style.margin = '2.5rem 0 0 0';
+                    // Build summary table data from products and savedMap
+                    var summaryHtml = '<h3 style="margin-bottom:1rem;">Portfolio Analysis Overview</h3>';
+                    summaryHtml += '<table class="products-table" style="width:100%; border-collapse:collapse; margin-top:0.5rem; text-align:center;">';
+                    summaryHtml += '<thead><tr style="background:#23272e; color:#FF5C00;">';
+                    summaryHtml += '<th style="text-align:center; padding:8px 0;">Code</th>';
+                    summaryHtml += '<th style="text-align:center; padding:8px 0;">Name</th>';
+                    summaryHtml += '<th style="text-align:center; padding:8px 0;">Type</th>';
+                    summaryHtml += '<th style="text-align:center; padding:8px 0;">Country</th>';
+                    summaryHtml += '<th style="text-align:center; padding:8px 0;">Trade Unit</th>';
+                    summaryHtml += '<th style="text-align:center; padding:8px 0;">Packaging</th>';
+                    summaryHtml += '<th style="text-align:center; padding:8px 0;">Currency</th>';
+                    summaryHtml += '<th style="text-align:center; padding:8px 0;">Last Updated Price</th>';
+                    summaryHtml += '<th style="text-align:center; padding:8px 0;">Last Updated Date</th>';
+                    summaryHtml += '<th style="text-align:center; padding:8px 0;">Portfolio Analisis %</th>';
+                    summaryHtml += '</tr></thead><tbody>';
+                    products.forEach(function(p) {
+                      var saved = savedMap[p.product_code] || {};
+                      // Portfolio Analisis %: Example calculation, can be replaced with real logic
+                      var portfolioPercent = saved.last_updated_price && p.reference_price ?
+                      (((parseFloat(saved.last_updated_price) / parseFloat(p.reference_price)) * 100).toFixed(2) + '%') : '-';
+                      summaryHtml += '<tr style="background:#181c22; color:#fff; border-bottom:1px solid #23272e;">';
+                      summaryHtml += '<td>' + p.product_code + '</td>';
+                      summaryHtml += '<td>' + p.name + '</td>';
+                      summaryHtml += '<td>' + p.product_type + '</td>';
+                      summaryHtml += '<td>' + (p.country_name || '') + '</td>';
+                      summaryHtml += '<td>' + p.trade_unit + '</td>';
+                      summaryHtml += '<td>' + p.packaging + '</td>';
+                      summaryHtml += '<td>USD</td>';
+                      summaryHtml += '<td>' + (saved.last_updated_price !== undefined && saved.last_updated_price !== null ? saved.last_updated_price : '-') + '</td>';
+                      summaryHtml += '<td>' + (saved.last_updated_date ? saved.last_updated_date : '-') + '</td>';
+                      summaryHtml += '<td>' + portfolioPercent + '</td>';
+                      summaryHtml += '</tr>';
+                    });
+                    summaryHtml += '</tbody></table>';
+                    summaryDiv.innerHTML = summaryHtml;
+                    container.appendChild(summaryDiv);
                   var cs = document.getElementById('import-country-select');
                   var cc = cs ? cs.value : '';
                   if (!cc) {
