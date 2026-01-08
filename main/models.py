@@ -225,3 +225,5 @@ class ProductPriceComparison(models.Model):
 
     def __str__(self):
         return f"{self.product_code} - {self.product_name} ({self.prices_in_country})"
+
+

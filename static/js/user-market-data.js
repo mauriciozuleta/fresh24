@@ -773,15 +773,11 @@ const UserMarketData = {
             managementDiv.style.margin = '2.5rem 0 0 0';
             managementDiv.innerHTML = '<div style="width:100%; background:#1e2227; border:2px solid #0078d4; border-radius:8px; padding:1.5rem; text-align:center;"><span style="color:#888;">Loading Commercial Structure Overview...</span></div>';
             container.appendChild(managementDiv);
-            Promise.all([
-              fetch('/api/get-management-table-data/').then(r => r.json()),
-              fetch('/api/products/').then(r => r.json())
-            ]).then(function([managementResponse, productsResponse]) {
+            fetch('/api/get-management-table-data/')
+              .then(function(r) { return r.json(); })
+              .then(function(managementResponse) {
                 var data = managementResponse.data || [];
-                var products = (productsResponse.products || []);
-                // Get unique product names
-                var uniqueNames = new Set(products.map(p => p.name && p.name.trim()).filter(Boolean));
-                var totalProducts = uniqueNames.size;
+                var totalProducts = managementResponse.total_products || 0;
                 if (!data.length) {
                   managementDiv.innerHTML = '<span style="color:#f44336;">No management data yet. Start by selecting a region and saving info.</span>';
                   return;
@@ -830,7 +826,8 @@ const UserMarketData = {
                         html += '<td style="padding:10px; border:1px solid #444; background:#23272e; color:#4a9eff;" rowspan="1">' + country.country_name + '</td>';
                         html += '<td style="padding:10px; border:1px solid #444; background:#23272e;" rowspan="1">' + country.country_manager + '</td>';
                         html += '<td style="padding:10px; border:1px solid #444; background:#23272e;" rowspan="1">' + country.country_user + '</td>';
-                        html += '<td style="padding:10px; border:1px solid #444; color:#888; font-style:italic;" colspan="1">No branches added yet</td>';
+                        // Analysis % column for country without branches
+                        html += '<td style="padding:10px; min-width:60px; max-width:80px; width:6vw; text-align:center; border:1px solid #444; background:#2d3139;">' + (country.analysis_percent || '') + '</td>';
                         html += '</tr>';
                       } else {
                         country.branches.forEach(function(branch) {
@@ -845,10 +842,10 @@ const UserMarketData = {
                             html += '<td style="padding:10px; min-width:70px; max-width:100px; width:7vw; text-align:center; border:1px solid #444; background:#23272e; color:#4a9eff;" rowspan="' + countryRowspan + '">' + country.country_name + '</td>';
                             html += '<td style="padding:10px; border:1px solid #444; background:#23272e;" rowspan="' + countryRowspan + '">' + country.country_manager + '</td>';
                             html += '<td style="padding:10px; min-width:70px; max-width:100px; width:7vw; text-align:center; border:1px solid #444; background:#23272e;" rowspan="' + countryRowspan + '">' + country.country_user + '</td>';
+                            // Analysis % column, one cell per country
+                            html += '<td style="padding:10px; min-width:60px; max-width:80px; width:6vw; text-align:center; border:1px solid #444; background:#2d3139;" rowspan="' + countryRowspan + '">' + (country.analysis_percent || '') + '</td>';
                             firstCountryRow = false;
                           }
-                          // Analysis % column (empty for now)
-                          html += '<td style="padding:10px; min-width:60px; max-width:80px; width:6vw; text-align:center; border:1px solid #444; background:#2d3139;"></td>';
                           html += '</tr>';
                         });
                       }
@@ -857,6 +854,10 @@ const UserMarketData = {
                 });
                 html += '</tbody></table></div>';
                 managementDiv.innerHTML = html;
+              })
+              .catch(function(err) {
+                managementDiv.innerHTML = '<span style="color:#f44336;">Failed to load Commercial Structure Overview.</span>';
+                console && console.error && console.error('Error loading management table:', err);
               });
 
             // Helper to check if any price input has a value

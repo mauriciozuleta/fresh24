@@ -2,7 +2,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 import json
-from .models import RegionalInfo, CountryInfo, BranchInfo, Country, Airport
+from .models import RegionalInfo, CountryInfo, BranchInfo, Country, Airport, Product, ProductPriceComparison
 
 
 def check_region_info(request):
@@ -169,12 +169,25 @@ def save_branch_info(request):
 
 
 def get_management_table_data(request):
-    """Get hierarchical management data for table rendering"""
+    """Get hierarchical management data for table rendering, with analysis percent"""
     data = []
-    
-    # Get all regional info
+    # Get all unique product names not repeated
+    all_products = Product.objects.all().values_list('name', 'country__country_code')
+    unique_products = set()
+    product_country_map = {}
+    for name, country_code in all_products:
+        if name:
+            unique_products.add(name.strip())
+            product_country_map[name.strip()] = country_code
+    total_products = len(unique_products)
+    # Get all price comparisons with a non-null new_price
+    # Avoid comparing DecimalField to an empty string, which raises ValidationError
+    price_comparisons = ProductPriceComparison.objects.filter(new_price__isnull=False).values_list('product_name', 'prices_in_country')
+    price_map = {}
+    for pname, country in price_comparisons:
+        if pname:
+            price_map.setdefault(country, set()).add(pname.strip())
     regions = RegionalInfo.objects.all().order_by('region')
-    
     for region_info in regions:
         region_data = {
             'region': region_info.region,
@@ -182,22 +195,28 @@ def get_management_table_data(request):
             'region_user': region_info.region_user,
             'countries': []
         }
-        
-        # Get countries for this region
         countries = CountryInfo.objects.filter(region=region_info.region).select_related('country')
-        
         for country_info in countries:
+            country_name = country_info.country.name
+            country_code = country_info.country.country_code
+            # Count products not from this country
+            products_not_from_country = [n for n in unique_products if product_country_map.get(n) != country_code]
+            denom = len(products_not_from_country)
+            # Count how many of those have a price comparison for this country
+            compared = 0
+            if country_code in price_map:
+                compared = len(set([n for n in price_map[country_code] if n in products_not_from_country]))
+            percent = (compared / denom * 100) if denom else 0
+            analysis_percent = f"{percent:.2f}% ({compared}/{denom})"
             country_data = {
-                'country_name': country_info.country.name,
-                'country_code': country_info.country.country_code,
+                'country_name': country_name,
+                'country_code': country_code,
                 'country_manager': country_info.country_manager,
                 'country_user': country_info.country_user,
-                'branches': []
+                'branches': [],
+                'analysis_percent': analysis_percent
             }
-            
-            # Get branches for this country
             branches = BranchInfo.objects.filter(country=country_info.country).select_related('airport')
-            
             for branch_info in branches:
                 branch_data = {
                     'airport_code': branch_info.airport.iata_code,
@@ -206,9 +225,6 @@ def get_management_table_data(request):
                     'branch_user': branch_info.branch_user
                 }
                 country_data['branches'].append(branch_data)
-            
             region_data['countries'].append(country_data)
-        
         data.append(region_data)
-    
-    return JsonResponse({'data': data})
+    return JsonResponse({'data': data, 'total_products': total_products})
