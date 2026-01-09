@@ -136,7 +136,7 @@ const UserMarketData = {
           html += '<th>Country</th>';
           html += '<th class="col-trade-unit">Trade Unit</th>';
           html += '<th class="col-packaging">Packaging</th>';
-          html += '<th class="col-currency">Currency</th>';
+          html += '<th class="col-currency" style="text-align:center;">Currency</th>';
           html += '</tr></thead><tbody>';
           products.forEach(function(p, idx) {
             html += '<tr style="background:#181c22; color:#fff; border-bottom:1px solid #23272e;" data-country-code="' + (p.country_code || '') + '">';
@@ -146,8 +146,8 @@ const UserMarketData = {
             html += '<td>' + p.product_type + '</td>';
             html += '<td>' + (p.country_name || '') + '</td>';
             html += '<td class="col-trade-unit" style="text-align:center;">' + p.trade_unit + '</td>';
-            html += '<td class="col-packaging" style="text-align:center;">' + p.packaging + '</td>';
-            html += '<td class="col-currency" style="text-align:center;">' + p.currency + '</td>';
+            html += '<td class="col-packaging" style="text-align:center;">' + (p.packaging || '') + '</td>';
+            html += '<td class="col-currency" style="text-align:center;">USD</td>';
             html += '</tr>';
           });
           html += '</tbody></table></div>';
@@ -739,8 +739,6 @@ const UserMarketData = {
             html += '<th>Type</th>';
             html += '<th>Country</th>';
             html += '<th class="col-trade-unit">Trade Unit</th>';
-            html += '<th class="col-packaging">Packaging</th>';
-            html += '<th class="col-currency" style="text-align:center;">Currency</th>';
             html += '<th>Last Updated Price</th>';
             html += '<th>Last Updated Date</th>';
             html += '<th>Enter New Price</th>';
@@ -754,8 +752,6 @@ const UserMarketData = {
               html += '<td>' + p.product_type + '</td>';
               html += '<td>' + (p.country_name || '') + '</td>';
               html += '<td class="col-trade-unit" style="text-align:center;">' + p.trade_unit + '</td>';
-              html += '<td class="col-packaging" style="text-align:center;">' + p.packaging + '</td>';
-              html += '<td class="col-currency" style="text-align:center;">USD</td>';
               html += '<td style="text-align:center;">' + (saved.last_updated_price !== undefined && saved.last_updated_price !== null ? saved.last_updated_price : '-') + '</td>';
               html += '<td style="text-align:center;">' + (saved.last_updated_date ? saved.last_updated_date : '-') + '</td>';
               var priceVal = enteredPrices[p.product_code] !== undefined ? enteredPrices[p.product_code] : '';
