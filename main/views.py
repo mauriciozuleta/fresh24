@@ -552,7 +552,7 @@ def add_product(request):
 				seq = 1
 			product_code = f"{prefix}{seq:03d}"
 
-			Product.objects.create(
+			product = Product.objects.create(
 				product_code=product_code,
 				product_type=product_type,
 				name=name,
@@ -566,6 +566,19 @@ def add_product(request):
 				units_per_pack=units_per_pack,
 				other_info=other_info
 			)
+
+			# Integrate USDA code assignment
+			try:
+				from financialsim.market_tools.usda_pricing import get_usda_product
+				usda_info = get_usda_product(name)
+				if usda_info:
+					# Update product_code and other fields if mapping found
+					product.product_code = usda_info.get("product_code", product.product_code)
+					product.other_info = (product.other_info or "") + f" | USDA: {usda_info.get('other_info', '')}"
+					product.save()
+			except Exception as e:
+				# Log error, but don't block product creation
+				print(f"USDA code assignment failed: {e}")
 			return JsonResponse({'success': True, 'message': 'Product added successfully', 'product_code': product_code})
 		except Exception as e:
 			return JsonResponse({'success': False, 'error': str(e)})

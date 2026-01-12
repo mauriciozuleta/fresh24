@@ -1,0 +1,13 @@
+product_code,product_type,local_name,name,country,trade_unit,fca_cost_per_wu,packaging,packaging_weight,typical_unit_weight_kg,units_per_pack,packaging_cost,other_info,currency,created_at,updated_at
+ME095,Meats,204 Rack 8-Rib Medium,Lamb Rack 8 Rib Medium,USA,kg,24.6,Box,9,2.2,4,216.48,Fresh,USD,2026-01-11T21:07:00Z,2026-01-11T21:07:00Z
+ME096,Meats,204C Rack Roast-Ready Frenched,Lamb Rack Frenched,USA,kg,50.82,Box,10,1.98,5,503.118,Fresh,USD,2026-01-11T21:07:00Z,2026-01-11T21:07:00Z
+ME097,Meats,209 Breast,Lamb Breast,USA,kg,8.65,Box,10,1.32,7,79.926,Fresh,USD,2026-01-11T21:07:00Z,2026-01-11T21:07:00Z
+ME098,Meats,207 Shoulders Square-Cut,Lamb Shoulder Square Cut,USA,kg,9.45,Box,10,3.3,3,93.555,Fresh,USD,2026-01-11T21:07:00Z,2026-01-11T21:07:00Z
+ME099,Meats,210 Foreshank,Lamb Foreshank,USA,kg,13.16,Box,10,0.61,16,128.4416,Fresh,USD,2026-01-11T21:07:00Z,2026-01-11T21:07:00Z
+ME100,Meats,Neck,Lamb Neck,USA,kg,9.47,Box,10,1.1,9,93.753,Fresh,USD,2026-01-11T21:07:00Z,2026-01-11T21:07:00Z
+ME101,Meats,296 Ground Lamb,Lamb Ground,USA,kg,14.28,Box,10,0.55,18,141.372,Fresh,USD,2026-01-11T21:07:00Z,2026-01-11T21:07:00Z
+ME102,Meats,232 Loins Trimmed 4x4,Lamb Loin Trimmed 4x4,USA,kg,15.42,Box,10,1.54,6,142.4808,Fresh,USD,2026-01-11T21:07:00Z,2026-01-11T21:07:00Z
+ME103,Meats,232 Loins Trimmed 1x1,Lamb Loin Trimmed 1x1,USA,kg,20.09,Box,9,1.76,5,176.792,Fresh,USD,2026-01-11T21:07:00Z,2026-01-11T21:07:00Z
+ME104,Meats,232E Flank Untrimmed,Lamb Flank Untrimmed,USA,kg,6.34,Box,10,1.1,9,62.766,Fresh,USD,2026-01-11T21:07:00Z,2026-01-11T21:07:00Z
+ME105,Meats,233A Leg Trotter Off,Lamb Leg Trotter Off,USA,kg,11.2,Box,9,4.4,2,98.56,Fresh,USD,2026-01-11T21:07:00Z,2026-01-11T21:07:00Z
+ME106,Meats,234 Leg Boneless Tied,Lamb Leg Boneless Tied,USA,kg,14.58,Box,10,3.3,3,144.342,Fresh,USD,2026-01-11T21:07:00Z,2026-01-11T21:07:00Z

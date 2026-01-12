@@ -198,6 +198,26 @@ const UserMarketExport = {
                         }
                       })
                       .catch(function() {
+                  // Add filter logic for country and category
+                  var countrySelect = document.getElementById('export-country-select');
+                  var categorySelect = document.getElementById('export-category-select');
+                  function filterProducts() {
+                    var selectedCountry = countrySelect ? countrySelect.value : '';
+                    var selectedCategory = categorySelect ? categorySelect.value : '';
+                    var productsTable = container.querySelector('.products-table-wrapper table');
+                    if (!productsTable) return;
+                    var rows = productsTable.querySelectorAll('tbody tr');
+                    rows.forEach(function(row) {
+                      var countryCode = row.getAttribute('data-country-code') || '';
+                      var category = row.children[3] ? row.children[3].textContent : '';
+                      var show = true;
+                      if (selectedCountry && countryCode !== selectedCountry) show = false;
+                      if (selectedCategory && selectedCategory !== '' && category !== selectedCategory) show = false;
+                      row.style.display = show ? '' : 'none';
+                    });
+                  }
+                  if (countrySelect) countrySelect.addEventListener('change', filterProducts);
+                  if (categorySelect) categorySelect.addEventListener('change', filterProducts);
                         alert('Error saving supplier');
                       });
                     });

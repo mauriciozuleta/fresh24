@@ -1,0 +1,34 @@
+product_code,product_type,local_name,name,country,trade_unit,fca_cost_per_wu,packaging,packaging_weight,typical_unit_weight_kg,units_per_pack,packaging_cost,other_info,currency,created_at,updated_at
+ME062,Meats,National Composite Whole,Whole Chicken National Composite,USA,kg,2.579,Box,9,1.76,5,22.6952,Fresh,USD,2026-01-11T20:56:00Z,2026-01-11T20:56:00Z
+ME063,Meats,National Composite WOGS,Whole Chicken,USA,kg,2.506,Box,9,1.76,5,22.0528,Fresh,USD,2026-01-11T20:56:00Z,2026-01-11T20:56:00Z
+ME064,Meats,2.50 LB and lighter,Small Whole Chicken,USA,kg,3.062,Box,10,1.1,9,30.3138,Fresh <=2.5 lb,USD,2026-01-11T20:56:00Z,2026-01-11T20:56:00Z
+ME065,Meats,2.51 to 3.50 LB,Medium Whole Chicken,USA,kg,2.455,Box,10,1.54,6,22.6842,Fresh 2.51-3.50 lb,USD,2026-01-11T20:56:00Z,2026-01-11T20:56:00Z
+ME066,Meats,3.51 LB and heavier,Large Whole Chicken,USA,kg,2.129,Box,10,1.87,5,19.90615,Fresh >=3.51 lb,USD,2026-01-11T20:56:00Z,2026-01-11T20:56:00Z
+ME067,Meats,National Composite,Whole Chicken Composite Whole Body,USA,kg,2.944,Box,9,1.76,5,25.9072,Fresh,USD,2026-01-11T20:56:00Z,2026-01-11T20:56:00Z
+ME068,Meats,3.00 LB and Lighter,Small Whole Chicken,USA,kg,2.99,Box,10,1.1,9,29.601,Fresh <=3 lb,USD,2026-01-11T20:56:00Z,2026-01-11T20:56:00Z
+ME069,Meats,3.01 LB and heavier,Large Whole Chicken,USA,kg,2.934,Box,10,1.87,5,27.4329,Fresh >=3.01 lb,USD,2026-01-11T20:56:00Z,2026-01-11T20:56:00Z
+ME070,Meats,Eastern Whole Body,Whole Chicken Eastern Region,USA,kg,2.542,Box,9,1.76,5,22.3696,Fresh Eastern Region,USD,2026-01-11T20:56:00Z,2026-01-11T20:56:00Z
+ME071,Meats,Eastern WOGS,Whole Chicken Eastern,USA,kg,2.414,Box,9,1.76,5,21.2432,Fresh Eastern,USD,2026-01-11T20:56:00Z,2026-01-11T20:56:00Z
+ME072,Meats,New York Whole Body,Whole Chicken New York,USA,kg,2.613,Box,9,1.76,5,22.9944,Fresh New York,USD,2026-01-11T20:56:00Z,2026-01-11T20:56:00Z
+ME073,Meats,Central Whole Body,Whole Chicken Central Region,USA,kg,2.259,Box,9,1.76,5,19.8792,Fresh Central Region,USD,2026-01-11T20:56:00Z,2026-01-11T20:56:00Z
+ME074,Meats,Central WOGS,Whole Chicken Central,USA,kg,2.224,Box,9,1.76,5,19.5712,Fresh Central,USD,2026-01-11T20:56:00Z,2026-01-11T20:56:00Z
+ME075,Meats,Chicago Whole Body,Whole Chicken Chicago,USA,kg,2.199,Box,9,1.76,5,19.3512,Fresh Chicago,USD,2026-01-11T20:56:00Z,2026-01-11T20:56:00Z
+ME076,Meats,Western Whole Body,Whole Chicken Western Region,USA,kg,2.885,Box,9,1.76,5,25.388,Fresh Western Region,USD,2026-01-11T20:56:00Z,2026-01-11T20:56:00Z
+ME077,Meats,Western WOGS,Whole Chicken Western,USA,kg,2.854,Box,9,1.76,5,25.1152,Fresh Western,USD,2026-01-11T20:56:00Z,2026-01-11T20:56:00Z
+ME078,Meats,Los Angeles Whole Body,Whole Chicken Los Angeles,USA,kg,2.862,Box,9,1.76,5,25.1856,Fresh Los Angeles,USD,2026-01-11T20:56:00Z,2026-01-11T20:56:00Z
+ME079,Meats,Backs and Necks Stripped,Chicken Backs and Necks,USA,kg,0.198,Box,10,0.13,76,1.95624,Fresh,USD,2026-01-11T20:56:00Z,2026-01-11T20:56:00Z
+ME080,Meats,Breast - B-S,Chicken Breast Boneless Skinless,USA,kg,3.631,Box,10,0.28,35,35.5838,Fresh,USD,2026-01-11T20:56:00Z,2026-01-11T20:56:00Z
+ME081,Meats,Breast - Line Run,Chicken Breast Line Run,USA,kg,2.694,Box,10,0.33,30,26.6706,Fresh,USD,2026-01-11T20:56:00Z,2026-01-11T20:56:00Z
+ME082,Meats,Breast With Ribs,Chicken Breast With Ribs,USA,kg,3.833,Box,10,0.44,22,37.10344,Fresh,USD,2026-01-11T20:56:00Z,2026-01-11T20:56:00Z
+ME083,Meats,Drumsticks,Chicken Drumsticks,USA,kg,1.147,Box,10,0.13,76,11.33236,Fresh,USD,2026-01-11T20:56:00Z,2026-01-11T20:56:00Z
+ME084,Meats,Frames,Chicken Frames,USA,kg,0.058,Box,10,0.03,333,0.57942,Fresh,USD,2026-01-11T20:56:00Z,2026-01-11T20:56:00Z
+ME085,Meats,Gizzards and Hearts,Chicken Gizzards and Hearts,USA,kg,2.011,Box,10,0.04,250,20.11,Fresh,USD,2026-01-11T20:56:00Z,2026-01-11T20:56:00Z
+ME086,Meats,Leg quarters - Bulk,Chicken Leg Quarters,USA,kg,1.217,Box,10,0.28,35,11.9266,Fresh,USD,2026-01-11T20:56:00Z,2026-01-11T20:56:00Z
+ME087,Meats,Legs - Bone-in,Chicken Legs Bone-In,USA,kg,1.816,Box,10,0.28,35,17.7968,Fresh,USD,2026-01-11T20:56:00Z,2026-01-11T20:56:00Z
+ME088,Meats,Livers,Chicken Livers,USA,kg,1.608,Box,10,0.04,250,16.08,Fresh,USD,2026-01-11T20:56:00Z,2026-01-11T20:56:00Z
+ME089,Meats,MSC 15-20 Percent Fat Content,Chicken MSC 15-20% Fresh,USA,kg,0.553,Box,10,0.02,500,5.53,Fresh,USD,2026-01-11T20:56:00Z,2026-01-11T20:56:00Z
+ME090,Meats,Tenderloins,Chicken Tenderloins,USA,kg,4.742,Box,10,0.07,142,47.13548,Fresh,USD,2026-01-11T20:56:00Z,2026-01-11T20:56:00Z
+ME091,Meats,Thighs - B-S,Chicken Thighs Boneless Skinless,USA,kg,4.196,Box,10,0.2,50,41.96,Fresh,USD,2026-01-11T20:56:00Z,2026-01-11T20:56:00Z
+ME092,Meats,Thighs - Bone-in,Chicken Thighs Bone-In,USA,kg,1.939,Box,10,0.28,35,19.0022,Fresh,USD,2026-01-11T20:56:00Z,2026-01-11T20:56:00Z
+ME093,Meats,Wings - Whole,Chicken Wings Whole,USA,kg,3.533,Box,10,0.11,90,34.9767,Fresh,USD,2026-01-11T20:56:00Z,2026-01-11T20:56:00Z
+ME094,Meats,MSC 15-20 Percent Fat Content,Frozen MSC 15-20% Fat,USA,kg,0.729,Box,10,0.02,500,7.29,Frozen,USD,2026-01-11T20:56:00Z,2026-01-11T20:56:00Z

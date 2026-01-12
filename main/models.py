@@ -227,3 +227,21 @@ class ProductPriceComparison(models.Model):
         return f"{self.product_code} - {self.product_name} ({self.prices_in_country})"
 
 
+# MarketDB model for user_imported_data/market_db.CSV
+class MarketDB(models.Model):
+	country_island = models.CharField(max_length=64)
+	supermarket = models.CharField(max_length=128)
+	website = models.URLField(max_length=256)
+	platform = models.CharField(max_length=64)
+	scrapable = models.CharField(max_length=32)
+	product_selector = models.CharField(max_length=128)
+	title_selector = models.CharField(max_length=128)
+	price_selector = models.CharField(max_length=128)
+	js_render = models.CharField(max_length=16)
+	scrape_method = models.CharField(max_length=64)
+	notes = models.TextField(blank=True, null=True)
+
+	def __str__(self):
+		return f"{self.country_island} - {self.supermarket}"
+
+

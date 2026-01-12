@@ -1,0 +1,115 @@
+{
+  "pork": {
+    "report_code": "LM_PK602",
+    "sub_primals": {
+      "Loin": {
+        "keywords": ["pork chop", "pork loin", "center cut chop", "chuleta", "loin roast"]
+      },
+      "Butt": {
+        "keywords": ["boston butt", "shoulder butt", "pork butt"]
+      },
+      "Pic": {
+        "keywords": ["picnic shoulder", "pork picnic"]
+      },
+      "Rib": {
+        "keywords": ["spare rib", "back rib", "st louis rib", "baby back rib", "costilla"]
+      },
+      "Ham": {
+        "keywords": ["ham", "leg ham", "pork leg"]
+      },
+      "Belly": {
+        "keywords": ["pork belly", "raw bacon", "tocino"]
+      }
+    }
+  },
+
+  "beef": {
+    "report_code": "LM_XB402",
+    "sub_primals": {
+      "Rib": {
+        "keywords": ["ribeye", "prime rib", "rib roast"]
+      },
+      "Loin": {
+        "keywords": ["striploin", "new york strip", "tenderloin", "sirloin"]
+      },
+      "Round": {
+        "keywords": ["top round", "bottom round", "eye of round"]
+      },
+      "Chuck": {
+        "keywords": ["chuck roll", "chuck roast", "shoulder clod"]
+      },
+      "Brisket": {
+        "keywords": ["brisket"]
+      },
+      "Short Plate": {
+        "keywords": ["short plate", "skirt steak"]
+      },
+      "Flank": {
+        "keywords": ["flank steak"]
+      }
+    }
+  },
+
+  "chicken": {
+    "report_code": "WA_CH202",
+    "sub_primals": {
+      "Whole": {
+        "keywords": ["whole chicken", "whole bird"]
+      },
+      "Breast": {
+        "keywords": ["chicken breast", "boneless breast", "breast fillet"]
+      },
+      "Wings": {
+        "keywords": ["chicken wings", "wingettes", "drumettes"]
+      },
+      "Legs": {
+        "keywords": ["drumsticks", "thighs", "chicken legs"]
+      },
+      "Quarters": {
+        "keywords": ["leg quarters", "chicken quarters"]
+      }
+    }
+  },
+
+  "turkey": {
+    "report_code": "WA_TB201",
+    "sub_primals": {
+      "Whole": {
+        "keywords": ["whole turkey"]
+      },
+      "Breast": {
+        "keywords": ["turkey breast"]
+      },
+      "Drumsticks": {
+        "keywords": ["turkey drumsticks"]
+      },
+      "Wings": {
+        "keywords": ["turkey wings"]
+      },
+      "Necks": {
+        "keywords": ["turkey necks"]
+      }
+    }
+  },
+
+  "lamb": {
+    "report_code": "LM_LM443",
+    "sub_primals": {
+      "Carcass": {
+        "keywords": ["lamb carcass"]
+      },
+      "Shoulder": {
+        "keywords": ["lamb shoulder"]
+      },
+      "Rack": {
+        "keywords": ["lamb rack", "rack of lamb"]
+      },
+      "Loin": {
+        "keywords": ["lamb loin", "loin chops"]
+      },
+      "Leg": {
+        "keywords": ["leg of lamb", "lamb leg"]
+      }
+    }
+  }
+}

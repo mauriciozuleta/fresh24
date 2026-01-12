@@ -1,0 +1,47 @@
+product_code,product_type,local_name,name,country,trade_unit,fca_cost_per_wu,packaging,packaging_weight,typical_unit_weight_kg,units_per_pack,packaging_cost,other_info,currency,created_at,updated_at
+ME001,Meats,1/4 Trimmed Loin VAC,Pork Loin Quarter Trimmed (Vacuum-Packed),USA,kg,2.086,Box,10,2.42,4,20.19,VAC,USD,2026-01-11T20:28:00Z,2026-01-11T20:28:00Z
+ME002,Meats,1/4 Trimmed Loin Combo,Pork Loin Quarter Trimmed (Combo Pack),USA,kg,1.944,Box,10,2.47,4,19.21,Combo,USD,2026-01-11T20:28:00Z,2026-01-11T20:28:00Z
+ME003,Meats,1/8 Trimmed Loin VAC,Pork Loin Eighth Trimmed (Vacuum-Packed),USA,kg,2.389,Box,9,1.76,5,21.02,VAC,USD,2026-01-11T20:28:00Z,2026-01-11T20:28:00Z
+ME004,Meats,Bone-in CC Tender-in Loin VAC,Pork Loin Center-Cut Bone-In (Vacuum-Packed),USA,kg,3.514,Box,9,4.4,2,30.92,Bone-in VAC,USD,2026-01-11T20:28:00Z,2026-01-11T20:28:00Z
+ME005,Meats,B-In CC Tender-in FLON,Pork Loin Center-Cut Bone-In (Fresh Long-On),USA,kg,2.99,Box,9,4.36,2,26.07,FLON,USD,2026-01-11T20:28:00Z,2026-01-11T20:28:00Z
+ME006,Meats,Bnls CC Strap-on,Pork Loin Boneless Center-Cut (Strap-On),USA,kg,2.949,Box,8,3.63,2,21.41,Boneless Strap-on,USD,2026-01-11T20:28:00Z,2026-01-11T20:28:00Z
+ME007,Meats,Bnls CC Strap-off,Pork Loin Boneless Center-Cut (Strap-Off),USA,kg,3.614,Box,8,3.68,2,26.60,Boneless Strap-off,USD,2026-01-11T20:28:00Z,2026-01-11T20:28:00Z
+ME008,Meats,Boneless Sirloin,Pork Sirloin Boneless,USA,kg,2.708,Box,10,2.42,4,26.21,Boneless,USD,2026-01-11T20:28:00Z,2026-01-11T20:28:00Z
+ME009,Meats,Bone-in Sirloin,Pork Sirloin Bone-In,USA,kg,1.923,Box,9,2.86,3,16.50,Bone-in,USD,2026-01-11T20:28:00Z,2026-01-11T20:28:00Z
+ME010,Meats,Tenderloin,Pork Tenderloin Boneless,USA,kg,4.033,Box,10,0.77,12,37.26,Boneless,USD,2026-01-11T20:28:00Z,2026-01-11T20:28:00Z
+ME011,Meats,Backribs 2.0#/up,Pork Back Ribs 2 lb+,USA,kg,5.848,Box,10,1.38,7,56.49,2lb+,USD,2026-01-11T20:28:00Z,2026-01-11T20:28:00Z
+ME012,Meats,Backribs 2.0#/up 1 Pc Vac,Pork Back Ribs 2 lb+ (Vacuum-Packed),USA,kg,6.289,Box,10,1.42,7,62.51,VAC 2lb+,USD,2026-01-11T20:28:00Z,2026-01-11T20:28:00Z
+ME013,Meats,Backribs 2.0#/up 1 Pc Vac FZN,Pork Back Ribs 2 lb+ (Vacuum-Packed Frozen),USA,kg,5.844,Box,10,1.4,7,57.27,VAC FZN 2lb+,USD,2026-01-11T20:28:00Z,2026-01-11T20:28:00Z
+ME014,Meats,St Louis Spareribs VAC,Pork St. Louis Ribs (Vacuum-Packed),USA,kg,5.683,Box,10,1.98,5,56.26,VAC,USD,2026-01-11T20:28:00Z,2026-01-11T20:28:00Z
+ME015,Meats,St Louis Spareribs POLY FZN,Pork St. Louis Ribs (Poly Frozen),USA,kg,5.468,Box,9,2.02,4,44.18,Poly FZN,USD,2026-01-11T20:28:00Z,2026-01-11T20:28:00Z
+ME016,Meats,BBQ Style Spareribs VAC,Pork BBQ-Style Ribs (Vacuum-Packed),USA,kg,4.68,Box,10,1.98,5,46.33,VAC,USD,2026-01-11T20:28:00Z,2026-01-11T20:28:00Z
+ME017,Meats,1/4 Trim Butt VAC,Pork Shoulder Butt Quarter Trimmed (Vacuum-Packed),USA,kg,2.756,Box,8,3.85,2,21.22,VAC,USD,2026-01-11T20:28:00Z,2026-01-11T20:28:00Z
+ME018,Meats,1/4 Trim Butt Paper,Pork Shoulder Butt Quarter Trimmed (Paper-Wrapped),USA,kg,3.381,Box,8,3.9,2,26.37,Paper,USD,2026-01-11T20:28:00Z,2026-01-11T20:28:00Z
+ME019,Meats,1/4 Trim Butt Combo,Pork Shoulder Butt Quarter Trimmed (Combo Pack),USA,kg,2.776,Box,8,3.88,2,21.54,Combo,USD,2026-01-11T20:28:00Z,2026-01-11T20:28:00Z
+ME020,Meats,1/4 Trim Butt 1 Pc VAC,Pork Shoulder Butt Quarter Trimmed (1-Piece Vacuum-Packed),USA,kg,3.217,Box,8,3.92,2,25.22,VAC,USD,2026-01-11T20:28:00Z,2026-01-11T20:28:00Z
+ME021,Meats,1/8 Trim Steak Ready Butt 1 Pc Vac,Pork Shoulder Steak-Ready (1-Piece Vacuum-Packed),USA,kg,3.463,Box,10,3.3,3,34.28,VAC,USD,2026-01-11T20:28:00Z,2026-01-11T20:28:00Z
+ME022,Meats,1/4 Trim Bnls Butt VAC,Pork Shoulder Boneless Quarter Trimmed (Vacuum-Packed),USA,kg,3.116,Box,8,3.85,2,23.99,VAC Boneless,USD,2026-01-11T20:28:00Z,2026-01-11T20:28:00Z
+ME023,Meats,1/4 Trim Bnls Butt Poly,Pork Shoulder Boneless Quarter Trimmed (Poly-Wrapped),USA,kg,4,Box,8,3.95,2,31.60,Poly Boneless,USD,2026-01-11T20:28:00Z,2026-01-11T20:28:00Z
+ME024,Meats,1/4 Trim Bnls Butt Combo,Pork Shoulder Boneless Quarter Trimmed (Combo Pack),USA,kg,3.283,Box,8,3.87,2,25.41,Combo Boneless,USD,2026-01-11T20:28:00Z,2026-01-11T20:28:00Z
+ME025,Meats,Bnls CT Butt 1 Pc VAC,Pork Shoulder Boneless Center-Cut (1-Piece Vacuum-Packed),USA,kg,4.676,Box,8,3.95,2,36.94,VAC Boneless,USD,2026-01-11T20:28:00Z,2026-01-11T20:28:00Z
+ME026,Meats,SS Smoker Trim Picnic VAC,Pork Picnic Smoker Trim (Vacuum-Packed),USA,kg,1.929,Box,11,5.5,2,21.22,VAC,USD,2026-01-11T20:28:00Z,2026-01-11T20:28:00Z
+ME027,Meats,SS Smoker Trim Picnic Paper/Poly,Pork Picnic Smoker Trim (Paper/Poly),USA,kg,2.995,Box,12,5.55,2,33.24,Paper/Poly,USD,2026-01-11T20:28:00Z,2026-01-11T20:28:00Z
+ME028,Meats,SS Smoker Trim Picnic 1 Pc Vac,Pork Picnic Smoker Trim (1-Piece Vacuum-Packed),USA,kg,2.469,Box,11,5.48,2,27.06,VAC,USD,2026-01-11T20:28:00Z,2026-01-11T20:28:00Z
+ME029,Meats,Picnic Cushion Meat Vac,Pork Cushion Meat (Vacuum-Packed),USA,kg,3.116,Box,10,1.65,6,30.85,VAC,USD,2026-01-11T20:28:00Z,2026-01-11T20:28:00Z
+ME030,Meats,Picnic Cushion Meat Poly FZN,Pork Cushion Meat (Poly Frozen),USA,kg,3.155,Box,9,1.7,5,26.82,Poly FZN,USD,2026-01-11T20:28:00Z,2026-01-11T20:28:00Z
+ME031,Meats,Picnic Cushion Meat Combo,Pork Cushion Meat (Combo Pack),USA,kg,3.006,Box,9,1.68,5,25.25,Combo,USD,2026-01-11T20:28:00Z,2026-01-11T20:28:00Z
+ME032,Meats,20-23# Trimmed Selected Ham,Pork Ham Trimmed Selected (20 23 lb),USA,kg,1.728,Box,20,10,2,34.56,20-23lb,USD,2026-01-11T20:28:00Z,2026-01-11T20:28:00Z
+ME033,Meats,23-27# Trimmed Selected Ham,Pork Ham,USA,kg,1.778,Box,21,10.5,2,37.34,23-27lb,USD,2026-01-11T20:28:00Z,2026-01-11T20:28:00Z
+ME034,Meats,20-23 Ham Boxed,Pork Ham Boxed,USA,kg,3.969,Box,21,10.2,2,80.97,Boxed 20-23lb,USD,2026-01-11T20:28:00Z,2026-01-11T20:28:00Z
+ME035,Meats,3 Muscle Ham to Blue,Pork Ham 3-Muscle,USA,kg,3.507,Box,9,2.2,4,30.86,3-Muscle,USD,2026-01-11T20:28:00Z,2026-01-11T20:28:00Z
+ME036,Meats,4 Muscle Ham to Blue,Pork Ham 4-Muscle,USA,kg,3.739,Box,9,2.75,3,30.85,4-Muscle,USD,2026-01-11T20:28:00Z,2026-01-11T20:28:00Z
+ME037,Meats,Rollout Ham Bnls Boxed,Pork Ham Boneless,USA,kg,3.501,Box,9,2.2,4,30.81,Boneless Boxed,USD,2026-01-11T20:28:00Z,2026-01-11T20:28:00Z
+ME038,Meats,2pc Ham,Pork Ham 2-Piece,USA,kg,3.4,Box,11,5.5,2,37.40,2pc,USD,2026-01-11T20:28:00Z,2026-01-11T20:28:00Z
+ME039,Meats,Insides,Pork Ham Inside Muscle,USA,kg,3.421,Box,10,1.65,6,33.87,Inside Muscle,USD,2026-01-11T20:28:00Z,2026-01-11T20:28:00Z
+ME040,Meats,Outsides,Pork Ham Outside Muscle,USA,kg,3.722,Box,10,1.85,5,34.43,Outside Muscle,USD,2026-01-11T20:28:00Z,2026-01-11T20:28:00Z
+ME041,Meats,Knuckles,Pork Ham Knuckle,USA,kg,3.28,Box,9,1.75,5,28.70,Knuckle,USD,2026-01-11T20:28:00Z,2026-01-11T20:28:00Z
+ME042,Meats,Derind Belly 9-13#,Pork Belly,USA,kg,3.505,Box,11,5.5,2,38.56,9-13lb,USD,2026-01-11T20:28:00Z,2026-01-11T20:28:00Z
+ME043,Meats,Derind Belly 13-17#,Pork Belly,USA,kg,3.345,Box,12,5.6,2,37.46,13-17lb,USD,2026-01-11T20:28:00Z,2026-01-11T20:28:00Z
+ME044,Meats,Derind Belly 9-13# Boxed,Pork Belly,USA,kg,5.6,Box,12,5.55,2,62.16,Boxed 9-13lb,USD,2026-01-11T20:28:00Z,2026-01-11T20:28:00Z
+ME045,Meats,Skin-on Belly 12-14#,Pork Belly Skin-On,USA,kg,4.086,Box,12,6,2,49.03,12-14lb,USD,2026-01-11T20:28:00Z,2026-01-11T20:28:00Z
+ME046,Meats,Skin-on Belly 10-12# Boxed,Pork Belly Skin-On,USA,kg,5.588,Box,12,5.9,2,65.94,Boxed 10-12lb,USD,2026-01-11T20:28:00Z,2026-01-11T20:28:00Z

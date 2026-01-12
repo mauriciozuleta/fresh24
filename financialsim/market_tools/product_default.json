@@ -1,0 +1,28 @@
+{
+  "defaults": {
+    "origin_country": "USA",
+    "trade_unit": "kg",
+    "packaging_type": "Box",
+    "packaging_weight_kg": 10,
+    "currency": "USD"
+  },
+
+  "unit_weights": {
+    "Loin": 1.0,
+    "Rib": 2.0,
+    "Belly": 1.0,
+    "Ham": 3.0,
+    "Pic": 2.0,
+    "Butt": 2.0,
+    "Carcass": 10.0,
+
+    "Breast": 1.0,
+    "Wings": 1.0,
+    "Legs": 1.0,
+    "Quarters": 2.0,
+
+    "Ribeye": 1.0,
+    "Striploin": 1.0,
+    "Brisket": 5.0
+  }
+}

@@ -1,0 +1,23 @@
+Country/Island,Supermarket,Website,Platform,Scrapable,product_selector,title_selector,price_selector,js_render,scrape_method,Notes
+Bahamas,Central Supercenter,https://centralsupercenter.com,WooCommerce,Yes,li.product,h2.woocommerce-loop-product__title,span.woocommerce-Price-amount,0,woocommerce_html,Confirmed WooCommerce structure
+St. Maarten,SXM Les Halles,https://sxmleshalles.com,WooCommerce,Yes,li.product,h2.woocommerce-loop-product__title,span.woocommerce-Price-amount,0,woocommerce_html,Confirmed WooCommerce structure
+St. Maarten,Le Grand Marché,https://legrandmarche.net,Custom,Yes,li.product,h2,span.price,0,custom_html,Online catalog available
+Aruba,Ling & Sons,https://lingandsons.com,WooCommerce,Yes,li.product,h2.woocommerce-loop-product__title,span.woocommerce-Price-amount,0,woocommerce_html,Full online store
+Aruba,Super Food Aruba,https://superfoodaruba.com,WooCommerce,Yes,li.product,h2.woocommerce-loop-product__title,span.woocommerce-Price-amount,0,woocommerce_html,Full online store
+Curaçao,Centrum Supermarket,https://centrumsupermarket.com,WooCommerce,Yes,li.product,h2.woocommerce-loop-product__title,span.woocommerce-Price-amount,0,woocommerce_html,Full online catalog
+Curaçao,Vreugdenhil Supermarket,https://vreugdenhil.com,Custom,Yes,li.product,h2,span.price,0,custom_html,Online catalog available
+Barbados,Popular Discounts,https://popularbarbados.com,WooCommerce,Yes,li.product,h2.woocommerce-loop-product__title,span.woocommerce-Price-amount,0,woocommerce_html,High-volume discount supermarket
+Barbados,Massy Stores Barbados,https://massystoresbb.com,Shopify,Yes,div.product-grid-item,h2.product-title,span.price-item,0,shopify_html,Online shopping available
+Trinidad & Tobago,Massy Stores Trinidad,https://massystorestt.com,Shopify,Yes,div.product-grid-item,h2.product-title,span.price-item,0,shopify_html,Online shopping available
+Trinidad & Tobago,TruValu Supermarket,https://truvalu.com,Custom,Yes,li.product,h2,span.price,0,custom_html,Online catalog available
+Trinidad & Tobago,Xtra Foods,https://xtrafoods.com,Custom,Yes,li.product,h2,span.price,0,custom_html,Online catalog available
+Jamaica,Hi-Lo Food Stores,https://hilofoodstoresja.com,Custom,Yes,li.product,h2,span.price,0,custom_html,Online shopping available
+Jamaica,Shopper's Fair,https://shoppersfairja.com,Custom,Yes,li.product,h2,span.price,0,custom_html,Online catalog available
+Puerto Rico,Pueblo Supermarkets,https://pueblosupermarkets.com,Custom,Yes,li.product,h2,span.price,0,custom_html,Online catalog available
+St. Lucia,Massy Stores St. Lucia,https://massystoreslc.com,Shopify,Yes,div.product-grid-item,h2.product-title,span.price-item,0,shopify_html,Online shopping available
+Grenada,Foodland Grenada,https://foodfair.gd,Custom,Yes,li.product,h2,span.price,0,custom_html,Online catalog available
+St. Kitts & Nevis,Rams Supermarket,https://ramsgroup.com,Custom,Yes,li.product,h2,span.price,0,custom_html,Online catalog available
+Dominican Republic,Supermercados Nacional,https://supermercadosnacional.com,JS,Needs JS,div.product-card,h2.product-title,span.price,1,js_render,Requires Playwright
+Dominican Republic,Jumbo,https://jumbo.com.do,JS,Needs JS,div.product-card,h2.product-title,span.price,1,js_render,Requires Playwright
+Puerto Rico,Econo Supermarkets,https://econopr.com,JS,Needs JS,div.product-card,h2.product-title,span.price,1,js_render,Requires Playwright
+Jamaica,PriceSmart Jamaica,https://pricesmart.com,JS,Needs JS,div.product-card,h2.product-title,span.price,1,js_render,Requires Playwright

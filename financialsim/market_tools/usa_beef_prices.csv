@@ -1,0 +1,16 @@
+product_code,product_type,local_name,name,country,trade_unit,fca_cost_per_wu,packaging,packaging_weight,typical_unit_weight_kg,units_per_pack,packaging_cost,other_info,currency,created_at,updated_at
+ME047,Meats,Rib ribeye lip-on bn-in,Beef Ribeye Lip-On Bone-In,USA,kg,28.63,Box,14,6.62,2,379.0612,IMPS109E FL1,USD,2026-01-11T20:40:00Z,2026-01-11T20:40:00Z
+ME048,Meats,Rib ribeye bnls light,Beef Ribeye Boneless Light,USA,kg,35.77,Box,12,5.58,2,399.1932,IMPS112A FL3,USD,2026-01-11T20:40:00Z,2026-01-11T20:40:00Z
+ME049,Meats,Rib ribeye bnls heavy,Beef Ribeye Boneless Heavy,USA,kg,31.62,Box,12,5.63,2,356.0412,IMPS112A FL3,USD,2026-01-11T20:40:00Z,2026-01-11T20:40:00Z
+ME050,Meats,Chuck roll lxl neck-off,Beef Chuck Roll,USA,kg,12.79,Box,19,9.42,2,240.9636,IMPS116A FL3,USD,2026-01-11T20:40:00Z,2026-01-11T20:40:00Z
+ME051,Meats,Brisket deckle-off bnls,Beef Brisket Deckle-Off,USA,kg,10.89,Box,12,5.58,2,121.5324,IMPS120 FL1,USD,2026-01-11T20:40:00Z,2026-01-11T20:40:00Z
+ME052,Meats,ShortPlate short-rib,Beef Short Rib,USA,kg,13.82,Box,9,4.48,2,123.8272,IMPS123A FL3,USD,2026-01-11T20:40:00Z,2026-01-11T20:40:00Z
+ME053,Meats,Round eye-of-round,Beef Eye of Round,USA,kg,9.2,Box,9,2.78,3,76.728,IMPS171C FL3,USD,2026-01-11T20:40:00Z,2026-01-11T20:40:00Z
+ME054,Meats,Loin short-loin 0x1,Beef Short Loin 0x1,USA,kg,20.39,Box,23,11.05,2,450.619,IMPS174 FL3,USD,2026-01-11T20:40:00Z,2026-01-11T20:40:00Z
+ME055,Meats,Loin strip-loin 1x1,Beef Strip Loin 1x1,USA,kg,20.86,Box,17,8.28,2,345.4416,IMPS175 FL3,USD,2026-01-11T20:40:00Z,2026-01-11T20:40:00Z
+ME056,Meats,Loin strip bnls 0x1,Beef Strip Loin Boneless 0x1,USA,kg,19.8,Box,15,7.22,2,285.912,IMPS180 FL3,USD,2026-01-11T20:40:00Z,2026-01-11T20:40:00Z
+ME057,Meats,Loin top-butt boneless,Beef Top Butt Boneless,USA,kg,11.43,Box,12,5.55,2,126.873,IMPS184 FL3,USD,2026-01-11T20:40:00Z,2026-01-11T20:40:00Z
+ME058,Meats,Loin top-butt CC,Beef Top Butt Center-Cut,USA,kg,15.8,Box,9,4.45,2,140.62,IMPS184B FL3,USD,2026-01-11T20:40:00Z,2026-01-11T20:40:00Z
+ME059,Meats,Loin bottom-sirloin flap,Beef Flap Meat,USA,kg,18.2,Box,9,2.25,4,163.8,IMPS185A FL4,USD,2026-01-11T20:40:00Z,2026-01-11T20:40:00Z
+ME060,Meats,Loin sirloin tri-tip pld,Beef Tri-Tip Peeled,USA,kg,16.49,Box,10,2.28,4,150.3888,IMPS185D FL4,USD,2026-01-11T20:40:00Z,2026-01-11T20:40:00Z
+ME061,Meats,Loin tndrloin trmd heavy,Beef Tenderloin Trimmed Heavy,USA,kg,42.97,Box,8,3.62,2,311.1028,IMPS189A FL4,USD,2026-01-11T20:40:00Z,2026-01-11T20:40:00Z

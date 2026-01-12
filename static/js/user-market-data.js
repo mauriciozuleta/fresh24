@@ -110,13 +110,8 @@ const UserMarketData = {
             });
         });
       }
-      // Fetch products from API and render list
-      var selectedCountry = (document.getElementById('import-country-select') && document.getElementById('import-country-select').value) || '';
-      var productsUrl = '/api/products/';
-      if (selectedCountry) {
-        productsUrl += '?country_code=' + encodeURIComponent(selectedCountry);
-      }
-      fetch(productsUrl)
+      // Fetch ALL products from API for Export tab (no pre-filter by Import country)
+      fetch('/api/products/')
         .then(function(response) { return response.json(); })
         .then(function(data) {
           var container = document.getElementById('export-products-table-container');
@@ -139,7 +134,7 @@ const UserMarketData = {
           html += '<th class="col-currency" style="text-align:center;">Currency</th>';
           html += '</tr></thead><tbody>';
           products.forEach(function(p, idx) {
-            html += '<tr style="background:#181c22; color:#fff; border-bottom:1px solid #23272e;" data-country-code="' + (p.country_code || '') + '">';
+            html += '<tr style="background:#181c22; color:#fff; border-bottom:1px solid #23272e;" data-country-code="' + (p.country_code || '') + '" data-country-name="' + (p.country_name || '') + '">';
             html += '<td class="col-checkbox" style="text-align:center;"><input type="checkbox" class="product-select-checkbox" data-product-code="' + p.product_code + '" style="transform:scale(1.2);" ' + (idx === 0 ? '' : '') + '></td>';
             html += '<td class="col-code" style="text-align:center;">' + p.product_code + '</td>';
             html += '<td>' + p.name + '</td>';
@@ -155,6 +150,22 @@ const UserMarketData = {
           html += '<div id="supplier-form-container"></div>';
           html += '<div id="supply-chain-table-container"></div>';
           container.innerHTML = html;
+
+          // Populate Export tab country dropdown from loaded products (use country name as label)
+          var countrySelect = document.getElementById('export-country-select');
+          if (countrySelect) {
+            var seenCountries = {};
+            countrySelect.innerHTML = '<option value="">All Countries</option>';
+            products.forEach(function(p) {
+              var label = (p.country_name || p.country_code || '').trim();
+              if (!label || seenCountries[label]) return;
+              seenCountries[label] = true;
+              var opt = document.createElement('option');
+              opt.value = label;
+              opt.textContent = label;
+              countrySelect.appendChild(opt);
+            });
+          }
 
                     // Add Supplier form logic
                     var addSupplierBtn = document.getElementById('add-supplier-btn');
@@ -326,25 +337,34 @@ const UserMarketData = {
             });
           });
 
-          // Search Product by name - live filter
+          // Combined filters: country, category, and name search
+          var categorySelect = document.getElementById('export-category-select');
           var searchInput = document.getElementById('export-product-search');
-          if (searchInput) {
-            searchInput.addEventListener('input', function() {
-              var term = this.value.toLowerCase();
-              var productsTable = container.querySelector('.products-table-wrapper table');
-              if (!productsTable) return;
-              var rows = productsTable.querySelectorAll('tbody tr');
-              rows.forEach(function(row) {
-                var nameCell = row.children[2]; // Name column
-                var nameText = nameCell ? nameCell.textContent.toLowerCase() : '';
-                if (!term || nameText.indexOf(term) !== -1) {
-                  row.style.display = '';
-                } else {
-                  row.style.display = 'none';
-                }
-              });
+          function applyExportFilters() {
+            var selectedCountry = countrySelect ? countrySelect.value : '';
+            var selectedCategory = categorySelect ? categorySelect.value : '';
+            var term = searchInput ? searchInput.value.toLowerCase() : '';
+            var productsTable = container.querySelector('.products-table-wrapper table');
+            if (!productsTable) return;
+            var rows = productsTable.querySelectorAll('tbody tr');
+            rows.forEach(function(row) {
+              var countryNameAttr = (row.getAttribute('data-country-name') || '').trim();
+              var typeCell = row.children[3]; // Type column
+              var typeText = typeCell ? typeCell.textContent.trim().toLowerCase() : '';
+              var nameCell = row.children[2]; // Name column
+              var nameText = nameCell ? nameCell.textContent.toLowerCase() : '';
+              var show = true;
+              if (selectedCountry && countryNameAttr !== selectedCountry) show = false;
+              if (selectedCategory && selectedCategory !== '') {
+                if (typeText !== selectedCategory.trim().toLowerCase()) show = false;
+              }
+              if (term && nameText.indexOf(term) === -1) show = false;
+              row.style.display = show ? '' : 'none';
             });
           }
+          if (countrySelect) countrySelect.addEventListener('change', applyExportFilters);
+          if (categorySelect) categorySelect.addEventListener('change', applyExportFilters);
+          if (searchInput) searchInput.addEventListener('input', applyExportFilters);
         })
         .catch(function() {
           var container = document.getElementById('export-products-table-container');
@@ -761,6 +781,33 @@ const UserMarketData = {
             html += '</tbody></table></div>';
             container.innerHTML = html;
 
+            // Add filter logic for country and category
+            var countrySelect = document.getElementById('export-country-select');
+            var categorySelect = document.getElementById('export-category-select');
+            function filterProducts() {
+              var selectedCountry = countrySelect ? countrySelect.value : '';
+              var selectedCategory = categorySelect ? categorySelect.value : '';
+              var productsTable = container.querySelector('.products-table-wrapper table');
+              if (!productsTable) return;
+              var rows = productsTable.querySelectorAll('tbody tr');
+              rows.forEach(function(row) {
+                var countryCode = row.getAttribute('data-country-code') || '';
+                var typeCell = row.children[3];
+                var typeText = typeCell ? typeCell.textContent.trim().toLowerCase() : '';
+                var show = true;
+                if (selectedCountry && countryCode !== selectedCountry) show = false;
+                if (selectedCategory && selectedCategory !== '') {
+                  if (selectedCategory === '') {
+                    show = true;
+                  } else {
+                    if (typeText !== selectedCategory.trim().toLowerCase()) show = false;
+                  }
+                }
+                row.style.display = show ? '' : 'none';
+              });
+            }
+            if (countrySelect) countrySelect.addEventListener('change', filterProducts);
+            if (categorySelect) categorySelect.addEventListener('change', filterProducts);
             // Add Save updated Prices and Search button container (flex for side-by-side buttons)
             var btnsContainer = document.createElement('div');
             btnsContainer.id = 'import-action-btns-container';
