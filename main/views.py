@@ -485,6 +485,7 @@ def products_api(request):
 			'country_code': p.country.country_code if p.country else '',
 			'trade_unit': p.trade_unit,
 			'fca_cost_per_wu': float(p.fca_cost_per_wu),
+			'updated_at': p.updated_at.isoformat() if hasattr(p, 'updated_at') and p.updated_at else '',
 			'packaging': p.packaging,
 			'currency': p.currency,
 		})

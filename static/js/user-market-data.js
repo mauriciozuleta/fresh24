@@ -760,11 +760,21 @@ const UserMarketData = {
             html += '<th>Country</th>';
             html += '<th class="col-trade-unit">Trade Unit</th>';
             html += '<th>Last Updated Price</th>';
-            html += '<th>Last Updated Date</th>';
+            html += '<th>Last update</th>';
             html += '<th>Enter New Price</th>';
             html += '</tr></thead><tbody>';
             products.forEach(function(p, idx) {
               var saved = savedMap[p.product_code] || {};
+              var lastPrice = (p.fca_cost_per_wu !== undefined && p.fca_cost_per_wu !== null) ? p.fca_cost_per_wu : '-';
+              var lastDate = '-';
+              if (p.updated_at) {
+                try {
+                  // Expect ISO string; take date part only
+                  lastDate = p.updated_at.split('T')[0];
+                } catch (e) {
+                  lastDate = p.updated_at;
+                }
+              }
               html += '<tr style="background:#181c22; color:#fff; border-bottom:1px solid #23272e;" data-country-code="' + (p.country_code || '') + '">';
               html += '<td class="col-checkbox" style="text-align:center;"><input type="checkbox" class="product-select-checkbox" data-product-code="' + p.product_code + '" style="transform:scale(1.2);"></td>';
               html += '<td class="col-code" style="text-align:center;">' + p.product_code + '</td>';
@@ -772,8 +782,8 @@ const UserMarketData = {
               html += '<td>' + p.product_type + '</td>';
               html += '<td>' + (p.country_name || '') + '</td>';
               html += '<td class="col-trade-unit" style="text-align:center;">' + p.trade_unit + '</td>';
-              html += '<td style="text-align:center;">' + (saved.last_updated_price !== undefined && saved.last_updated_price !== null ? saved.last_updated_price : '-') + '</td>';
-              html += '<td style="text-align:center;">' + (saved.last_updated_date ? saved.last_updated_date : '-') + '</td>';
+              html += '<td style="text-align:center;">' + lastPrice + '</td>';
+              html += '<td style="text-align:center;">' + lastDate + '</td>';
               var priceVal = enteredPrices[p.product_code] !== undefined ? enteredPrices[p.product_code] : '';
               html += '<td style="text-align:center;"><input type="number" class="form-control form-control-sm import-new-price" data-product-code="' + p.product_code + '" style="width:90px;" placeholder="$ value" value="' + priceVal + '" /></td>';
               html += '</tr>';
