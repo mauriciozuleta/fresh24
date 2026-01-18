@@ -1,5 +1,3 @@
-
-
 from django.urls import path
 from . import views
 from . import views_countries_api
@@ -56,4 +54,6 @@ urlpatterns = [
     path('api/supply-chain-details/', views.supply_chain_details_api, name='supply_chain_details_api'),
     path('edit-supplier/', __import__('main.views_edit_supplier_api').views_edit_supplier_api.edit_supplier, name='edit_supplier'),
     path('api/supplier-details/', views.supplier_details_api, name='supplier_details_api'),
+    path('api/countries-in-countryinfo/', views_countries_api.countries_in_countryinfo_api, name='countries_in_countryinfo_api'),
+    path('api/exchange-rate/', views.exchange_rate_api, name='exchange_rate_api'),
 ]

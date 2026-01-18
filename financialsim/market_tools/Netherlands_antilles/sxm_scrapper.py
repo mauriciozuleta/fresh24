@@ -149,6 +149,7 @@ def search_products(query, limit=20):
             "title": title  # Store actual product title for accurate searching
         })
 
+
     return results
 
 
@@ -160,17 +161,12 @@ if __name__ == "__main__":
     for item in items:
         description = item.get('weight')
         product_page_url = item.get('url')
-        
         # If no description in title (or empty string), get it from product page
         if (not description or not description.strip()):
-            # Use the URL from the initial search if available
             if not product_page_url and item.get('name'):
                 product_page_url = find_product_page_url(item['name'])
-            
-            # Then visit that page to extract description
             if product_page_url:
                 description = get_product_weight(product_page_url)
-        
         description = description or 'N/A'
         url = product_page_url or 'N/A'
         print(f"Name: {item['name']}, Price: {item['price']}, {description}, URL: {url}")

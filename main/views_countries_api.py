@@ -33,3 +33,22 @@ def countries_by_region_api(request):
         })
     
     return JsonResponse({'countries': data})
+
+def countries_in_branches_api(request):
+    # Implementation for countries_in_branches_api
+    pass
+
+def countries_in_countryinfo_api(request):
+    # Get unique country IDs from CountryInfo
+    country_ids = CountryInfo.objects.values_list('country', flat=True).distinct()
+    countries = Country.objects.filter(id__in=country_ids).order_by('name')
+    data = [
+        {
+            'name': c.name,
+            'code': c.country_code,
+            'country_code': c.country_code,
+            'id': c.id,
+        }
+        for c in countries
+    ]
+    return JsonResponse({'countries': data})

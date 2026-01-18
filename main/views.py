@@ -467,6 +467,7 @@ def add_airport(request):
 	return render(request, 'add_airport.html', {'form': form, 'airports': airports})
 from django.http import JsonResponse
 from .models import Product
+from financialsim.market_tools.exchange_rate import get_exchange_rate
 
 
 def products_api(request):
@@ -490,6 +491,24 @@ def products_api(request):
 			'currency': p.currency,
 		})
 	return JsonResponse({'products': data})
+
+
+def exchange_rate_api(request):
+	"""Return exchange rate between two currencies using exchange_rate utility.
+
+	Expected query params:
+	- from: source currency code (e.g. EUR)
+	- to: target currency code (e.g. USD), defaults to USD
+	"""
+	from_currency = request.GET.get('from') or request.GET.get('source')
+	to_currency = request.GET.get('to') or 'USD'
+	if not from_currency:
+		return JsonResponse({'error': 'Missing from currency'}, status=400)
+	try:
+		rate = get_exchange_rate(from_currency, to_currency)
+	except Exception as e:  # pragma: no cover - simple error passthrough
+		return JsonResponse({'error': str(e)}, status=500)
+	return JsonResponse({'rate': rate, 'from': from_currency.upper(), 'to': to_currency.upper()})
 
 def edit_product_form(request, product_code):
     product = get_object_or_404(Product, product_code=product_code)
