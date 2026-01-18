@@ -34,11 +34,116 @@ const UserMarketExport = {
           <button id="add-product-btn" class="primary-button" style="margin-left:1rem; height:2.5rem;">Add Product</button>
           <button id="edit-product-btn" class="primary-button" style="margin-left:1rem; height:2.5rem;">Edit Product</button>
         </div>
+        <div id="export-products-summary" style="margin-bottom:1.5rem;"></div>
         <div id="export-products-table-container">
           <!-- Table or export content will go here -->
         </div>
       </div>
     `;
+    // After rendering, fetch products and build table and country dropdown
+    setTimeout(function() {
+      var countrySelect = document.getElementById('export-country-select');
+      var container = document.getElementById('export-products-table-container');
+      fetch('/api/products/')
+        .then(function(response) { return response.json(); })
+        .then(function(data) {
+          if (!container) return;
+          if (!data.products || data.products.length === 0) {
+            container.innerHTML = '<div style="margin:2rem 0; text-align:center; color:#f44336;">No products found.</div>';
+            if (countrySelect) countrySelect.innerHTML = '<option value="">Select Country</option>';
+            return;
+          }
+          var products = data.products || [];
+          // Build summary
+          var summaryDiv = document.getElementById('export-products-summary');
+          if (summaryDiv) {
+            var total = products.length;
+            var byCountry = {};
+            var byCategory = {};
+            products.forEach(function(p) {
+              var country = p.country_name || p.country_code || 'Unknown';
+              var cat = (p.product_type || '').trim() || 'Unknown';
+              byCountry[country] = (byCountry[country] || 0) + 1;
+              byCategory[cat] = (byCategory[cat] || 0) + 1;
+            });
+            var countrySummary = Object.entries(byCountry).map(([name, count]) => `${count} from ${name}`).join(', ');
+            var categorySummary = Object.entries(byCategory).map(([cat, count]) => `${count} are ${cat}`).join(', ');
+            summaryDiv.innerHTML = `<div style="background:#23272e; color:#fff; border-radius:8px; padding:1rem 1.5rem; font-size:1rem;">
+              <b>${total}</b> products available<br>
+              ${countrySummary}<br>
+              ${categorySummary}
+            </div>`;
+          }
+          // Build country set from products
+          var countrySet = new Set();
+          var countryList = [];
+          products.forEach(function(p) {
+            var code = p.country_code || '';
+            var name = p.country_name || '';
+            // Use composite key to ensure uniqueness
+            var key = code + '||' + name;
+            if (!countrySet.has(key) && (code || name)) {
+              countrySet.add(key);
+              countryList.push({ code: code, name: name });
+            }
+          });
+          // Populate dropdown
+          if (countrySelect) {
+            countrySelect.innerHTML = '<option value="">Select Country</option>';
+            countryList.forEach(function(c) {
+              var opt = document.createElement('option');
+              // Prefer code for value, fallback to name
+              opt.value = c.code || c.name;
+              opt.textContent = c.name || c.code;
+              countrySelect.appendChild(opt);
+            });
+          }
+          // Build product table
+          var html = (window.UserMarketHelpers && UserMarketHelpers.buildProductsTable)
+            ? UserMarketHelpers.buildProductsTable(products)
+            : (window.UserMarketData && UserMarketData.buildProductsTable
+                ? UserMarketData.buildProductsTable(products)
+                : '');
+          html += '<div style="border-top:2px solid #0078d4; margin:1.5rem 0 0.5rem 0;"></div>';
+          html += '<div id="supplier-form-container"></div>';
+          html += '<div id="supply-chain-table-container"></div>';
+          container.innerHTML = html;
+
+          // Filtering logic
+          var filterProducts = function() {
+            var selectedCountry = countrySelect ? countrySelect.value : '';
+            var categorySelect = document.getElementById('export-category-select');
+            var selectedCategory = categorySelect ? categorySelect.value : '';
+            var searchInput = document.getElementById('export-product-search');
+            var term = searchInput ? searchInput.value.toLowerCase() : '';
+            var productsTable = container.querySelector('.products-table-wrapper table');
+            if (!productsTable) return;
+            var rows = productsTable.querySelectorAll('tbody tr');
+            rows.forEach(function(row) {
+              var countryCode = row.getAttribute('data-country-code') || '';
+              var countryName = row.getAttribute('data-country-name') || '';
+              var typeCell = row.children[3];
+              var typeText = typeCell ? typeCell.textContent.trim().toLowerCase() : '';
+              var nameCell = row.children[2];
+              var nameText = nameCell ? nameCell.textContent.toLowerCase() : '';
+              var show = true;
+              if (selectedCountry && countryCode !== selectedCountry && countryName !== selectedCountry) show = false;
+              if (selectedCategory && selectedCategory !== '' && typeText !== selectedCategory.trim().toLowerCase()) show = false;
+              if (term && nameText.indexOf(term) === -1) show = false;
+              row.style.display = show ? '' : 'none';
+            });
+          };
+          if (countrySelect) countrySelect.addEventListener('change', filterProducts);
+          var categorySelect = document.getElementById('export-category-select');
+          if (categorySelect) categorySelect.addEventListener('change', filterProducts);
+          var searchInput = document.getElementById('export-product-search');
+          if (searchInput) searchInput.addEventListener('input', filterProducts);
+        })
+        .catch(function() {
+          if (container) container.innerHTML = '<div style="margin:2rem 0; text-align:center; color:#f44336;">Failed to load products.</div>';
+          if (countrySelect) countrySelect.innerHTML = '<option value="">Select Country</option>';
+        });
+    }, 10);
     // Add event listener to open Add Product tab and fetch products
     setTimeout(function() {
       var btn = document.getElementById('add-product-btn');
@@ -111,7 +216,11 @@ const UserMarketExport = {
             return;
           }
           var products = data.products || [];
-          var html = UserMarketData.buildProductsTable(products);
+          var html = (window.UserMarketHelpers && UserMarketHelpers.buildProductsTable)
+            ? UserMarketHelpers.buildProductsTable(products)
+            : (window.UserMarketData && UserMarketData.buildProductsTable
+                ? UserMarketData.buildProductsTable(products)
+                : '');
           html += '<div style="border-top:2px solid #0078d4; margin:1.5rem 0 0.5rem 0;"></div>';
           html += '<div id="supplier-form-container"></div>';
           html += '<div id="supply-chain-table-container"></div>';
@@ -150,7 +259,11 @@ const UserMarketExport = {
                   } else {
                     airportOptions += '<option value="">No airports found</option>';
                   }
-                  var formHtml = UserMarketData.buildAddSupplierForm(productName, country, airportOptions);
+                  var formHtml = (window.UserMarketHelpers && UserMarketHelpers.buildAddSupplierForm)
+                    ? UserMarketHelpers.buildAddSupplierForm(productName, country, airportOptions)
+                    : (window.UserMarketData && UserMarketData.buildAddSupplierForm
+                        ? UserMarketData.buildAddSupplierForm(productName, country, airportOptions)
+                        : '');
                   var formContainer = document.getElementById('supplier-form-container');
                   if (formContainer) formContainer.innerHTML = formHtml;
                   // Attach submit handler
@@ -295,7 +408,12 @@ const UserMarketExport = {
           scHtml += '<div style="color:#f44336;">No supply chain data found for the selected product.</div>';
         } else {
           var row = sc[0];
-          scHtml += UserMarketData.buildSupplyChainTableHTML(row);
+          var tableHtml = (window.UserMarketHelpers && UserMarketHelpers.buildSupplyChainTableHTML)
+            ? UserMarketHelpers.buildSupplyChainTableHTML(row)
+            : (window.UserMarketData && UserMarketData.buildSupplyChainTableHTML
+                ? UserMarketData.buildSupplyChainTableHTML(row)
+                : '');
+          scHtml += tableHtml;
         }
         scHtml += '</div>';
         scContainer.innerHTML = scHtml;
@@ -349,7 +467,11 @@ const UserMarketExport = {
                       } else {
                         airportOptions += '<option value="">No airports found</option>';
                       }
-                      var formHtml = UserMarketData.buildEditSupplierForm(supplier, airportOptions);
+                      var formHtml = (window.UserMarketHelpers && UserMarketHelpers.buildEditSupplierForm)
+                        ? UserMarketHelpers.buildEditSupplierForm(supplier, airportOptions)
+                        : (window.UserMarketData && UserMarketData.buildEditSupplierForm
+                            ? UserMarketData.buildEditSupplierForm(supplier, airportOptions)
+                            : '');
                       formContainer.innerHTML = formHtml;
                       var form = document.getElementById('supplier-form');
                       if (form) {

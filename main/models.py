@@ -245,3 +245,32 @@ class MarketDB(models.Model):
 		return f"{self.country_island} - {self.supermarket}"
 
 
+class ProductDiagnosis(models.Model):
+	"""Stores per-product market diagnosis results for a specific country."""
+
+	country_of_diagnosis = models.CharField(max_length=100)
+	product_code = models.CharField(max_length=32)
+	db_name = models.CharField(max_length=128)
+	product_type = models.CharField(max_length=32, blank=True, null=True)
+	trade_unit = models.CharField(max_length=16, blank=True, null=True)
+	cost = models.DecimalField(max_digits=14, decimal_places=2, blank=True, null=True)
+	currency = models.CharField(max_length=8, blank=True, null=True)
+
+	supermarket_name = models.CharField(max_length=128, blank=True, null=True)
+	local_cost = models.DecimalField(max_digits=14, decimal_places=2, blank=True, null=True)
+	price_margin = models.DecimalField(max_digits=7, decimal_places=2, blank=True, null=True)
+
+	# 0 = no close match, 1 = found in 1 supermarket, 2 = found in 2 supermarkets
+	availability = models.PositiveSmallIntegerField(default=0)
+
+	updated = models.DateTimeField(auto_now=True)
+
+	class Meta:
+		indexes = [
+			models.Index(fields=["country_of_diagnosis", "product_code"]),
+		]
+
+	def __str__(self) -> str:
+		return f"{self.product_code} - {self.country_of_diagnosis} ({self.supermarket_name or 'no match'})"
+
+
