@@ -241,8 +241,8 @@ const UserMarketImport = {
       return;
     }
 
-    var html = '<div class="products-table-wrapper">';
-    html += '<table class="products-table" id="products-table" style="width:100%; border-collapse:collapse; margin-top:1rem;">';
+    var html = '<div class="products-table-wrapper" style="overflow-x:auto; width:100%;">';
+    html += '<table class="products-table" id="products-table" style="min-width:1200px; width:100%; border-collapse:collapse; margin-top:1rem;">';
     html += '<thead style="position:sticky;top:0;z-index:2;background:#222;">';
     html += '<tr>';
     html += '<th style="width:32px;background:#222;color:#fff;"> </th>';
@@ -250,7 +250,13 @@ const UserMarketImport = {
     html += '<th style="background:#222;color:#fff;">Name</th>';
     html += '<th style="background:#222;color:#fff;">Origin</th>';
     html += '<th class="col-trade-unit" style="background:#222;color:#fff;">Trade Unit</th>';
+    // Removed DB Name and Cost columns as requested
+    html += '<th style="background:#222;color:#fff;">Currency</th>';
     html += '<th style="position:sticky;top:0;z-index:3;background:#222;color:#fff;">FOB Price (USD)</th>';
+    html += '<th style="background:#222;color:#fff; min-width:180px;">Supermarket</th>';
+    html += '<th style="background:#222;color:#fff;">Local Cost</th>';
+    html += '<th style="background:#222;color:#fff;">Price Margin</th>';
+    html += '<th style="background:#222;color:#fff;">Availability</th>';
     html += '<th style="background:#222;color:#fff;">Updated</th>';
     html += '<th style="background:#222;color:#fff;">Price to Compare</th>';
     html += '</tr></thead><tbody>';
@@ -262,7 +268,7 @@ const UserMarketImport = {
       html += '<td>' + (product.name || '') + '</td>';
       html += '<td>' + (product.country_name || product.country_code || '') + '</td>';
       html += '<td class="col-trade-unit">' + (product.trade_unit || '') + '</td>';
-
+      html += '<td>' + (product.currency || '') + '</td>';
       // FOB Price: always display in USD
       var fca = (product.fca_cost_per_wu !== undefined && product.fca_cost_per_wu !== null)
         ? product.fca_cost_per_wu
@@ -279,7 +285,10 @@ const UserMarketImport = {
         }
       }
       html += '<td>' + (fcaUSD || '') + '</td>';
-
+      html += '<td style="min-width:180px;">' + (product.supermarket_name || '') + '</td>';
+      html += '<td>' + (product.local_cost !== undefined && product.local_cost !== null ? product.local_cost : '') + '</td>';
+      html += '<td>' + (product.price_margin !== undefined && product.price_margin !== null ? product.price_margin : '') + '</td>';
+      html += '<td>' + (product.availability !== undefined && product.availability !== null ? product.availability : '') + '</td>';
       html += '<td><span id="updated-' + product.id + '">' + (product.updated_date || '-') + '</span></td>';
       html += '<td>';
       html +=   '<input type="text" class="form-control form-control-sm" placeholder="$ value" style="width:80px;" id="input-' + product.id + '" value="' + (product.price_to_compare || '') + '" />';
