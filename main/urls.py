@@ -45,6 +45,7 @@ urlpatterns = [
     path('delete-airport/<int:pk>/', views.delete_airport, name='delete_airport'),
     path('delete-aircraft/<int:pk>/', views.delete_aircraft, name='delete_aircraft'),
     path('api/products/', views.products_api, name='products_api'),
+    path('api/run-market-diagnosis/', views.run_market_diagnosis_api, name='run_market_diagnosis_api'),
     path('add-product-form/', views.add_product_form, name='add_product_form'),
     path('add-product/', views.add_product, name='add_product'),
     path('edit-product-form/<str:product_code>/', views.edit_product_form, name='edit_product_form'),
@@ -57,4 +58,6 @@ urlpatterns = [
     path('api/countries-in-countryinfo/', views_countries_api.countries_in_countryinfo_api, name='countries_in_countryinfo_api'),
     path('api/exchange-rate/', views.exchange_rate_api, name='exchange_rate_api'),
     path('api/country-has-retail-scraper/', views.country_has_retail_scraper_api, name='country_has_retail_scraper_api'),
+    path('api/available-supermarkets/', views.available_supermarkets_api, name='available_supermarkets_api'),
+    path('api/scrape-supermarket/', views.scrape_supermarket_api, name='scrape_supermarket_api'),
 ]

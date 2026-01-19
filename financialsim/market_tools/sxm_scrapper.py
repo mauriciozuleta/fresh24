@@ -103,53 +103,52 @@ def get_product_weight(product_url):
     return None
 
 
-def search_products(query, limit=20):
-    url = SEARCH_URL.format(query=query.replace(" ", "+"))
-
+def search_products(query, limit=100):
+    """Scrape all pages for a query, collecting products until no more are found."""
+    results = []
+    page_num = 1
+    collected = 0
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
-        page = browser.new_page()
-
-        page.goto(url, timeout=30000)
-        page.wait_for_load_state("networkidle")
-
-        html = page.content()
+        while True:
+            url = SEARCH_URL.format(query=query.replace(" ", "+")) + f"&page={page_num}"
+            print(f"DEBUG: Scraping {url}")
+            page = browser.new_page()
+            page.goto(url, timeout=30000)
+            page.wait_for_load_state("networkidle")
+            html = page.content()
+            page.close()
+            soup = BeautifulSoup(html, "html.parser")
+            products = soup.select(PRODUCT_SELECTOR)
+            if not products:
+                break
+            for product in products:
+                if limit is not None and collected >= limit:
+                    browser.close()
+                    return results
+                title_el = product.select_one(TITLE_SELECTOR)
+                price_el = product.select_one(PRICE_SELECTOR)
+                img_el = product.select_one(IMAGE_SELECTOR)
+                title = title_el.text.strip() if title_el else "Unknown"
+                price = price_el.text.strip() if price_el else "N/A"
+                product_url = title_el["href"] if title_el and title_el.has_attr("href") else None
+                image = img_el["src"] if img_el else None
+                jpg_name = None
+                if image:
+                    match = re.search(r"/([^/]+)\.jpg", image)
+                    if match:
+                        jpg_name = match.group(1)
+                weight = extract_weight(title) if title else None
+                results.append({
+                    "name": jpg_name,
+                    "price": price,
+                    "weight": weight,
+                    "url": product_url,
+                    "title": title
+                })
+                collected += 1
+            page_num += 1
         browser.close()
-
-    soup = BeautifulSoup(html, "html.parser")
-    products = soup.select(PRODUCT_SELECTOR)
-
-    results = []
-
-    for product in products[:limit]:
-        title_el = product.select_one(TITLE_SELECTOR)
-        price_el = product.select_one(PRICE_SELECTOR)
-        img_el = product.select_one(IMAGE_SELECTOR)
-
-        title = title_el.text.strip() if title_el else "Unknown"
-        price = price_el.text.strip() if price_el else "N/A"
-        product_url = title_el["href"] if title_el and title_el.has_attr("href") else None
-        image = img_el["src"] if img_el else None
-
-        # Extract the .jpg name without extension from the image URL
-        jpg_name = None
-        if image:
-            match = re.search(r"/([^/]+)\.jpg", image)
-            if match:
-                jpg_name = match.group(1)
-
-        # Extract weight from the title first
-        weight = extract_weight(title) if title else None
-
-        results.append({
-            "name": jpg_name,
-            "price": price,
-            "weight": weight,
-            "url": product_url,
-            "title": title  # Store actual product title for accurate searching
-        })
-
-
     return results
 
 
@@ -158,6 +157,10 @@ if __name__ == "__main__":
     items = search_products(query)
 
     print("\n=== RESULTS ===")
+
+    import csv
+    import os
+    csv_rows = []
     for item in items:
         description = item.get('weight')
         product_page_url = item.get('url')
@@ -170,3 +173,24 @@ if __name__ == "__main__":
         description = description or 'N/A'
         url = product_page_url or 'N/A'
         print(f"Name: {item['name']}, Price: {item['price']}, {description}, URL: {url}")
+        csv_rows.append({
+            'Name': item.get('name', ''),
+            'Price': item.get('price', ''),
+            'Description': description,
+            'URL': url
+        })
+
+    # Save to CSV in the same folder
+    if items:
+        from datetime import datetime
+        date_str = datetime.now().strftime('%m-%d-%Y')
+        scraper_name = os.path.splitext(os.path.basename(__file__))[0]
+        csv_filename = os.path.join(
+            os.path.dirname(__file__),
+            f"{scraper_name}_{query}_{date_str}.csv"
+        )
+        with open(csv_filename, 'w', newline='', encoding='utf-8') as csvfile:
+            writer = csv.DictWriter(csvfile, fieldnames=['Name', 'Price', 'Description', 'URL'])
+            writer.writeheader()
+            writer.writerows(csv_rows)
+        print(f"\nResults also saved to {csv_filename}")

@@ -25,17 +25,12 @@ const UserMarketImport = {
           </div>
           <div style="flex:1; min-width:220px;">
             <label for="import-product-filter" style="display:block; margin-bottom:0.5rem;">Filter</label>
-            <div style="display:flex; align-items:center; gap:0.5rem; position:relative;">
-              <input type="text" id="import-product-filter" class="aircraft-form-control" placeholder="Type to filter products..." style="width:180px; min-width:150px; background:transparent; border:2px solid #2196f3; border-radius:4px; color:#fff; font-size:0.98em; padding:0.25rem 0.5rem; box-shadow:none; outline:none; z-index:2; position:relative; pointer-events:auto;" autocomplete="off" />
-              <button id="retail-price-finder-btn" class="btn btn-secondary" style="background:transparent;color:#2196f3;padding:0.3rem 0.7rem;border:2px solid #2196f3;border-radius:4px;font-size:0.95em;box-shadow:none; z-index:1; position:relative;">retail price finder available</button>
-            </div>
+            <input type="text" id="import-product-filter" class="aircraft-form-control" placeholder="Type to filter products..." style="width:180px; min-width:150px; background:transparent; border:2px solid #2196f3; border-radius:4px; color:#fff; font-size:0.98em; padding:0.25rem 0.5rem; box-shadow:none; outline:none; z-index:2; position:relative; pointer-events:auto;" autocomplete="off" />
           </div>
         </div>
         <div style="display:flex; align-items:center; gap:1rem; margin-bottom:1rem;">
           <span id="import-exchange-label" style="color:#aaa; font-size:0.95em;"></span>
           <span id="import-exchange-rate" style="color:#aaa; font-size:0.95em;"></span>
-        </div>
-          </div>
         </div>
         <div id="import-products-table-container"></div>
         <div id="import-search-btn-container" style="margin:1.5rem 0 0 0; text-align:center;"></div>
@@ -65,77 +60,21 @@ const UserMarketImport = {
         var filterInput = document.getElementById('import-product-filter');
         var exchangeLabelSpan = document.getElementById('import-exchange-label');
 
-        function updateRetailButton() {
-          var btn = document.getElementById('retail-price-finder-btn');
-          if (!btn) return;
-
-          var code = countrySelect.value || '';
-          if (!code) {
-            btn.disabled = true;
-            btn.style.color = '#f44336';
-            btn.style.borderColor = '#f44336';
-            btn.textContent = 'retail price finder not available';
-            btn.style.cursor = 'not-allowed';
-            return;
-          }
-
-          fetch('/api/country-has-retail-scraper/?country=' + encodeURIComponent(code))
-            .then(function(resp) { return resp.json(); })
-            .then(function(data) {
-              var hasScraper = data && data.has_scraper;
-              if (hasScraper) {
-                btn.disabled = false;
-                btn.style.color = '#28a745';
-                btn.style.borderColor = '#28a745';
-                btn.textContent = 'retail price finder available';
-                btn.style.cursor = 'pointer';
-              } else {
-                btn.disabled = true;
-                btn.style.color = '#f44336';
-                btn.style.borderColor = '#f44336';
-                btn.textContent = 'retail price finder not available';
-                btn.style.cursor = 'not-allowed';
-              }
-            })
-            .catch(function() {
-              // On error, treat as not available
-              btn.disabled = true;
-              btn.style.color = '#f44336';
-              btn.style.borderColor = '#f44336';
-              btn.textContent = 'retail price finder not available';
-              btn.style.cursor = 'not-allowed';
-            });
-        }
-
         function filterTable() {
-          // Always pass a string for filterText
           UserMarketImport.renderProductsTable(
             countrySelect.value,
             categorySelect.value,
             (typeof filterInput.value === 'string' ? filterInput.value : '')
           );
-          // Show label even if no conversion is needed
-          var countryName = '';
-          if (countrySelect && countrySelect.selectedIndex > 0) {
-            countryName = countrySelect.options[countrySelect.selectedIndex].text;
-          }
-          if (exchangeLabelSpan) {
-            exchangeLabelSpan.textContent = countryName ? ('Products from "' + countryName + '" converted at:') : '';
-            exchangeLabelSpan.style.display = countryName ? '' : 'none';
-          }
         }
-        countrySelect.addEventListener('change', function() {
-          filterTable();
-          updateRetailButton();
-        });
+        countrySelect.addEventListener('change', filterTable);
         categorySelect.addEventListener('change', filterTable);
         filterInput.addEventListener('input', function(e) {
-          // Do not blur or reset input, just filter
           filterTable();
         });
+
         // Initial table render
         filterTable();
-        updateRetailButton();
       });
   },
 
@@ -266,115 +205,22 @@ const UserMarketImport = {
       html += '<td><input type="checkbox" class="import-product-checkbox" data-row-idx="' + idx + '" /></td>';
       html += '<td class="col-code">' + (product.product_code || '') + '</td>';
       html += '<td>' + (product.name || '') + '</td>';
-      html += '<td>' + (product.country_name || product.country_code || '') + '</td>';
-      html += '<td class="col-trade-unit">' + (product.trade_unit || '') + '</td>';
+      html += '<td>' + (product.country_name || '') + '</td>';
+      html += '<td>' + (product.trade_unit || '') + '</td>';
       html += '<td>' + (product.currency || '') + '</td>';
-      // FOB Price: always display in USD
-      var fca = (product.fca_cost_per_wu !== undefined && product.fca_cost_per_wu !== null)
-        ? product.fca_cost_per_wu
-        : '';
-      var fcaUSD = '';
-      if (fca) {
-        var numericFca = parseFloat(fca);
-        if (!isNaN(numericFca)) {
-          if (product.currency && product.currency.toUpperCase() !== 'USD' && exchangeRate) {
-            fcaUSD = (numericFca * exchangeRate).toFixed(2) + ' USD';
-          } else {
-            fcaUSD = numericFca.toFixed(2) + ' USD';
-          }
-        }
-      }
-      html += '<td>' + (fcaUSD || '') + '</td>';
-      html += '<td style="min-width:180px;">' + (product.supermarket_name || '') + '</td>';
-      html += '<td>' + (product.local_cost !== undefined && product.local_cost !== null ? product.local_cost : '') + '</td>';
-      html += '<td>' + (product.price_margin !== undefined && product.price_margin !== null ? product.price_margin : '') + '</td>';
-      html += '<td>' + (product.availability !== undefined && product.availability !== null ? product.availability : '') + '</td>';
-      html += '<td><span id="updated-' + product.id + '">' + (product.updated_date || '-') + '</span></td>';
-      html += '<td>';
-      html +=   '<input type="text" class="form-control form-control-sm" placeholder="$ value" style="width:80px;" id="input-' + product.id + '" value="' + (product.price_to_compare || '') + '" />';
-      html += '</td>';
+      html += '<td>' + (typeof product.fca_cost_per_wu === 'number' ? product.fca_cost_per_wu.toFixed(2) : (product.fca_cost_per_wu || '')) + '</td>';
+      html += '<td>' + (product.supermarket_name || '') + '</td>';
+      html += '<td>' + (typeof product.local_cost === 'number' ? product.local_cost.toFixed(2) : (product.local_cost || '')) + '</td>';
+      html += '<td>' + (typeof product.price_margin === 'number' ? product.price_margin.toFixed(2) : (product.price_margin || '')) + '</td>';
+      html += '<td>' + (product.availability || '') + '</td>';
+      html += '<td>' + (product.updated_date || product.updated_at || '') + '</td>';
+      html += '<td>' + (product.price_to_compare || '') + '</td>';
       html += '</tr>';
     });
-
     html += '</tbody></table></div>';
     container.innerHTML = html;
-
-    // Only allow one checkbox to be selected at a time
-    var checkboxes = container.querySelectorAll('.import-product-checkbox');
-
-    function updateButton() {
-      var selectedIdx = -1;
-      checkboxes.forEach(function(cb, i) { if (cb.checked) selectedIdx = i; });
-      if (selectedIdx >= 0) {
-        var selectedProduct = products[selectedIdx];
-        var countrySelect = document.getElementById('import-country-select');
-        var countryName = countrySelect && countrySelect.options[countrySelect.selectedIndex]
-          ? countrySelect.options[countrySelect.selectedIndex].text
-          : '';
-        if (btnContainer) {
-          btnContainer.innerHTML = '<button class="btn btn-primary aircraft-btn" id="import-search-btn" style="padding: 0.5rem 1.5rem; font-size: 1rem; border-radius: 6px; background: #2196f3; color: #fff; border: none; box-shadow: 0 2px 6px rgba(33,150,243,0.08); transition: background 0.2s;">Search for ' + (selectedProduct.name || '') + ' in ' + countryName + '</button>';
-        }
-
-        // Add click handler for the button
-        setTimeout(function() {
-          var btn = document.getElementById('import-search-btn');
-          if (btn) {
-            btn.onclick = function(e) {
-              if (!countrySelect || !countrySelect.value) {
-                alert('Please select a country first.');
-                e.preventDefault();
-                return false;
-              }
-              // Build search query and update iframe
-              var query = (selectedProduct.name || '') + ' price in ' + countryName;
-              var iframe = document.getElementById('search-iframe');
-              var iframeContainer = document.getElementById('import-iframe-container');
-              if (iframe && iframeContainer) {
-                var url = 'https://www.bing.com/search?q=' + encodeURIComponent(query);
-                iframe.src = url;
-                iframeContainer.style.display = '';
-              }
-            };
-          }
-        }, 0);
-      } else if (btnContainer) {
-        btnContainer.innerHTML = '';
-      }
-    }
-
-    checkboxes.forEach(function(checkbox) {
-      checkbox.addEventListener('change', function(e) {
-        var countrySelect = document.getElementById('import-country-select');
-        if (this.checked && (!countrySelect || !countrySelect.value)) {
-          alert('Please select a country first.');
-          this.checked = false;
-          e.preventDefault();
-          return;
-        }
-        if (this.checked) {
-          checkboxes.forEach(function(cb) {
-            if (cb !== checkbox) cb.checked = false;
-          });
-        }
-        updateButton();
-      });
-    });
-
-    // Initial state
-    updateButton();
-  },
-
-  combinedSearch: function(productId, productName, country) {
-    var prompt = productName + ' price in ' + country + ' supermarket USD';
-    var bingUrl = 'https://www.bing.com/search?q=' + encodeURIComponent(prompt);
-    document.getElementById('search-iframe').src = bingUrl;
-    // Optionally, trigger AI search logic here
   }
 };
-
-if (typeof module !== 'undefined' && module.exports) {
-  module.exports = UserMarketImport;
-}
 if (typeof window !== 'undefined') {
   window.UserMarketImport = UserMarketImport;
 }

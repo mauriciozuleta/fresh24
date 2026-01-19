@@ -1,5 +1,71 @@
-# --- API endpoint to get saved price comparison data for a country ---
 from django.views.decorators.http import require_GET
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
+import importlib
+@require_GET
+def available_supermarkets_api(request):
+	"""Return a list of available supermarkets (display name and module name) for a given country code."""
+	country_code = request.GET.get('country_code') or request.GET.get('country')
+	if not country_code:
+		return JsonResponse({'supermarkets': []})
+	try:
+		country = Country.objects.get(country_code=country_code)
+	except Country.DoesNotExist:
+		return JsonResponse({'supermarkets': []})
+	from financialsim.market_tools.market_diagnosis import _get_country_scrapers
+	scrapers = _get_country_scrapers(country)
+	# Each scraper: (display_name, function)
+	supermarkets = []
+	for display_name, func in scrapers:
+		module_name = func.__module__.split('.')[-1]
+		supermarkets.append({'display_name': display_name, 'module_name': module_name})
+	return JsonResponse({'supermarkets': supermarkets})
+
+
+@csrf_exempt
+@require_POST
+def scrape_supermarket_api(request):
+	"""Trigger a full-category scrape for a selected supermarket and category (query)."""
+	import json
+	data = json.loads(request.body.decode('utf-8'))
+	country_code = data.get('country_code')
+	module_name = data.get('module_name')
+	query = data.get('query')
+	if not (country_code and module_name and query):
+		return JsonResponse({'error': 'Missing required fields'}, status=400)
+	try:
+		country = Country.objects.get(country_code=country_code)
+	except Country.DoesNotExist:
+		return JsonResponse({'error': 'Invalid country code'}, status=400)
+	# Find the scraper function by module name
+	from financialsim.market_tools.market_diagnosis import _get_country_scrapers
+	scrapers = _get_country_scrapers(country)
+	scraper_func = None
+	display_name = None
+	for dname, func in scrapers:
+		if func.__module__.split('.')[-1] == module_name:
+			scraper_func = func
+			display_name = dname
+			break
+	if not scraper_func:
+		return JsonResponse({'error': 'Scraper not found for this country'}, status=404)
+	# Run the scraper for the query/category
+	try:
+		results = scraper_func(query, 1000)  # Large limit to get all pages
+	except Exception as exc:
+		return JsonResponse({'error': f'Scraper failed: {exc}'}, status=500)
+	# Only return the most relevant fields
+	rows = []
+	for item in results:
+		rows.append({
+			'name': item.get('name', ''),
+			'price': item.get('price', ''),
+			'description': item.get('description', item.get('weight', '')),
+			'url': item.get('url', ''),
+		})
+	return JsonResponse({'supermarket': display_name, 'query': query, 'results': rows})
+from django.views.decorators.http import require_GET
+# --- API endpoint to get saved price comparison data for a country ---
 @require_GET
 def get_saved_price_comparison_api(request):
 	country_code = request.GET.get('country_code')
@@ -468,19 +534,56 @@ def add_airport(request):
 from django.http import JsonResponse
 from django.conf import settings
 from pathlib import Path
-from .models import Product, Country, BranchInfo, Airport
+from .models import Product, Country, BranchInfo, Airport, ProductDiagnosis
 from financialsim.market_tools.exchange_rate import get_exchange_rate
+from financialsim.market_tools.market_diagnosis import (
+	run_market_diagnosis_for_country,
+	start_market_diagnosis_job,
+	is_market_diagnosis_running,
+)
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def products_api(request):
+	"""Return imported products plus any existing market diagnosis data.
+
+	The "country" (or country_code) parameter selects the country of diagnosis:
+	- Products from that country are excluded (only imports).
+	- If ProductDiagnosis rows exist for that country name + product_code,
+	  their fields are attached to the JSON so the Import tab can show
+	  supermarket, local cost, price margin, availability, and updated date.
+	"""
+
 	country_code = request.GET.get('country_code') or request.GET.get('country')
+	country = None
+	if country_code:
+		try:
+			country = Country.objects.get(country_code=country_code)
+		except Country.DoesNotExist:
+			country = None
+
 	qs = Product.objects.select_related('country').all()
 	if country_code:
 		qs = qs.exclude(country__country_code=country_code)
-	products = qs.order_by('product_code')
+	products = list(qs.order_by('product_code'))
+
+	# Pre-load any existing diagnosis rows for this country + product set
+	diagnosis_map = {}
+	if country and products:
+		codes = [p.product_code for p in products]
+		diag_qs = ProductDiagnosis.objects.filter(
+			country_of_diagnosis=country.name,
+			product_code__in=codes,
+		)
+		diagnosis_map = {d.product_code: d for d in diag_qs}
+
 	data = []
 	for p in products:
+		diag = diagnosis_map.get(p.product_code)
 		data.append({
+			'product_id': p.id,
 			'product_code': p.product_code,
 			'product_type': p.product_type,
 			'name': p.name,
@@ -491,6 +594,12 @@ def products_api(request):
 			'updated_at': p.updated_at.isoformat() if hasattr(p, 'updated_at') and p.updated_at else '',
 			'packaging': p.packaging,
 			'currency': p.currency,
+			# Diagnosis fields
+			'supermarket_name': diag.supermarket_name if diag else None,
+			'local_cost': float(diag.local_cost) if diag and diag.local_cost is not None else None,
+			'price_margin': float(diag.price_margin) if diag and diag.price_margin is not None else None,
+			'availability': diag.availability if diag else 0,
+			'updated_date': diag.updated.isoformat() if diag and diag.updated else '',
 		})
 	return JsonResponse({'products': data})
 
@@ -559,6 +668,74 @@ def country_has_retail_scraper_api(request):
 
 	has_scraper = any((code or '').upper() in codes_with_scrapers for code in airport_codes)
 	return JsonResponse({'has_scraper': bool(has_scraper)})
+
+
+def run_market_diagnosis_api(request):
+	"""Trigger market diagnosis for all imported products into a given country.
+
+	Used by the Import tab's "retail price finder" button. It will:
+	- Resolve the country based on ?country= or ?country_code=.
+	- Run run_market_diagnosis_for_country(country), which uses scrapers
+	  and OpenAI (when configured) to populate ProductDiagnosis.
+	- Return a JSON summary with the number of products processed.
+	"""
+
+	if request.method not in ('GET', 'POST'):
+		return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+	country_code = (
+		request.GET.get('country')
+		or request.GET.get('country_code')
+		or request.POST.get('country')
+		or request.POST.get('country_code')
+	)
+	if not country_code:
+		return JsonResponse({'error': 'Missing country code'}, status=400)
+
+	try:
+		country = Country.objects.get(country_code=country_code)
+	except Country.DoesNotExist:
+		return JsonResponse({'error': 'Invalid country code'}, status=400)
+
+	try:
+		# If a job is already running for this country, just report status.
+		if is_market_diagnosis_running(country):
+			# Fall through to status computation below
+			processed = None
+		else:
+			started = start_market_diagnosis_job(country)
+			if started:
+				processed = 0
+			else:
+				processed = None
+	except Exception as exc:  # pragma: no cover - runtime/scraper/OpenAI failures
+		logger.exception("Market diagnosis failed for country %s: %s", country.name, exc)
+		return JsonResponse({'error': 'Market diagnosis failed'}, status=500)
+
+	# Compute simple summary stats for status indicator in the UI
+	imports_qs = Product.objects.exclude(country=country)
+	total_products = imports_qs.count()
+	product_codes = list(imports_qs.values_list('product_code', flat=True))
+	if product_codes:
+		matched_products = ProductDiagnosis.objects.filter(
+			country_of_diagnosis=country.name,
+			product_code__in=product_codes,
+			availability__gt=0,
+		).count()
+	else:
+		matched_products = 0
+
+	is_running = is_market_diagnosis_running(country)
+
+	return JsonResponse({
+		'ok': True,
+		'country_code': country.country_code,
+		'country_name': country.name,
+		'processed_count': processed,
+		'total_products': total_products,
+		'matched_products': matched_products,
+		'is_running': is_running,
+	})
 
 def edit_product_form(request, product_code):
     product = get_object_or_404(Product, product_code=product_code)
