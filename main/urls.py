@@ -56,4 +56,5 @@ urlpatterns = [
     path('api/supplier-details/', views.supplier_details_api, name='supplier_details_api'),
     path('api/countries-in-countryinfo/', views_countries_api.countries_in_countryinfo_api, name='countries_in_countryinfo_api'),
     path('api/exchange-rate/', views.exchange_rate_api, name='exchange_rate_api'),
+    path('api/country-has-retail-scraper/', views.country_has_retail_scraper_api, name='country_has_retail_scraper_api'),
 ]

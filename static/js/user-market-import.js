@@ -23,12 +23,18 @@ const UserMarketImport = {
               <option value="Other">Other</option>
             </select>
           </div>
-          <div style="flex:1; min-width:200px;">
+          <div style="flex:1; min-width:220px;">
             <label for="import-product-filter" style="display:block; margin-bottom:0.5rem;">Filter</label>
-            <div style="display:flex; align-items:center; gap:1rem;">
-              <input type="text" id="import-product-filter" class="aircraft-form-control" placeholder="Type to filter products..." style="width:100%; min-width:180px;" />
-              <span id="import-exchange-rate" style="color:#aaa; font-size:0.95em;"></span>
+            <div style="display:flex; align-items:center; gap:0.5rem; position:relative;">
+              <input type="text" id="import-product-filter" class="aircraft-form-control" placeholder="Type to filter products..." style="width:180px; min-width:150px; background:transparent; border:2px solid #2196f3; border-radius:4px; color:#fff; font-size:0.98em; padding:0.25rem 0.5rem; box-shadow:none; outline:none; z-index:2; position:relative; pointer-events:auto;" autocomplete="off" />
+              <button id="retail-price-finder-btn" class="btn btn-secondary" style="background:transparent;color:#2196f3;padding:0.3rem 0.7rem;border:2px solid #2196f3;border-radius:4px;font-size:0.95em;box-shadow:none; z-index:1; position:relative;">retail price finder available</button>
             </div>
+          </div>
+        </div>
+        <div style="display:flex; align-items:center; gap:1rem; margin-bottom:1rem;">
+          <span id="import-exchange-label" style="color:#aaa; font-size:0.95em;"></span>
+          <span id="import-exchange-rate" style="color:#aaa; font-size:0.95em;"></span>
+        </div>
           </div>
         </div>
         <div id="import-products-table-container"></div>
@@ -57,14 +63,79 @@ const UserMarketImport = {
         }
         var categorySelect = document.getElementById('import-category-select');
         var filterInput = document.getElementById('import-product-filter');
-        function filterTable() {
-          UserMarketImport.renderProductsTable(countrySelect.value, categorySelect.value, filterInput.value);
+        var exchangeLabelSpan = document.getElementById('import-exchange-label');
+
+        function updateRetailButton() {
+          var btn = document.getElementById('retail-price-finder-btn');
+          if (!btn) return;
+
+          var code = countrySelect.value || '';
+          if (!code) {
+            btn.disabled = true;
+            btn.style.color = '#f44336';
+            btn.style.borderColor = '#f44336';
+            btn.textContent = 'retail price finder not available';
+            btn.style.cursor = 'not-allowed';
+            return;
+          }
+
+          fetch('/api/country-has-retail-scraper/?country=' + encodeURIComponent(code))
+            .then(function(resp) { return resp.json(); })
+            .then(function(data) {
+              var hasScraper = data && data.has_scraper;
+              if (hasScraper) {
+                btn.disabled = false;
+                btn.style.color = '#28a745';
+                btn.style.borderColor = '#28a745';
+                btn.textContent = 'retail price finder available';
+                btn.style.cursor = 'pointer';
+              } else {
+                btn.disabled = true;
+                btn.style.color = '#f44336';
+                btn.style.borderColor = '#f44336';
+                btn.textContent = 'retail price finder not available';
+                btn.style.cursor = 'not-allowed';
+              }
+            })
+            .catch(function() {
+              // On error, treat as not available
+              btn.disabled = true;
+              btn.style.color = '#f44336';
+              btn.style.borderColor = '#f44336';
+              btn.textContent = 'retail price finder not available';
+              btn.style.cursor = 'not-allowed';
+            });
         }
-        countrySelect.addEventListener('change', filterTable);
+
+        function filterTable() {
+          // Always pass a string for filterText
+          UserMarketImport.renderProductsTable(
+            countrySelect.value,
+            categorySelect.value,
+            (typeof filterInput.value === 'string' ? filterInput.value : '')
+          );
+          // Show label even if no conversion is needed
+          var countryName = '';
+          if (countrySelect && countrySelect.selectedIndex > 0) {
+            countryName = countrySelect.options[countrySelect.selectedIndex].text;
+          }
+          if (exchangeLabelSpan) {
+            exchangeLabelSpan.textContent = countryName ? ('Products from "' + countryName + '" converted at:') : '';
+            exchangeLabelSpan.style.display = countryName ? '' : 'none';
+          }
+        }
+        countrySelect.addEventListener('change', function() {
+          filterTable();
+          updateRetailButton();
+        });
         categorySelect.addEventListener('change', filterTable);
-        filterInput.addEventListener('input', filterTable);
+        filterInput.addEventListener('input', function(e) {
+          // Do not blur or reset input, just filter
+          filterTable();
+        });
         // Initial table render
         filterTable();
+        updateRetailButton();
       });
   },
 
@@ -73,6 +144,7 @@ const UserMarketImport = {
     if (!container) return;
     var btnContainer = document.getElementById('import-search-btn-container');
     var exchangeRateSpan = document.getElementById('import-exchange-rate');
+    var exchangeLabelSpan = document.getElementById('import-exchange-label');
     container.innerHTML = '<div style="margin:2rem 0; text-align:center; color:#2196f3;">Loading products...</div>';
 
     fetch('/api/products/?country=' + encodeURIComponent(countryCode || ''))
@@ -110,26 +182,43 @@ const UserMarketImport = {
 
         // Determine if any product currency is not USD and fetch exchange rate
         var nonUsdProduct = products.find(function(p) { return p.currency && p.currency.toUpperCase() !== 'USD'; });
+        // Collect all unique product countries (non-USD) in the filtered list
+        var countrySet = new Set();
+        products.forEach(function(p) {
+          var c = p.country_name || p.country || p.country_code || '';
+          var curr = p.currency || '';
+          if (c && curr.toUpperCase() !== 'USD') countrySet.add(c);
+        });
+        var countryList = Array.from(countrySet).join(', ');
+        var labelText = countryList ? ('Products from "' + countryList + '" converted at:') : '';
+        if (exchangeLabelSpan) {
+          exchangeLabelSpan.textContent = labelText;
+          exchangeLabelSpan.style.display = countryList ? '' : 'none';
+        }
 
         if (nonUsdProduct && nonUsdProduct.currency && nonUsdProduct.currency.toUpperCase() !== 'USD') {
           fetch('/api/exchange-rate/?from=' + encodeURIComponent(nonUsdProduct.currency) + '&to=USD')
             .then(function(resp) { return resp.json(); })
             .then(function(rateData) {
               if (rateData && typeof rateData.rate === 'number') {
+                // Keep existing label text based on product countries
                 if (exchangeRateSpan) {
                   exchangeRateSpan.textContent = nonUsdProduct.currency + '→USD: ' + rateData.rate;
                 }
                 UserMarketImport._renderProductsTableWithRate(products, rateData.rate, nonUsdProduct.currency);
               } else {
+                if (exchangeLabelSpan) exchangeLabelSpan.textContent = labelText;
                 if (exchangeRateSpan) exchangeRateSpan.textContent = '';
                 UserMarketImport._renderProductsTableWithRate(products, null, null);
               }
             })
             .catch(function() {
+              if (exchangeLabelSpan) exchangeLabelSpan.textContent = labelText;
               if (exchangeRateSpan) exchangeRateSpan.textContent = '';
               UserMarketImport._renderProductsTableWithRate(products, null, null);
             });
         } else {
+          if (exchangeLabelSpan) exchangeLabelSpan.textContent = labelText;
           if (exchangeRateSpan) exchangeRateSpan.textContent = '';
           UserMarketImport._renderProductsTableWithRate(products, null, null);
         }
@@ -142,6 +231,7 @@ const UserMarketImport = {
   },
 
   _renderProductsTableWithRate: function(products, exchangeRate, currency) {
+
     var container = document.getElementById('import-products-table-container');
     var btnContainer = document.getElementById('import-search-btn-container');
 
@@ -153,15 +243,16 @@ const UserMarketImport = {
 
     var html = '<div class="products-table-wrapper">';
     html += '<table class="products-table" id="products-table" style="width:100%; border-collapse:collapse; margin-top:1rem;">';
-    html += '<thead><tr>';
-    html += '<th style="width:32px;"></th>';
-    html += '<th class="col-code">ID</th>';
-    html += '<th>Name</th>';
-    html += '<th>Origin</th>';
-    html += '<th class="col-trade-unit">Trade Unit</th>';
-    html += '<th>FOB Price</th>';
-    html += '<th>Updated</th>';
-    html += '<th>Price to Compare</th>';
+    html += '<thead style="position:sticky;top:0;z-index:2;background:#222;">';
+    html += '<tr>';
+    html += '<th style="width:32px;background:#222;color:#fff;"> </th>';
+    html += '<th class="col-code" style="background:#222;color:#fff;">ID</th>';
+    html += '<th style="background:#222;color:#fff;">Name</th>';
+    html += '<th style="background:#222;color:#fff;">Origin</th>';
+    html += '<th class="col-trade-unit" style="background:#222;color:#fff;">Trade Unit</th>';
+    html += '<th style="position:sticky;top:0;z-index:3;background:#222;color:#fff;">FOB Price (USD)</th>';
+    html += '<th style="background:#222;color:#fff;">Updated</th>';
+    html += '<th style="background:#222;color:#fff;">Price to Compare</th>';
     html += '</tr></thead><tbody>';
 
     products.forEach(function(product, idx) {
@@ -172,17 +263,22 @@ const UserMarketImport = {
       html += '<td>' + (product.country_name || product.country_code || '') + '</td>';
       html += '<td class="col-trade-unit">' + (product.trade_unit || '') + '</td>';
 
-      // FOB Price: display FCA cost, converted to USD if needed
+      // FOB Price: always display in USD
       var fca = (product.fca_cost_per_wu !== undefined && product.fca_cost_per_wu !== null)
         ? product.fca_cost_per_wu
-        : '-';
-      if (exchangeRate && currency && product.currency && product.currency.toUpperCase() === currency.toUpperCase()) {
+        : '';
+      var fcaUSD = '';
+      if (fca) {
         var numericFca = parseFloat(fca);
         if (!isNaN(numericFca)) {
-          fca = (numericFca * exchangeRate).toFixed(2) + ' USD';
+          if (product.currency && product.currency.toUpperCase() !== 'USD' && exchangeRate) {
+            fcaUSD = (numericFca * exchangeRate).toFixed(2) + ' USD';
+          } else {
+            fcaUSD = numericFca.toFixed(2) + ' USD';
+          }
         }
       }
-      html += '<td>' + fca + '</td>';
+      html += '<td>' + (fcaUSD || '') + '</td>';
 
       html += '<td><span id="updated-' + product.id + '">' + (product.updated_date || '-') + '</span></td>';
       html += '<td>';

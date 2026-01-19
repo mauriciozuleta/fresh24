@@ -466,7 +466,9 @@ def add_airport(request):
 		form = AirportForm()
 	return render(request, 'add_airport.html', {'form': form, 'airports': airports})
 from django.http import JsonResponse
-from .models import Product
+from django.conf import settings
+from pathlib import Path
+from .models import Product, Country, BranchInfo, Airport
 from financialsim.market_tools.exchange_rate import get_exchange_rate
 
 
@@ -509,6 +511,54 @@ def exchange_rate_api(request):
 	except Exception as e:  # pragma: no cover - simple error passthrough
 		return JsonResponse({'error': str(e)}, status=500)
 	return JsonResponse({'rate': rate, 'from': from_currency.upper(), 'to': to_currency.upper()})
+
+
+def country_has_retail_scraper_api(request):
+	"""Return whether the selected country has any retail price scraper.
+
+	A country is considered to have a scraper if any of its airports (from BranchInfo
+	and Airport models) has a matching scraper file in financialsim/market_tools whose
+	filename starts with the airport's IATA code (case-insensitive), e.g. sxm_shopndrop.py.
+	"""
+	country_code = request.GET.get('country') or request.GET.get('country_code')
+	if not country_code:
+		return JsonResponse({'has_scraper': False})
+
+	try:
+		country = Country.objects.get(country_code=country_code)
+	except Country.DoesNotExist:
+		return JsonResponse({'has_scraper': False})
+
+	# Get all airport IATA codes linked to this country via BranchInfo
+	airport_codes = set(
+		BranchInfo.objects.filter(country=country)
+		.values_list('airport__iata_code', flat=True)
+	)
+
+	# Fallback: also include airports whose country text matches the country name
+	if not airport_codes:
+		airport_codes.update(
+			Airport.objects.filter(country__icontains=country.name)
+			.values_list('iata_code', flat=True)
+		)
+
+	if not airport_codes:
+		return JsonResponse({'has_scraper': False})
+
+	# Discover scraper files by IATA prefix in financialsim/market_tools (recursively)
+	scraper_dir = Path(settings.BASE_DIR) / 'financialsim' / 'market_tools'
+	codes_with_scrapers = set()
+	if scraper_dir.exists():
+		for py_file in scraper_dir.rglob('*.py'):
+			name = py_file.name
+			if name.startswith('__'):
+				continue
+			prefix = name.split('_', 1)[0]
+			if len(prefix) == 3:
+				codes_with_scrapers.add(prefix.upper())
+
+	has_scraper = any((code or '').upper() in codes_with_scrapers for code in airport_codes)
+	return JsonResponse({'has_scraper': bool(has_scraper)})
 
 def edit_product_form(request, product_code):
     product = get_object_or_404(Product, product_code=product_code)
