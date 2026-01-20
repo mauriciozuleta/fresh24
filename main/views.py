@@ -16,9 +16,16 @@ def available_supermarkets_api(request):
 	scrapers = _get_country_scrapers(country)
 	# Each scraper: (display_name, function)
 	supermarkets = []
+	# Map known scrapers to their homepage URLs for user reference
+	SCRAPER_URLS = {
+		'sxm_scrapper': 'https://www.sxmleshalles.com',
+		'sxm_shopndrop': 'https://www.shopndropgrocerysxm.com',
+		# Add more mappings as needed
+	}
 	for display_name, func in scrapers:
 		module_name = func.__module__.split('.')[-1]
-		supermarkets.append({'display_name': display_name, 'module_name': module_name})
+		url = SCRAPER_URLS.get(module_name, '')
+		supermarkets.append({'display_name': display_name, 'module_name': module_name, 'url': url})
 	return JsonResponse({'supermarkets': supermarkets})
 
 

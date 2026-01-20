@@ -198,6 +198,12 @@ document.addEventListener('DOMContentLoaded', function() {
 				} else {
 					tabContent.innerHTML = '<div class="tab-content-inner"><h2>Import User Market Data</h2><p>Import functionality coming soon.</p></div>';
 				}
+			} else if (tabName === 'Market Analysis') {
+				if (window.AdminMarketAnalysis && typeof AdminMarketAnalysis.renderMarketAnalysisTab === 'function') {
+					AdminMarketAnalysis.renderMarketAnalysisTab(tabContent);
+				} else {
+					tabContent.innerHTML = '<div class="tab-content-inner"><h2>Market Analysis</h2><p>Market Analysis module not available.</p></div>';
+				}
 			} else if (tabName === 'User Management') {
 				// Load User Management tab content from backend template and execute its scripts
 				fetch('/user-management-tab/')

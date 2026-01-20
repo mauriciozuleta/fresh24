@@ -1,9 +1,17 @@
 // user-market-import.js
 // Handles Import tab: product list for imports.
 
+let importTabCache = null;
 const UserMarketImport = {
   renderImportTab: function(tabContent) {
-    tabContent.innerHTML = `
+    if (importTabCache) {
+      tabContent.innerHTML = '';
+      tabContent.appendChild(importTabCache.cloneNode(true));
+      // Re-attach event listeners if needed (for dynamic elements)
+      return;
+    }
+    var wrapper = document.createElement('div');
+    wrapper.innerHTML = `
       <div class="tab-content-inner">
         <h2>Competitive Prices Import</h2>
         <div style="display: flex; gap: 1.5rem; align-items: flex-end; margin-bottom: 1.5rem;">
@@ -47,6 +55,9 @@ const UserMarketImport = {
         </div>
       </div>
     `;
+    tabContent.innerHTML = '';
+    tabContent.appendChild(wrapper);
+    importTabCache = wrapper;
 
     // Fetch countries for dropdown from CountryInfo (unique countries)
     fetch('/api/countries-in-countryinfo/')
