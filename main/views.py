@@ -2,6 +2,8 @@ from django.views.decorators.http import require_GET
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 import importlib
+import os
+from pathlib import Path
 @require_GET
 def available_supermarkets_api(request):
 	"""Return a list of available supermarkets (display name and module name) for a given country code."""
@@ -71,7 +73,53 @@ def scrape_supermarket_api(request):
 			'url': item.get('url', ''),
 		})
 	return JsonResponse({'supermarket': display_name, 'query': query, 'results': rows})
-from django.views.decorators.http import require_GET
+
+
+@require_GET
+def scrape_summary_api(request):
+	"""Summarize existing scraper CSV files in financialsim/market_tools.
+
+	Returns a JSON object mapping supermarket domains to the list of
+	unique categories that have raw data available.
+	"""
+	base_dir = Path(settings.BASE_DIR)
+	tools_dir = base_dir / 'financialsim' / 'market_tools'
+
+	# Reuse the same mapping we use for available_supermarkets_api
+	SCRAPER_URLS = {
+		'sxm_scrapper': 'https://www.sxmleshalles.com',
+		'sxm_shopndrop': 'https://www.shopndropgrocerysxm.com',
+	}
+
+	# Invert mapping: module_name -> domain (without protocol/trailing slash)
+	module_to_domain = {}
+	for module, url in SCRAPER_URLS.items():
+		clean = url.replace('http://', '').replace('https://', '').rstrip('/')
+		module_to_domain[module] = clean
+
+	summary = {}
+	if tools_dir.exists():
+		for entry in tools_dir.iterdir():
+			if not entry.is_file() or not entry.name.endswith('.csv'):
+				continue
+			stem = entry.stem  # e.g. 'sxm_scrapper_beef_01-20-2026'
+			parts = stem.split('_')
+			if len(parts) < 3:
+				continue
+			# Heuristic: first two parts form the module (e.g. 'sxm_scrapper'),
+			# the next part is the category; the rest is typically the date.
+			module_name = '_'.join(parts[0:2])
+			category = parts[2]
+			domain = module_to_domain.get(module_name)
+			if not domain:
+				continue
+			cats = summary.setdefault(domain, set())
+			cats.add(category)
+
+	# Convert sets to sorted lists for JSON serialization
+	serializable = {domain: sorted(list(categories)) for domain, categories in summary.items()}
+	return JsonResponse({'summary': serializable})
+
 # --- API endpoint to get saved price comparison data for a country ---
 @require_GET
 def get_saved_price_comparison_api(request):

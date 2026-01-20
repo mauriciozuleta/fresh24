@@ -16,7 +16,7 @@ window.AdminMarketAnalysis = (function() {
       '    <label for="market-analysis-supermarket-select" style="display:block; margin-bottom:0.5rem;">Supermarket</label>',
       '    <select id="market-analysis-supermarket-select" class="aircraft-form-control" style="min-width:180px;"></select>',
       '  </div>',
-      '  <div style="display:flex; align-items:flex-end; gap:1.5rem; margin-bottom:1.5rem; flex-wrap:wrap;">',
+      '  <div style="display:flex; align-items:flex-end; gap:1.5rem; margin-bottom:1rem; flex-wrap:wrap;">',
       '    <div style="flex:0 0 180px;">',
       '      <label for="market-analysis-category-select" style="display:block; margin-bottom:0.5rem;">Category</label>',
       '      <select id="market-analysis-category-select" class="aircraft-form-control" style="min-width:160px; width:100%;">',
@@ -40,6 +40,7 @@ window.AdminMarketAnalysis = (function() {
       '      <button id="market-analysis-search-btn" class="primary-button" style="width:100%;">search</button>',
       '    </div>',
       '  </div>',
+      '  <div id="market-analysis-summary" style="margin-bottom:1rem; font-size:0.9rem; color:#b0bec5;"></div>',
       '  <div id="market-analysis-content"></div>',
       '</div>'
     ].join('');
@@ -54,6 +55,8 @@ window.AdminMarketAnalysis = (function() {
     var valueInput = document.getElementById('market-analysis-category-value');
     var searchButton = document.getElementById('market-analysis-search-btn');
     var resultsContainer = document.getElementById('market-analysis-content');
+    var summaryContainer = document.getElementById('market-analysis-summary');
+    var summaryData = null; // will hold mapping domain -> categories
 
     function updateValueInput() {
       if (!categorySelect || !valueInput) return;
@@ -72,6 +75,49 @@ window.AdminMarketAnalysis = (function() {
     if (categorySelect) {
       categorySelect.addEventListener('change', updateValueInput);
       updateValueInput();
+    }
+
+    // Load summary of existing raw CSV data and tie it to the selected scraper
+    function renderSummaryForSelectedScraper() {
+      if (!summaryContainer || !summaryData || !supermarketSelect) return;
+      var selectedOption = supermarketSelect.options[supermarketSelect.selectedIndex];
+      if (!selectedOption) {
+        summaryContainer.textContent = '';
+        return;
+      }
+      var text = selectedOption.textContent || '';
+      var match = text.match(/\(([^)]+)\)\s*$/); // extract domain inside parentheses
+      if (!match) {
+        summaryContainer.textContent = '';
+        return;
+      }
+      var domain = match[1];
+      var cats = (summaryData[domain] || []).slice();
+      if (!cats.length) {
+        summaryContainer.textContent = '';
+        return;
+      }
+      var niceCats;
+      if (cats.length === 1) {
+        niceCats = cats[0];
+      } else if (cats.length === 2) {
+        niceCats = cats[0] + ' and ' + cats[1];
+      } else {
+        niceCats = cats.slice(0, -1).join(', ') + ', and ' + cats[cats.length - 1];
+      }
+      summaryContainer.textContent = 'Raw data from ' + domain + ' for ' + niceCats + ' are available.';
+    }
+
+    if (summaryContainer) {
+      fetch('/api/scrape-summary/')
+        .then(function(response) { return response.json(); })
+        .then(function(data) {
+          summaryData = data.summary || {};
+          renderSummaryForSelectedScraper();
+        })
+        .catch(function(err) {
+          console.warn('Error loading scrape summary for Market Analysis:', err);
+        });
     }
 
     // Fetch countries for dropdown from CountryInfo (unique countries)
@@ -133,9 +179,14 @@ window.AdminMarketAnalysis = (function() {
                 supermarketLabel.textContent = 'retail price finder not available';
                 supermarketLabel.style.color = '#f44336';
               });
+
+            // After updating options, refresh the summary for the currently
+            // selected scraper (if any and if summary data is loaded).
+            renderSummaryForSelectedScraper();
           }
 
           countrySelect.addEventListener('change', updateSupermarketDropdown);
+          supermarketSelect.addEventListener('change', renderSummaryForSelectedScraper);
           updateSupermarketDropdown();
         })
         .catch(function(err) {

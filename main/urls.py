@@ -60,4 +60,5 @@ urlpatterns = [
     path('api/country-has-retail-scraper/', views.country_has_retail_scraper_api, name='country_has_retail_scraper_api'),
     path('api/available-supermarkets/', views.available_supermarkets_api, name='available_supermarkets_api'),
     path('api/scrape-supermarket/', views.scrape_supermarket_api, name='scrape_supermarket_api'),
+    path('api/scrape-summary/', views.scrape_summary_api, name='scrape_summary_api'),
 ]
