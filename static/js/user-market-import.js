@@ -27,7 +27,7 @@ const UserMarketImport = {
             <label for="import-product-filter" style="display:block; margin-bottom:0.5rem;">Filter</label>
             <input type="text" id="import-product-filter" class="aircraft-form-control" placeholder="Type to filter products..." style="width:180px; min-width:150px; background:transparent; border:2px solid #2196f3; border-radius:4px; color:#fff; font-size:0.98em; padding:0.25rem 0.5rem; box-shadow:none; outline:none; z-index:2; position:relative; pointer-events:auto;" autocomplete="off" />
           </div>
-          <div id="supermarket-dropdown-container" style="min-width:200px; display:none; flex-direction:column;">
+          <div id="supermarket-dropdown-container" style="min-width:200px; display:flex; flex-direction:column;">
             <label for="import-supermarket-select" style="display:block; margin-bottom:0.5rem;">Supermarket</label>
             <div style="display:flex; gap:0.5rem; align-items:flex-end;">
               <select id="import-supermarket-select" class="aircraft-form-control" style="min-width:180px;"></select>
@@ -72,10 +72,12 @@ const UserMarketImport = {
 
         function updateSupermarketDropdown() {
           var code = countrySelect.value || '';
+          supermarketDropdownContainer.style.display = 'flex';
           if (!code) {
-            supermarketDropdownContainer.style.display = 'none';
             supermarketSelect.innerHTML = '';
             supermarketSelect.disabled = true;
+            supermarketLabel.textContent = 'retail price finder not available';
+            supermarketLabel.style.color = '#f44336';
             return;
           }
           fetch('/api/available-supermarkets/?country=' + encodeURIComponent(code))
@@ -83,7 +85,6 @@ const UserMarketImport = {
             .then(function(data) {
               var supermarkets = (data && data.supermarkets) || [];
               if (supermarkets.length > 0) {
-                supermarketDropdownContainer.style.display = '';
                 supermarketSelect.disabled = false;
                 supermarketLabel.textContent = 'Supermarket';
                 supermarketLabel.style.color = '#4caf50';
@@ -95,7 +96,6 @@ const UserMarketImport = {
                   supermarketSelect.appendChild(opt);
                 });
               } else {
-                supermarketDropdownContainer.style.display = '';
                 supermarketSelect.disabled = true;
                 supermarketSelect.innerHTML = '';
                 supermarketLabel.textContent = 'retail price finder not available';
@@ -103,7 +103,6 @@ const UserMarketImport = {
               }
             })
             .catch(function() {
-              supermarketDropdownContainer.style.display = '';
               supermarketSelect.disabled = true;
               supermarketSelect.innerHTML = '';
               supermarketLabel.textContent = 'retail price finder not available';
@@ -287,11 +286,48 @@ const UserMarketImport = {
     // Make checkboxes mutually exclusive and add country check
     var checkboxes = container.querySelectorAll('.import-product-checkbox');
     var countrySelect = document.getElementById('import-country-select');
+    var btnContainer = document.getElementById('import-search-btn-container');
+    var iframeContainer = document.getElementById('import-iframe-container');
+    function updateSearchBtn() {
+      var checked = Array.from(checkboxes).find(cb => cb.checked);
+      var selectedProductName = '';
+      if (checked) {
+        var row = checked.closest('tr');
+        if (row) {
+          var nameCell = row.querySelector('td:nth-child(3)');
+          if (nameCell) selectedProductName = nameCell.textContent.trim();
+        }
+      }
+      var selectedCountry = '';
+      if (countrySelect && countrySelect.value) {
+        var selectedOption = countrySelect.options[countrySelect.selectedIndex];
+        selectedCountry = selectedOption ? selectedOption.textContent.trim() : countrySelect.value;
+      }
+      if (countrySelect && countrySelect.value && checked && selectedProductName && selectedCountry) {
+        var prompt = 'search for online supermarket prices for ' + selectedProductName + ' in ' + selectedCountry + ' main cities';
+        btnContainer.innerHTML = '<button id="show-iframe-btn" class="primary-button" style="margin:1rem auto;">' + prompt + '</button>';
+        var btn = document.getElementById('show-iframe-btn');
+        btn.onclick = function() {
+          if (iframeContainer) {
+            var iframe = document.getElementById('search-iframe');
+            if (iframe) {
+              var query = encodeURIComponent(selectedCountry + ' supermarket price ' + selectedProductName + ' main cities');
+              iframe.src = 'https://www.bing.com/search?q=' + query;
+            }
+            iframeContainer.style.display = '';
+          }
+        };
+      } else {
+        btnContainer.innerHTML = '';
+        if (iframeContainer) iframeContainer.style.display = 'none';
+      }
+    }
     checkboxes.forEach(function(checkbox) {
       checkbox.addEventListener('change', function(e) {
         if (!countrySelect || !countrySelect.value) {
           checkbox.checked = false;
           alert('Please select a country first.');
+          updateSearchBtn();
           return;
         }
         if (checkbox.checked) {
@@ -299,8 +335,13 @@ const UserMarketImport = {
             if (cb !== checkbox) cb.checked = false;
           });
         }
+        updateSearchBtn();
       });
     });
+    if (countrySelect) {
+      countrySelect.addEventListener('change', updateSearchBtn);
+    }
+    updateSearchBtn();
     html += '</tbody></table></div>';
   }
 };
