@@ -27,6 +27,13 @@ const UserMarketImport = {
             <label for="import-product-filter" style="display:block; margin-bottom:0.5rem;">Filter</label>
             <input type="text" id="import-product-filter" class="aircraft-form-control" placeholder="Type to filter products..." style="width:180px; min-width:150px; background:transparent; border:2px solid #2196f3; border-radius:4px; color:#fff; font-size:0.98em; padding:0.25rem 0.5rem; box-shadow:none; outline:none; z-index:2; position:relative; pointer-events:auto;" autocomplete="off" />
           </div>
+          <div id="supermarket-dropdown-container" style="min-width:200px; display:none; flex-direction:column;">
+            <label for="import-supermarket-select" style="display:block; margin-bottom:0.5rem;">Supermarket</label>
+            <div style="display:flex; gap:0.5rem; align-items:flex-end;">
+              <select id="import-supermarket-select" class="aircraft-form-control" style="min-width:180px;"></select>
+              <input type="text" id="supermarket-search-value" class="aircraft-form-control" placeholder="Enter value to search..." style="width:160px; min-width:120px; background:transparent; border:2px solid #2196f3; border-radius:4px; color:#fff; font-size:0.98em; padding:0.25rem 0.5rem; box-shadow:none; outline:none; z-index:2; position:relative; pointer-events:auto;" autocomplete="off" />
+            </div>
+          </div>
         </div>
         <div style="display:flex; align-items:center; gap:1rem; margin-bottom:1rem;">
           <span id="import-exchange-label" style="color:#aaa; font-size:0.95em;"></span>
@@ -59,6 +66,50 @@ const UserMarketImport = {
         var categorySelect = document.getElementById('import-category-select');
         var filterInput = document.getElementById('import-product-filter');
         var exchangeLabelSpan = document.getElementById('import-exchange-label');
+        var supermarketDropdownContainer = document.getElementById('supermarket-dropdown-container');
+        var supermarketSelect = document.getElementById('import-supermarket-select');
+        var supermarketLabel = supermarketDropdownContainer.querySelector('label');
+
+        function updateSupermarketDropdown() {
+          var code = countrySelect.value || '';
+          if (!code) {
+            supermarketDropdownContainer.style.display = 'none';
+            supermarketSelect.innerHTML = '';
+            supermarketSelect.disabled = true;
+            return;
+          }
+          fetch('/api/available-supermarkets/?country=' + encodeURIComponent(code))
+            .then(function(resp) { return resp.json(); })
+            .then(function(data) {
+              var supermarkets = (data && data.supermarkets) || [];
+              if (supermarkets.length > 0) {
+                supermarketDropdownContainer.style.display = '';
+                supermarketSelect.disabled = false;
+                supermarketLabel.textContent = 'Supermarket';
+                supermarketLabel.style.color = '#4caf50';
+                supermarketSelect.innerHTML = '';
+                supermarkets.forEach(function(s) {
+                  var opt = document.createElement('option');
+                  opt.value = s.module_name;
+                  opt.textContent = s.display_name;
+                  supermarketSelect.appendChild(opt);
+                });
+              } else {
+                supermarketDropdownContainer.style.display = '';
+                supermarketSelect.disabled = true;
+                supermarketSelect.innerHTML = '';
+                supermarketLabel.textContent = 'retail price finder not available';
+                supermarketLabel.style.color = '#f44336';
+              }
+            })
+            .catch(function() {
+              supermarketDropdownContainer.style.display = '';
+              supermarketSelect.disabled = true;
+              supermarketSelect.innerHTML = '';
+              supermarketLabel.textContent = 'retail price finder not available';
+              supermarketLabel.style.color = '#f44336';
+            });
+        }
 
         function filterTable() {
           UserMarketImport.renderProductsTable(
@@ -67,7 +118,10 @@ const UserMarketImport = {
             (typeof filterInput.value === 'string' ? filterInput.value : '')
           );
         }
-        countrySelect.addEventListener('change', filterTable);
+        countrySelect.addEventListener('change', function() {
+          filterTable();
+          updateSupermarketDropdown();
+        });
         categorySelect.addEventListener('change', filterTable);
         filterInput.addEventListener('input', function(e) {
           filterTable();
@@ -75,6 +129,7 @@ const UserMarketImport = {
 
         // Initial table render
         filterTable();
+        updateSupermarketDropdown();
       });
   },
 
@@ -208,7 +263,16 @@ const UserMarketImport = {
       html += '<td>' + (product.country_name || '') + '</td>';
       html += '<td>' + (product.trade_unit || '') + '</td>';
       html += '<td>' + (product.currency || '') + '</td>';
-      html += '<td>' + (typeof product.fca_cost_per_wu === 'number' ? product.fca_cost_per_wu.toFixed(2) : (product.fca_cost_per_wu || '')) + '</td>';
+      // FOB Price (USD) with conversion if needed
+      if (
+        typeof product.fca_cost_per_wu === 'number' &&
+        exchangeRate && currency && product.currency && product.currency.toUpperCase() !== 'USD'
+      ) {
+        var converted = (product.fca_cost_per_wu * exchangeRate).toFixed(2);
+        html += '<td>' + converted + ' <span style="color:#aaa; font-size:0.95em;">(' + product.fca_cost_per_wu.toFixed(2) + ' ' + product.currency + ')</span></td>';
+      } else {
+        html += '<td>' + (typeof product.fca_cost_per_wu === 'number' ? product.fca_cost_per_wu.toFixed(2) : (product.fca_cost_per_wu || '')) + '</td>';
+      }
       html += '<td>' + (product.supermarket_name || '') + '</td>';
       html += '<td>' + (typeof product.local_cost === 'number' ? product.local_cost.toFixed(2) : (product.local_cost || '')) + '</td>';
       html += '<td>' + (typeof product.price_margin === 'number' ? product.price_margin.toFixed(2) : (product.price_margin || '')) + '</td>';
@@ -219,6 +283,25 @@ const UserMarketImport = {
     });
     html += '</tbody></table></div>';
     container.innerHTML = html;
+
+    // Make checkboxes mutually exclusive and add country check
+    var checkboxes = container.querySelectorAll('.import-product-checkbox');
+    var countrySelect = document.getElementById('import-country-select');
+    checkboxes.forEach(function(checkbox) {
+      checkbox.addEventListener('change', function(e) {
+        if (!countrySelect || !countrySelect.value) {
+          checkbox.checked = false;
+          alert('Please select a country first.');
+          return;
+        }
+        if (checkbox.checked) {
+          checkboxes.forEach(function(cb) {
+            if (cb !== checkbox) cb.checked = false;
+          });
+        }
+      });
+    });
+    html += '</tbody></table></div>';
   }
 };
 if (typeof window !== 'undefined') {
