@@ -1,6 +1,6 @@
 import sys
 import re
-from playwright.sync_api import sync_playwright
+from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeoutError
 from bs4 import BeautifulSoup
 
 SEARCH_URL = "https://www.sxmleshalles.com/en/search?controller=search&s={query}"
@@ -112,15 +112,31 @@ def search_products(query, limit=100):
         browser = p.chromium.launch(headless=True)
         while True:
             url = SEARCH_URL.format(query=query.replace(" ", "+")) + f"&page={page_num}"
-            print(f"DEBUG: Scraping {url}")
+            print(f"DEBUG: Scraping {url}", flush=True)
             page = browser.new_page()
-            page.goto(url, timeout=30000)
-            page.wait_for_load_state("networkidle")
-            html = page.content()
-            page.close()
+            try:
+                page.goto(url, timeout=30000)
+                # Be defensive: if "networkidle" never happens (e.g., hanging assets),
+                # don't block forever; just wait a bit and proceed.
+                try:
+                    page.wait_for_load_state("networkidle", timeout=15000)
+                except PlaywrightTimeoutError:
+                    print("DEBUG: networkidle timeout, continuing with current HTML", flush=True)
+                html = page.content()
+            except PlaywrightTimeoutError:
+                print("DEBUG: page.goto timeout, stopping pagination", flush=True)
+                page.close()
+                break
+            except Exception as e:
+                print(f"DEBUG: unexpected error loading page: {e}", flush=True)
+                page.close()
+                break
+
             soup = BeautifulSoup(html, "html.parser")
             products = soup.select(PRODUCT_SELECTOR)
+            print(f"DEBUG: found {len(products)} products on page {page_num}", flush=True)
             if not products:
+                page.close()
                 break
             for product in products:
                 if limit is not None and collected >= limit:
@@ -148,6 +164,7 @@ def search_products(query, limit=100):
                 })
                 collected += 1
             page_num += 1
+            page.close()
         browser.close()
     return results
 

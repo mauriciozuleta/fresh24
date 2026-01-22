@@ -1,9 +1,151 @@
 from django.views.decorators.http import require_GET
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
+from django.http import JsonResponse
 import importlib
 import os
 from pathlib import Path
+from threading import Thread
+
+
+def _run_supermarket_scrape_job(country_id: int, module_name: str, query: str, slug: str) -> None:
+	"""Background worker: run scraper and write CSV for a supermarket query.
+
+	This mirrors the synchronous logic previously in scrape_supermarket_api,
+	but is executed in a separate thread so the HTTP request can return
+	immediately and the scrape continues even if the user changes tabs.
+	"""
+	from datetime import datetime
+	import csv
+	from django.conf import settings
+	from .models import Country
+	from financialsim.market_tools.market_diagnosis import _get_country_scrapers
+
+	try:
+		country = Country.objects.get(id=country_id)
+	except Country.DoesNotExist:
+		print(f"DEBUG: background scrape aborted, country id {country_id} not found", flush=True)
+		return
+
+	# Find scraper function for this country/module
+	scrapers = _get_country_scrapers(country)
+	scraper_func = None
+	display_name = None
+	for dname, func in scrapers:
+		if func.__module__.split('.')[-1] == module_name:
+			scraper_func = func
+			display_name = dname
+			break
+	if not scraper_func:
+		print(f"DEBUG: background scrape aborted, scraper {module_name} not found for country {country}", flush=True)
+		return
+
+	print(f"DEBUG: [bg] starting scrape for {module_name} query={query}", flush=True)
+	try:
+		results = scraper_func(query)
+	except Exception as exc:
+		print(f"DEBUG: [bg] scraper failed for {module_name} query={query}: {exc}", flush=True)
+		return
+	print(f"DEBUG: [bg] scraper returned {len(results)} raw items for {display_name}", flush=True)
+
+	# Normalize/enrich results (same logic as before)
+	rows = []
+	sxm_module = None
+	if module_name == 'sxm_scrapper':
+		try:
+			from financialsim.market_tools import sxm_scrapper as _sxm
+			sxm_module = _sxm
+			print("DEBUG: [bg] using sxm_scrapper enrichment logic", flush=True)
+		except Exception as e:
+			print(f"DEBUG: [bg] failed to import sxm_scrapper for enrichment: {e}", flush=True)
+
+	for item in results:
+		name = item.get('name', '')
+		price = item.get('price', '')
+		if module_name == 'sxm_scrapper' and sxm_module is not None:
+			# Start with weight and the URL from the listing, as in CLI
+			description = item.get('weight')
+			product_page_url = item.get('url')
+			try:
+				if (not description or not str(description).strip()):
+					if (not product_page_url) and name:
+						product_page_url = sxm_module.find_product_page_url(name) or product_page_url
+					if product_page_url:
+						description = sxm_module.get_product_weight(product_page_url) or description
+			except Exception as e:
+				print(f"DEBUG: [bg] sxm_scrapper enrichment failed for {name}: {e}", flush=True)
+			description = description or 'N/A'
+			url = product_page_url or 'N/A'
+		else:
+			# Generic normalization for other scrapers
+			description = item.get('description') or item.get('weight') or 'N/A'
+			url = item.get('url') or item.get('URL') or 'N/A'
+
+		rows.append({
+			'name': name,
+			'price': price,
+			'description': description,
+			'url': url,
+		})
+
+	# Save CSV mirroring the CLI behavior and clean up older ones
+	try:
+		tools_dir = Path(settings.BASE_DIR) / 'financialsim' / 'market_tools'
+		tools_dir.mkdir(parents=True, exist_ok=True)
+		date_str = datetime.now().strftime('%m-%d-%Y')
+		csv_path = tools_dir / f"{module_name}_{slug}_{date_str}.csv"
+		with csv_path.open('w', newline='', encoding='utf-8') as csvfile:
+			writer = csv.DictWriter(csvfile, fieldnames=['Name', 'Price', 'Description', 'URL'])
+			writer.writeheader()
+			for row in rows:
+				writer.writerow({
+					'Name': row.get('name', ''),
+					'Price': row.get('price', ''),
+					'Description': row.get('description', ''),
+					'URL': row.get('url', ''),
+				})
+		pattern = f"{module_name}_{slug}_*.csv"
+		matches = list(tools_dir.glob(pattern))
+		if len(matches) > 1:
+			sorted_files = sorted(matches, key=lambda p: p.stat().st_mtime)
+			for old in sorted_files[:-1]:
+				try:
+					os.remove(old)
+				except Exception:
+					pass
+	except Exception as exc:
+		print(f"DEBUG: [bg] failed to write CSV for {module_name} {slug}: {exc}", flush=True)
+
+
+@require_GET
+def shopndrop_categories_api(request):
+	"""Return navbar-based categories for the sxm_shopndrop scraper.
+
+	The response groups subcategories under their top-level navbar label so
+	that the UI can build a primary "Category" dropdown and a secondary
+	"Subcategory" dropdown for ShopNDrop.
+
+	Schema:
+
+	    {
+	        "categories": [
+	            {"top": "Fruits & Vegetables", "subcategories": ["Apple", ...]},
+	            ...
+	        ]
+	    }
+	"""
+	try:
+		from financialsim.market_tools import sxm_shopndrop
+	except Exception as exc:
+		return JsonResponse({'error': f'Failed to import sxm_shopndrop: {exc}', 'categories': []}, status=500)
+
+	try:
+		categories = sxm_shopndrop.get_nav_categories()
+	except Exception as exc:
+		return JsonResponse({'error': f'Failed to build ShopNDrop navbar categories: {exc}', 'categories': []}, status=500)
+
+	return JsonResponse({'categories': categories})
+
 @require_GET
 def available_supermarkets_api(request):
 	"""Return a list of available supermarkets (display name and module name) for a given country code."""
@@ -34,7 +176,12 @@ def available_supermarkets_api(request):
 @csrf_exempt
 @require_POST
 def scrape_supermarket_api(request):
-	"""Trigger a full-category scrape for a selected supermarket and category (query)."""
+	"""Start a supermarket scrape in the background for a given query.
+
+	The actual scraping and CSV writing are done in a background thread so
+	that the request can return immediately and the job is not cancelled if
+	the user changes tabs or navigates away.
+	"""
 	import json
 	data = json.loads(request.body.decode('utf-8'))
 	country_code = data.get('country_code')
@@ -46,33 +193,29 @@ def scrape_supermarket_api(request):
 		country = Country.objects.get(country_code=country_code)
 	except Country.DoesNotExist:
 		return JsonResponse({'error': 'Invalid country code'}, status=400)
-	# Find the scraper function by module name
+
+	# Optional: verify that a scraper exists for this module/country
 	from financialsim.market_tools.market_diagnosis import _get_country_scrapers
 	scrapers = _get_country_scrapers(country)
-	scraper_func = None
-	display_name = None
-	for dname, func in scrapers:
-		if func.__module__.split('.')[-1] == module_name:
-			scraper_func = func
-			display_name = dname
-			break
-	if not scraper_func:
+	if not any(func.__module__.split('.')[-1] == module_name for _dname, func in scrapers):
 		return JsonResponse({'error': 'Scraper not found for this country'}, status=404)
-	# Run the scraper for the query/category
-	try:
-		results = scraper_func(query, 1000)  # Large limit to get all pages
-	except Exception as exc:
-		return JsonResponse({'error': f'Scraper failed: {exc}'}, status=500)
-	# Only return the most relevant fields
-	rows = []
-	for item in results:
-		rows.append({
-			'name': item.get('name', ''),
-			'price': item.get('price', ''),
-			'description': item.get('description', item.get('weight', '')),
-			'url': item.get('url', ''),
-		})
-	return JsonResponse({'supermarket': display_name, 'query': query, 'results': rows})
+
+	slug = (query or '').strip().lower().replace(' ', '-')
+	print(f"DEBUG: scheduling background scrape for {module_name} query={query} slug={slug}", flush=True)
+
+	thread = Thread(
+		target=_run_supermarket_scrape_job,
+		args=(country.id, module_name, query, slug),
+		daemon=True,
+	)
+	thread.start()
+
+	return JsonResponse({
+		'ok': True,
+		'query': query,
+		'module_name': module_name,
+		'category': slug,
+	})
 
 
 @require_GET
@@ -119,6 +262,91 @@ def scrape_summary_api(request):
 	# Convert sets to sorted lists for JSON serialization
 	serializable = {domain: sorted(list(categories)) for domain, categories in summary.items()}
 	return JsonResponse({'summary': serializable})
+
+
+@require_GET
+def scrape_results_api(request):
+	"""Return detailed CSV records for a given scraper module and category.
+
+	Looks up CSV files in financialsim/market_tools with names like
+	"sxm_scrapper_beef_01-20-2026.csv", picks the most recent by date,
+	and returns all records (excluding the header) along with basic
+	metadata for UI display.
+	"""
+	module_name = request.GET.get('module_name')
+	category = request.GET.get('category')
+	if not module_name or not category:
+		return JsonResponse({'error': 'module_name and category are required'}, status=400)
+
+	from django.conf import settings
+	from datetime import datetime
+	import csv
+
+	base_dir = Path(settings.BASE_DIR)
+	tools_dir = base_dir / 'financialsim' / 'market_tools'
+	if not tools_dir.exists():
+		return JsonResponse({'records': [], 'total': 0, 'category': category, 'domain': '', 'date': ''})
+
+	matches = []  # (Path, datetime or None, date_str)
+	for entry in tools_dir.iterdir():
+		if not entry.is_file() or not entry.name.endswith('.csv'):
+			continue
+		stem = entry.stem  # e.g. 'sxm_scrapper_beef_01-20-2026'
+		parts = stem.split('_')
+		if len(parts) < 4:
+			continue
+		file_module = '_'.join(parts[0:2])
+		file_category = parts[2]
+		if file_module != module_name or file_category.lower() != category.lower():
+			continue
+		date_str = '_'.join(parts[3:])
+		try:
+			parsed_dt = datetime.strptime(date_str, '%m-%d-%Y')
+		except ValueError:
+			parsed_dt = None
+		matches.append((entry, parsed_dt, date_str))
+
+	if not matches:
+		return JsonResponse({'records': [], 'total': 0, 'category': category, 'domain': '', 'date': ''})
+
+	def _sort_key(item):
+		_efile, edt, _ds = item
+		from datetime import datetime as _dt
+		return edt or _dt.min
+
+	latest_file, latest_dt, latest_date_str = sorted(matches, key=_sort_key)[-1]
+
+	# Map scrapers to their homepages to derive the display domain
+	SCRAPER_URLS = {
+		'sxm_scrapper': 'https://www.sxmleshalles.com',
+		'sxm_shopndrop': 'https://www.shopndropgrocerysxm.com',
+	}
+	full_url = SCRAPER_URLS.get(module_name, '')
+	domain = full_url.replace('http://', '').replace('https://', '').rstrip('/') if full_url else ''
+
+	records = []
+	try:
+		with latest_file.open('r', encoding='utf-8') as f:
+			reader = csv.DictReader(f)
+			for row in reader:
+				records.append({
+					'name': row.get('Name', ''),
+					'price': row.get('Price', ''),
+					'description': row.get('Description', ''),
+					'url': row.get('URL', ''),
+				})
+	except Exception as exc:
+		return JsonResponse({'error': f'Failed to read CSV: {exc}'}, status=500)
+
+	total = len(records)
+
+	return JsonResponse({
+		'records': records,
+		'total': total,
+		'category': category,
+		'domain': domain,
+		'date': latest_date_str,
+	})
 
 # --- API endpoint to get saved price comparison data for a country ---
 @require_GET
@@ -678,12 +906,7 @@ def exchange_rate_api(request):
 
 
 def country_has_retail_scraper_api(request):
-	"""Return whether the selected country has any retail price scraper.
-
-	A country is considered to have a scraper if any of its airports (from BranchInfo
-	and Airport models) has a matching scraper file in financialsim/market_tools whose
-	filename starts with the airport's IATA code (case-insensitive), e.g. sxm_shopndrop.py.
-	"""
+	"""Return whether the selected country has any retail price scraper."""
 	country_code = request.GET.get('country') or request.GET.get('country_code')
 	if not country_code:
 		return JsonResponse({'has_scraper': False})
@@ -726,14 +949,7 @@ def country_has_retail_scraper_api(request):
 
 
 def run_market_diagnosis_api(request):
-	"""Trigger market diagnosis for all imported products into a given country.
-
-	Used by the Import tab's "retail price finder" button. It will:
-	- Resolve the country based on ?country= or ?country_code=.
-	- Run run_market_diagnosis_for_country(country), which uses scrapers
-	  and OpenAI (when configured) to populate ProductDiagnosis.
-	- Return a JSON summary with the number of products processed.
-	"""
+	"""Trigger market diagnosis for all imported products into a given country."""
 
 	if request.method not in ('GET', 'POST'):
 		return JsonResponse({'error': 'Method not allowed'}, status=405)
