@@ -511,7 +511,20 @@ window.AdminMarketAnalysis = (function() {
             } else {
               updateValueInput();
             }
-            renderSummaryForSelectedScraper();
+            // Force reload summary from backend to update available files
+            if (summaryContainer) {
+              fetch('/api/scrape-summary/')
+                .then(function(response) { return response.json(); })
+                .then(function(data) {
+                  summaryData = data.summary || {};
+                  renderSummaryForSelectedScraper();
+                })
+                .catch(function(err) {
+                  console.warn('Error loading scrape summary for Market Analysis:', err);
+                });
+            } else {
+              renderSummaryForSelectedScraper();
+            }
           });
           updateSupermarketDropdown();
         })

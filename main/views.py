@@ -245,14 +245,27 @@ def scrape_summary_api(request):
 		for entry in tools_dir.iterdir():
 			if not entry.is_file() or not entry.name.endswith('.csv'):
 				continue
-			stem = entry.stem  # e.g. 'sxm_scrapper_beef_01-20-2026'
+			stem = entry.stem  # e.g. 'sxm_scrapper_beef_01-20-2026' or 'sxm_shopndrop-fruitsandvegetables'
 			parts = stem.split('_')
-			if len(parts) < 3:
+
+			module_name = None
+			category = None
+
+			# Primary heuristic: old pattern 'module_module_category_date'
+			if len(parts) >= 3:
+				module_name = '_'.join(parts[0:2])
+				category = parts[2]
+			else:
+				# Fallback for newer ShopNDrop aggregated files named like
+				# 'sxm_shopndrop-fruitsandvegetables.csv'. These do not carry
+				# a date in the filename, just the combined category slug.
+				if stem.startswith('sxm_shopndrop-'):
+					module_name = 'sxm_shopndrop'
+					category = stem[len('sxm_shopndrop-'):]
+
+			if not module_name or not category:
 				continue
-			# Heuristic: first two parts form the module (e.g. 'sxm_scrapper'),
-			# the next part is the category; the rest is typically the date.
-			module_name = '_'.join(parts[0:2])
-			category = parts[2]
+
 			domain = module_to_domain.get(module_name)
 			if not domain:
 				continue
