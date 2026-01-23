@@ -125,7 +125,14 @@ def shopndrop_categories_api(request):
 
 @require_GET
 def available_supermarkets_api(request):
-    """Return a list of available supermarkets for a given country code."""
+    """Return supermarkets for a country based on IATA-prefixed scrapers.
+
+    Any .py file in financialsim/market_tools/scrapers whose filename starts
+    with an airport IATA code for the selected country is treated as a
+    supermarket scraper. The supermarket label is built from its URL if
+    present in the source code.
+    """
+    from urllib.parse import urlparse
     country_code = request.GET.get('country_code') or request.GET.get('country')
     if not country_code:
         return JsonResponse({'supermarkets': []})
@@ -133,18 +140,73 @@ def available_supermarkets_api(request):
         country = Country.objects.get(country_code=country_code)
     except Country.DoesNotExist:
         return JsonResponse({'supermarkets': []})
-    from financialsim.market_tools.market_diagnosis import _get_country_scrapers
 
+    # Gather IATA codes for the country
+    airport_codes = set(
+        BranchInfo.objects.filter(country=country).values_list('airport__iata_code', flat=True)
+    )
+    if not airport_codes:
+        airport_codes.update(
+            Airport.objects.filter(country__icontains=country.name).values_list('iata_code', flat=True)
+        )
+    codes_upper = { (code or '').upper() for code in airport_codes if code }
+    if not codes_upper:
+        return JsonResponse({'supermarkets': []})
+
+    from django.conf import settings
+    from pathlib import Path
+    scraper_dir = Path(settings.BASE_DIR) / 'financialsim' / 'market_tools' / 'scrapers'
     supermarkets = []
-    scraper_urls = {
-        'sxm_scrapper': 'https://www.sxmleshalles.com',
-        'sxm_shopndrop': 'https://www.shopndropgrocerysxm.com',
-    }
+    if scraper_dir.exists():
+        import re
+        for py_file in scraper_dir.glob('*.py'):
+            name = py_file.name
+            if name.startswith('__') or not name.endswith('.py'):
+                continue
 
-    for display_name, func in _get_country_scrapers(country):
-        module_name = func.__module__.split('.')[-1]
-        url = scraper_urls.get(module_name, '')
-        supermarkets.append({'display_name': display_name, 'module_name': module_name, 'url': url})
+            # File must start with an IATA code for this country
+            prefix = name.split('_', 1)[0].upper()
+            if prefix not in codes_upper:
+                continue
+
+            rel = py_file.with_suffix('').name
+
+            # Try to extract a URL from the source code.
+            try:
+                text = py_file.read_text(encoding='utf-8', errors='ignore')
+            except Exception:
+                text = ''
+
+            candidate_url = None
+
+            # 1) Look for explicit BASE_URL / SEARCH_URL style constants
+            url_match = re.search(
+                r"^(?:BASE_URL|SEARCH_URL|base_url|search_url)\s*=\s*['\"]([^'\"]+)['\"]",
+                text,
+                re.MULTILINE,
+            )
+            if url_match:
+                candidate_url = url_match.group(1)
+
+            # 2) Fallback: first literal http(s) URL in the file
+            if not candidate_url:
+                any_url = re.search(r"https?://[^'\"\s]+", text)
+                if any_url:
+                    candidate_url = any_url.group(0)
+
+            # Derive supermarket URL/domain from whatever we found (if anything)
+            domain = ''
+            if candidate_url:
+                parsed = urlparse(candidate_url)
+                if parsed.scheme and parsed.netloc:
+                    domain = f"{parsed.scheme}://{parsed.netloc}"
+                elif parsed.netloc:  # scheme-less like //example.com
+                    domain = parsed.netloc
+                else:
+                    domain = str(candidate_url).rstrip('/')
+
+            display_name = domain or rel.replace('_', ' ').title()
+            supermarkets.append({'display_name': display_name, 'module_name': rel, 'url': domain})
 
     return JsonResponse({'supermarkets': supermarkets})
 

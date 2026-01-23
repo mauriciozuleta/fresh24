@@ -449,11 +449,15 @@ window.AdminMarketAnalysis = (function() {
                   supermarkets.forEach(function(s) {
                     var opt = document.createElement('option');
                     opt.value = s.module_name;
-                    var label = s.display_name;
-                    if (s.url) {
-                      label += ' (' + s.url.replace(/^https?:\/\//, '').replace(/\/$/, '') + ')';
+                    var label = '';
+                    if (s.display_name) {
+                      // Backend already provides a human-readable label (usually domain only).
+                      label = s.display_name;
+                    } else if (s.url) {
+                      // Fallback: derive label from URL without scheme and trailing slash.
+                      label = s.url.replace(/^https?:\/\//, '').replace(/\/$/, '');
                     }
-                    opt.textContent = label;
+                    opt.textContent = label || s.module_name;
                     supermarketSelect.appendChild(opt);
                   });
                 } else {
